@@ -7,6 +7,10 @@ const killerColor = new THREE.Color(0xff00ff);
 
 const victimColor = new THREE.Color(0x00ffff);
 
+const topSize = 0.1;
+const bottomSize = 0.1;
+const sides = 8;
+
 const uniforms = {
     opacity: { type: "f", value: 1.0 }
 };
@@ -19,9 +23,12 @@ const shaderMaterial = new THREE.ShaderMaterial({
     side: THREE.DoubleSide
 });
 
-
 const weapons = getWeaponsTable();
 
+
+/**
+ * 
+ */
 export class Viewer {
     constructor(canvasId) {
         this._scene = new THREE.Scene();
@@ -45,6 +52,20 @@ export class Viewer {
         this.onWindowResize();
     }
 
+    highlightEvent(event) {
+        const target = this._scene.getObjectByName(event.Id);
+        if (!target)
+            return;
+        
+        const color = target.geometry.attributes.customColor;
+        for (let i = 0; i < color.array.length; ++i) {
+            new THREE.Color(0xffffff).toArray(color.array, i);
+        }
+        color.needsUpdate = true;
+        this.render();
+    }
+
+
     onWindowResize() {
         const width = this._renderer.domElement.clientWidth;
         const height = this._renderer.domElement.clientHeight;
@@ -57,7 +78,7 @@ export class Viewer {
     onMouseMove(event) {
         this.mouse = new THREE.Vector2(
             (event.clientX / window.innerWidth) * 2 - 1,
-            (event.clientY / window.innerHeight) * 2 + 1);
+            -(event.clientY / window.innerHeight) * 2 + 1);
         this.update();
     }
 
@@ -121,78 +142,49 @@ export class Viewer {
         return mesh;
     }
 
-    drawEvents(events) {
-        const killerColor = new THREE.Color(0xff00ff);
-        const victimColor = new THREE.Color(0x00ffff);
+    addEvent(event) {
+        const {KillerWorldLocation, VictimWorldLocation} = event;
 
-        const topSize = 0.1;
-        const bottomSize = 0.1;
-        const sides = 8;
+        const killer = new THREE.Vector3(KillerWorldLocation.x, KillerWorldLocation.y, KillerWorldLocation.z);
+        const victim = new THREE.Vector3(VictimWorldLocation.x, VictimWorldLocation.y, VictimWorldLocation.z);
+        const weapon = weapons.get(event.KillerWeaponStockId);
 
-        for (let i = 0, len = events.length; i < len; ++i) {
-            const event = events[i];
-            const {KillerWorldLocation, VictimWorldLocation} = event;
-
-            const killer = new THREE.Vector3(KillerWorldLocation.x, KillerWorldLocation.y, KillerWorldLocation.z);
-            const victim = new THREE.Vector3(VictimWorldLocation.x, VictimWorldLocation.y, VictimWorldLocation.z);
-            const weapon = weapons.get(event.KillerWeaponStockId);
-
-            if (weapon && weapon.Type === 'Gernade' || (event.IsGroundPound || event.IsMelee || event.IsShoulderBash)) {
-                const geometry = new THREE.SphereGeometry(0.2, 32, 23);
-                const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-                const sphere = new THREE.Mesh(geometry, material);
-                sphere.position.add(victim);
-                this._scene.add(sphere);
-            }// else if (weapon) {
-                this._scene.add(this._shotPath(killer, victim));
-            //}
-        }
-
+        if (weapon && weapon.Type === 'Gernade' || (event.IsGroundPound || event.IsMelee || event.IsShoulderBash)) {
+            const geometry = new THREE.SphereGeometry(0.2, 32, 23);
+            const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+            const sphere = new THREE.Mesh(geometry, material);
+            sphere.position.add(victim);
+            this._scene.add(sphere);
+        }// else if (weapon) {
+        const path = this._shotPath(killer, victim);
+        path.name = event.Id;
+        this._scene.add(path);
+        //}
         this.animate();
     }
 
     update() {
         this._controls.update();
 
-        if (!this.mouse)
+        if (!this.mouse || true)
             return;
 
         this._raycaster.setFromCamera(this.mouse, this._camera);
-        var intersects = this._raycaster.intersectObjects(this._scene.children);
+        const intersects = this._raycaster.intersectObjects(this._scene.children);
 
-        // INTERSECTED = the object in the scene currently closest to the camera 
-        //		and intersected by the Ray projected from the mouse position 	
-
-        // if there is one (or more) intersections
         if (intersects.length > 0) {
             const target = intersects[0].object;
-            // if the closest object intersected is not the currently stored intersection object
-            if (target != INTERSECTED) {
-                // restore previous intersection object (if it exists) to its original color
-                if (INTERSECTED)
-                    INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
-                // store reference to closest object as current intersection object
-                INTERSECTED = intersects[0].object;
-                // store color of closest object (for later restoration)
-                // INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
-                // set a new color for closest object
-                // INTERSECTED.material.color.setHex(0xffff00);
-
-                /* const color = target.geometry.attributes.customColor;
-                 for (var i = 0; i < 100; ++i) {
-                     new THREE.Color(0xffffff).toArray(color.array, i * color.itemSize);
-                 }
-                 color.needsUpdate = true;*/
-
+            if (target !== this._currentInersection) {
+                const color = target.geometry.attributes.customColor;
+                for (let i = 0; i < color.array.length; ++i) {
+                    new THREE.Color(0xffffff).toArray(color.array, i);
+                }
+                color.needsUpdate = true;
+                this.render();
             }
-        }
-        else // there are no intersections
-        {
-            // restore previous intersection object (if it exists) to its original color
-            //if (INTERSECTED)
-            //   INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
-            // remove previous intersection object reference
-            //     by setting current intersection object to "nothing"
+        } else {
+
+            this._currentInersection = null;
         }
     }
 

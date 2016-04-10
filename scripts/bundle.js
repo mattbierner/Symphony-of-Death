@@ -50,43 +50,29 @@
 
 	var _viewer = __webpack_require__(1);
 
+	var _timeline = __webpack_require__(267);
+
+	var _timeline2 = _interopRequireDefault(_timeline);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	var example = __webpack_require__(4);
-	var DeathStream = __webpack_require__(5);
-	var weapons = __webpack_require__(107);
-
 	var React = __webpack_require__(109);
 	var ReactDOM = __webpack_require__(266);
 
+	var DeathStream = __webpack_require__(5);
+
+
 	var matchId = "5b27a620-cebf-40a3-b09c-a37f15fd135f";
 
-	var getMatchFromCache = function getMatchFromCache(id, forceUpdate) {
-	    return forceUpdate ? Promise.resolve(null) : Promise.resolve(null);
-	};
-
-	var updateCache = function updateCache(id, data) {
-	    return data;
-	};
-
 	/**
-	 * Get match data from the server.
+	 * 
 	 */
-	var getMatchFromServer = function getMatchFromServer(matchId) {
-	    return Promise.resolve(example.GameEvents);
-	};
-
-	var getMatchEvents = function getMatchEvents(id, forceUpdate) {
-	    return getMatchFromCache(id, forceUpdate).then(function (cachedMatch) {
-	        return cachedMatch || getMatchFromServer(id).then(function (matchData) {
-	            return updateCache(id, matchData);
-	        });
-	    });
-	};
 
 	var Application = function (_React$Component) {
 	    _inherits(Application, _React$Component);
@@ -103,10 +89,18 @@
 	    _createClass(Application, [{
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
-	            getMatchEvents(this.state.matchId).then(function (events) {
-	                var stream = DeathStream.createFromJson(events);
+	            var _this2 = this;
+
+	            DeathStream.loadForMatch(this.state.matchId).then(function (_ref) {
+	                var stream = _ref.stream;
+	                var events = _ref.events;
+
+	                _this2.setState({ stream: stream });
 	                try {
-	                    new _viewer.Viewer('glcanvas').drawEvents(events);
+	                    _this2.viewer = new _viewer.Viewer('glcanvas');
+	                    stream.forEach(function (key, event) {
+	                        return _this2.viewer.addEvent(event);
+	                    });
 	                } catch (e) {
 	                    debugger;
 	                }
@@ -115,9 +109,20 @@
 	            });
 	        }
 	    }, {
+	        key: 'onEventFocus',
+	        value: function onEventFocus(event) {
+	            this.viewer.highlightEvent(event);
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
-	            return React.createElement('canvas', { id: 'glcanvas', className: "glCanvas" });
+	            return React.createElement(
+	                'div',
+	                null,
+	                React.createElement('canvas', { id: 'glcanvas', className: "glCanvas" }),
+	                React.createElement(_timeline2.default, { stream: this.state.stream,
+	                    onEventFocus: this.onEventFocus.bind(this) })
+	            );
 	        }
 	    }]);
 
@@ -125,8 +130,6 @@
 	}(React.Component);
 
 	;
-
-	weapons.getWeaponsTable();
 
 	ReactDOM.render(React.createElement(Application, { matchId: matchId }), document.getElementById('content'));
 
@@ -161,6 +164,10 @@
 
 	var victimColor = new _three2.default.Color(0x00ffff);
 
+	var topSize = 0.1;
+	var bottomSize = 0.1;
+	var sides = 8;
+
 	var uniforms = {
 	    opacity: { type: "f", value: 1.0 }
 	};
@@ -174,6 +181,10 @@
 	});
 
 	var weapons = (0, _weapons.getWeaponsTable)();
+
+	/**
+	 * 
+	 */
 
 	var Viewer = exports.Viewer = function () {
 	    function Viewer(canvasId) {
@@ -201,6 +212,19 @@
 	    }
 
 	    _createClass(Viewer, [{
+	        key: 'highlightEvent',
+	        value: function highlightEvent(event) {
+	            var target = this._scene.getObjectByName(event.Id);
+	            if (!target) return;
+
+	            var color = target.geometry.attributes.customColor;
+	            for (var i = 0; i < color.array.length; ++i) {
+	                new _three2.default.Color(0xffffff).toArray(color.array, i);
+	            }
+	            color.needsUpdate = true;
+	            this.render();
+	        }
+	    }, {
 	        key: 'onWindowResize',
 	        value: function onWindowResize() {
 	            var width = this._renderer.domElement.clientWidth;
@@ -213,7 +237,7 @@
 	    }, {
 	        key: 'onMouseMove',
 	        value: function onMouseMove(event) {
-	            this.mouse = new _three2.default.Vector2(event.clientX / window.innerWidth * 2 - 1, event.clientY / window.innerHeight * 2 + 1);
+	            this.mouse = new _three2.default.Vector2(event.clientX / window.innerWidth * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
 	            this.update();
 	        }
 	    }, {
@@ -272,36 +296,27 @@
 	            return mesh;
 	        }
 	    }, {
-	        key: 'drawEvents',
-	        value: function drawEvents(events) {
-	            var killerColor = new _three2.default.Color(0xff00ff);
-	            var victimColor = new _three2.default.Color(0x00ffff);
-
-	            var topSize = 0.1;
-	            var bottomSize = 0.1;
-	            var sides = 8;
-
-	            for (var i = 0, len = events.length; i < len; ++i) {
-	                var event = events[i];
-	                var KillerWorldLocation = event.KillerWorldLocation;
-	                var VictimWorldLocation = event.VictimWorldLocation;
+	        key: 'addEvent',
+	        value: function addEvent(event) {
+	            var KillerWorldLocation = event.KillerWorldLocation;
+	            var VictimWorldLocation = event.VictimWorldLocation;
 
 
-	                var killer = new _three2.default.Vector3(KillerWorldLocation.x, KillerWorldLocation.y, KillerWorldLocation.z);
-	                var victim = new _three2.default.Vector3(VictimWorldLocation.x, VictimWorldLocation.y, VictimWorldLocation.z);
-	                var weapon = weapons.get(event.KillerWeaponStockId);
+	            var killer = new _three2.default.Vector3(KillerWorldLocation.x, KillerWorldLocation.y, KillerWorldLocation.z);
+	            var victim = new _three2.default.Vector3(VictimWorldLocation.x, VictimWorldLocation.y, VictimWorldLocation.z);
+	            var weapon = weapons.get(event.KillerWeaponStockId);
 
-	                if (weapon && weapon.Type === 'Gernade' || event.IsGroundPound || event.IsMelee || event.IsShoulderBash) {
-	                    var geometry = new _three2.default.SphereGeometry(0.2, 32, 23);
-	                    var material = new _three2.default.MeshBasicMaterial({ color: 0xffff00 });
-	                    var sphere = new _three2.default.Mesh(geometry, material);
-	                    sphere.position.add(victim);
-	                    this._scene.add(sphere);
-	                } // else if (weapon) {
-	                this._scene.add(this._shotPath(killer, victim));
-	                //}
-	            }
-
+	            if (weapon && weapon.Type === 'Gernade' || event.IsGroundPound || event.IsMelee || event.IsShoulderBash) {
+	                var geometry = new _three2.default.SphereGeometry(0.2, 32, 23);
+	                var material = new _three2.default.MeshBasicMaterial({ color: 0xffff00 });
+	                var sphere = new _three2.default.Mesh(geometry, material);
+	                sphere.position.add(victim);
+	                this._scene.add(sphere);
+	            } // else if (weapon) {
+	            var path = this._shotPath(killer, victim);
+	            path.name = event.Id;
+	            this._scene.add(path);
+	            //}
 	            this.animate();
 	        }
 	    }, {
@@ -309,42 +324,25 @@
 	        value: function update() {
 	            this._controls.update();
 
-	            if (!this.mouse) return;
+	            if (!this.mouse || true) return;
 
 	            this._raycaster.setFromCamera(this.mouse, this._camera);
 	            var intersects = this._raycaster.intersectObjects(this._scene.children);
 
-	            // INTERSECTED = the object in the scene currently closest to the camera
-	            //		and intersected by the Ray projected from the mouse position 	
-
-	            // if there is one (or more) intersections
 	            if (intersects.length > 0) {
 	                var target = intersects[0].object;
-	                // if the closest object intersected is not the currently stored intersection object
-	                if (target != INTERSECTED) {
-	                    // restore previous intersection object (if it exists) to its original color
-	                    if (INTERSECTED) INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
-	                    // store reference to closest object as current intersection object
-	                    INTERSECTED = intersects[0].object;
-	                    // store color of closest object (for later restoration)
-	                    // INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
-	                    // set a new color for closest object
-	                    // INTERSECTED.material.color.setHex(0xffff00);
+	                if (target !== this._currentInersection) {
+	                    var color = target.geometry.attributes.customColor;
+	                    for (var i = 0; i < color.array.length; ++i) {
+	                        new _three2.default.Color(0xffffff).toArray(color.array, i);
+	                    }
+	                    color.needsUpdate = true;
+	                    this.render();
+	                }
+	            } else {
 
-	                    /* const color = target.geometry.attributes.customColor;
-	                     for (var i = 0; i < 100; ++i) {
-	                         new THREE.Color(0xffffff).toArray(color.array, i * color.itemSize);
-	                     }
-	                     color.needsUpdate = true;*/
-	                }
-	            } else // there are no intersections
-	                {
-	                    // restore previous intersection object (if it exists) to its original color
-	                    //if (INTERSECTED)
-	                    //   INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
-	                    // remove previous intersection object reference
-	                    //     by setting current intersection object to "nothing"
-	                }
+	                this._currentInersection = null;
+	            }
 	        }
 	    }, {
 	        key: 'animate',
@@ -8532,16 +8530,14 @@
 	    value: true
 	});
 
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var createTree = __webpack_require__(6);
 	var moment = __webpack_require__(7);
 
-	var convertJsonEvent = function convertJsonEvent(eventData) {
-	    return Object.assign({}, eventData, {
-	        TimeSinceStart: moment.duration(eventData.TimeSinceStart).asMilliseconds()
-	    });
-	};
+	var example = __webpack_require__(4);
 
 	var createTreeFromEvents = function createTreeFromEvents(events) {
 	    return events.reduce(function (tree, event) {
@@ -8549,16 +8545,68 @@
 	    }, createTree());
 	};
 
-	var DeathStream = function DeathStream(events) {
-	    _classCallCheck(this, DeathStream);
-
-	    this._tree = createTreeFromEvents(events);
+	var createMapFromEvents = function createMapFromEvents(events) {
+	    return events.reduce(function (map, event) {
+	        map.set(event.Id, event);
+	        return map;
+	    }, new Map());
 	};
 
+	/**
+	 * 
+	 */
+
+	var DeathStream = function () {
+	    function DeathStream(eventsData) {
+	        _classCallCheck(this, DeathStream);
+
+	        var duration = eventsData.length ? eventsData[eventsData.length - 1].TimeSinceStart : 0;
+	        var events = eventsData.map(function (eventData, i) {
+	            return Object.assign({}, eventData, {
+	                Id: '' + i,
+	                MatchProgress: (eventData.TimeSinceStart + 1.0) / duration
+	            });
+	        });
+
+	        this._tree = createTreeFromEvents(events);
+	        this._map = createMapFromEvents(events);
+	    }
+
+	    _createClass(DeathStream, [{
+	        key: "forEach",
+	        value: function forEach(f) {
+	            this._tree.forEach(f);
+	        }
+	    }]);
+
+	    return DeathStream;
+	}();
+
+	/**
+	 * Create a DeathStream from json.
+	 */
+
+
 	var createFromJson = exports.createFromJson = function createFromJson(events) {
-	    return new DeathStream(events.filter(function (x) {
+	    var deaths = events.filter(function (x) {
 	        return x && x.EventName === "Death";
-	    }).map(convertJsonEvent));
+	    });
+
+	    return new DeathStream(deaths.map(function (eventData) {
+	        return Object.assign({}, eventData, {
+	            TimeSinceStart: moment.duration(eventData.TimeSinceStart).asMilliseconds()
+	        });
+	    }));
+	};
+
+	/**
+	 * Load a death stream for a match.
+	 */
+	var loadForMatch = exports.loadForMatch = function loadForMatch(matchId) {
+	    return Promise.resolve({
+	        events: example.GameEvents,
+	        stream: createFromJson(example.GameEvents)
+	    });
 	};
 
 /***/ },
@@ -39630,6 +39678,140 @@
 	'use strict';
 
 	module.exports = __webpack_require__(111);
+
+/***/ },
+/* 267 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var React = __webpack_require__(109);
+	var ReactDOM = __webpack_require__(266);
+
+	var DeathStream = __webpack_require__(5);
+
+	var tryInvoke = function tryInvoke(f, x) {
+	    return f ? f(x) : null;
+	};
+
+	/**
+	 * Single event on the timeline.
+	 */
+
+	var TimelineEvent = function (_React$Component) {
+	    _inherits(TimelineEvent, _React$Component);
+
+	    function TimelineEvent() {
+	        _classCallCheck(this, TimelineEvent);
+
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(TimelineEvent).apply(this, arguments));
+	    }
+
+	    _createClass(TimelineEvent, [{
+	        key: 'onMouseEnter',
+	        value: function onMouseEnter(event) {
+	            tryInvoke(this.props.onFocus, this.props.event);
+	        }
+	    }, {
+	        key: 'onMouseLeave',
+	        value: function onMouseLeave(event) {
+	            tryInvoke(this.props.onFocusEnd, this.props.event);
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            var progress = this.props.event ? this.props.event.MatchProgress : 0;
+	            var style = {
+	                left: progress * 100 + '%'
+	            };
+	            return React.createElement('li', { className: 'timeline-event',
+	                style: style,
+	                onMouseEnter: this.onMouseEnter.bind(this),
+	                onMouseLeave: this.onMouseLeave.bind(this) });
+	        }
+	    }]);
+
+	    return TimelineEvent;
+	}(React.Component);
+
+	/**
+	 * 
+	 */
+
+
+	var Timeline = function (_React$Component2) {
+	    _inherits(Timeline, _React$Component2);
+
+	    function Timeline(props) {
+	        _classCallCheck(this, Timeline);
+
+	        var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(Timeline).call(this, props));
+
+	        _this2.state = {};
+	        return _this2;
+	    }
+
+	    _createClass(Timeline, [{
+	        key: 'onEventFocus',
+	        value: function onEventFocus(event) {
+	            this.setState({ focusedEvent: event });
+	            tryInvoke(this.props.onEventFocus, event);
+	        }
+	    }, {
+	        key: 'onEventFocusEnd',
+	        value: function onEventFocusEnd(event) {
+	            this.setState({ focusedEvent: null });
+	            tryInvoke(this.props.onEventFocusEnd, event);
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            var _this3 = this;
+
+	            var events = [];
+	            if (this.props.stream) {
+	                this.props.stream.forEach(function (key, value) {
+	                    events.push(React.createElement(TimelineEvent, { key: key,
+	                        event: value,
+	                        onFocus: _this3.onEventFocus.bind(_this3),
+	                        onFocusEnd: _this3.onEventFocusEnd.bind(_this3) }));
+	                });
+	            }
+	            var focusedEvent = this.state.focusedEvent ? this.state.focusedEvent.KillerWeaponStockId : '';
+	            return React.createElement(
+	                'div',
+	                { id: 'timeline' },
+	                React.createElement(
+	                    'ul',
+	                    { className: 'timeline-events' },
+	                    events
+	                ),
+	                React.createElement(
+	                    'div',
+	                    null,
+	                    focusedEvent
+	                )
+	            );
+	        }
+	    }]);
+
+	    return Timeline;
+	}(React.Component);
+
+	exports.default = Timeline;
+	;
 
 /***/ }
 /******/ ]);
