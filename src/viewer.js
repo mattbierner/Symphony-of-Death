@@ -11,18 +11,6 @@ const topSize = 0.1;
 const bottomSize = 0.1;
 const sides = 8;
 
-const uniforms = {
-    opacity: { type: "f", value: 1.0 }
-};
-
-const shaderMaterial = new THREE.ShaderMaterial({
-    uniforms: uniforms,
-    vertexShader: document.getElementById('vertexshader').textContent,
-    fragmentShader: document.getElementById('fragmentshader').textContent,
-    transparent: true,
-    side: THREE.DoubleSide
-});
-
 const weapons = getWeaponsTable();
 
 
@@ -53,18 +41,25 @@ export class Viewer {
     }
 
     highlightEvent(event) {
-        const target = this._scene.getObjectByName(event.Id);
-        if (!target)
-            return;
-        
-        const color = target.geometry.attributes.customColor;
-        for (let i = 0; i < color.array.length; ++i) {
-            new THREE.Color(0xffffff).toArray(color.array, i);
-        }
-        color.needsUpdate = true;
-        this.render();
+        this._highlightTarget(this._scene.getObjectByName(event.Id));
     }
 
+    _highlightTarget(target) {
+        if (this._currentTarget === target)
+            return;
+            
+        if (this._currentTarget) {
+            this._currentTarget.material.uniforms.mul.value = 1.0;
+            this._currentTarget.material.uniforms.mul.needsUpdate = true;
+        }
+
+        this._currentTarget = target;
+        if (this._currentTarget) {
+            this._currentTarget.material.uniforms.mul.value = 5.0;
+            this._currentTarget.material.uniforms.mul.needsUpdate = true;
+        }
+        this.render();
+    }
 
     onWindowResize() {
         const width = this._renderer.domElement.clientWidth;
@@ -134,11 +129,24 @@ export class Viewer {
             index += 3;
         }
 
+        const shaderMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                opacity: { type: 'f', value: 1.0 },
+                mul: { type: 'f', value: 1.0 }
+            },
+            vertexShader: document.getElementById('vertexshader').textContent,
+            fragmentShader: document.getElementById('fragmentshader').textContent,
+            transparent: true,
+            side: THREE.DoubleSide
+        });
+
         const mesh = new THREE.Mesh(buffergeometry, shaderMaterial);
         var arrow = new THREE.ArrowHelper(killvec.clone().normalize(), victim);
 
         mesh.rotation.setFromQuaternion(arrow.quaternion);
         mesh.position.addVectors(victim, killvec.multiplyScalar(0.5));
+        
+        mesh.userData = { isEvent: true };
         return mesh;
     }
 
@@ -166,25 +174,21 @@ export class Viewer {
     update() {
         this._controls.update();
 
-        if (!this.mouse || true)
+        if (!this.mouse)
             return;
 
         this._raycaster.setFromCamera(this.mouse, this._camera);
         const intersects = this._raycaster.intersectObjects(this._scene.children);
 
         if (intersects.length > 0) {
-            const target = intersects[0].object;
-            if (target !== this._currentInersection) {
-                const color = target.geometry.attributes.customColor;
-                for (let i = 0; i < color.array.length; ++i) {
-                    new THREE.Color(0xffffff).toArray(color.array, i);
+            for (let intersect of intersects) {
+                var obj = intersect.object;
+                if (obj && obj.userData && obj.userData.isEvent) {
+                    this._highlightTarget(obj);
                 }
-                color.needsUpdate = true;
-                this.render();
             }
         } else {
-
-            this._currentInersection = null;
+           // this._highlightTarget(null);
         }
     }
 

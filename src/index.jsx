@@ -6,6 +6,7 @@ const ReactDOM = require('react-dom');
 const DeathStream = require('./DeathStream');
 import {Viewer} from './viewer';
 import Timeline from './timeline';
+const Wad = require('imports?this=>window!web-audio-daw');
 
 const matchId = "5b27a620-cebf-40a3-b09c-a37f15fd135f"
 
@@ -34,11 +35,13 @@ class Application extends React.Component {
     
     onEventFocus(event) {
         this.viewer.highlightEvent(event);
+        var bell = new Wad({source : 'sawtooth'})
+bell.play()
     }
     
     render() {
         return (
-            <div>
+            <div className={'container'}>
                 <canvas id="glcanvas" className={"glCanvas"}></canvas>
                 <Timeline stream={this.state.stream}
                     onEventFocus={this.onEventFocus.bind(this)}/>

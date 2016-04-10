@@ -2,7 +2,7 @@
 layout: default
 ---
 
-<div id="content"></div>
+<div id="content" class="container"></div>
 
 <script type="x-shader/x-vertex" id="vertexshader">
     attribute vec3 customColor;
@@ -17,10 +17,11 @@ layout: default
 
 <script type="x-shader/x-fragment" id="fragmentshader">
     uniform float opacity;
+    uniform float mul;
     varying vec3 vColor;
     
     void main() {
-        gl_FragColor = vec4(vColor, opacity);
+        gl_FragColor = vec4(vColor * mul, opacity);
     }
 </script>
 
