@@ -1,6 +1,11 @@
 "use strict";
 import THREE from 'three';
 import OrbitControls from './OrbitControls'
+import {getWeaponsTable} from './weapons';
+
+const killerColor = new THREE.Color(0xff00ff);
+
+const victimColor = new THREE.Color(0x00ffff);
 
 const uniforms = {
     opacity: { type: "f", value: 1.0 }
@@ -15,7 +20,7 @@ const shaderMaterial = new THREE.ShaderMaterial({
 });
 
 
-var INTERSECTED;
+const weapons = getWeaponsTable();
 
 export class Viewer {
     constructor(canvasId) {
@@ -56,75 +61,91 @@ export class Viewer {
         this.update();
     }
 
+    _shotPath(killer, victim) {
+        const topSize = 0.1;
+        const bottomSize = 0.1;
+        const sides = 8;
+
+        const killvec = new THREE.Vector3().subVectors(killer, victim);
+        const height = killvec.length();
+
+        const buffergeometry = new THREE.BufferGeometry();
+
+        const position = new THREE.Float32Attribute(sides * 6 * 3, 3);
+        buffergeometry.addAttribute('position', position)
+
+        const customColor = new THREE.Float32Attribute(sides * 6 * 3, 3);
+        buffergeometry.addAttribute('customColor', customColor);
+
+        for (let i = 0, index = 0; i < sides; ++i) {
+            let start = ((Math.PI * 2.0) / sides) * i;
+            let end = ((Math.PI * 2.0) / sides) * (i + 1);
+            let index = i * 6 * position.itemSize;
+
+            new THREE.Vector3(Math.cos(end) * topSize, height / 2, Math.sin(end) * topSize)
+                .toArray(position.array, index);
+            killerColor.toArray(customColor.array, index);
+            index += 3;
+
+            new THREE.Vector3(Math.cos(start) * topSize, height / 2, Math.sin(start) * topSize)
+                .toArray(position.array, index);
+            killerColor.toArray(customColor.array, index);
+            index += 3;
+
+            new THREE.Vector3(Math.cos(start) * bottomSize, -height / 2, Math.sin(start) * bottomSize)
+                .toArray(position.array, index);
+            victimColor.toArray(customColor.array, index);
+            index += 3;
+
+            new THREE.Vector3(Math.cos(start) * bottomSize, -height / 2, Math.sin(start) * bottomSize)
+                .toArray(position.array, index);
+            victimColor.toArray(customColor.array, index);
+            index += 3;
+
+            new THREE.Vector3(Math.cos(end) * bottomSize, -height / 2, Math.sin(end) * bottomSize)
+                .toArray(position.array, index);
+            victimColor.toArray(customColor.array, index);
+            index += 3;
+
+            new THREE.Vector3(Math.cos(end) * topSize, height / 2, Math.sin(end) * topSize)
+                .toArray(position.array, index);
+            killerColor.toArray(customColor.array, index);
+            index += 3;
+        }
+
+        const mesh = new THREE.Mesh(buffergeometry, shaderMaterial);
+        var arrow = new THREE.ArrowHelper(killvec.clone().normalize(), victim);
+
+        mesh.rotation.setFromQuaternion(arrow.quaternion);
+        mesh.position.addVectors(victim, killvec.multiplyScalar(0.5));
+        return mesh;
+    }
+
     drawEvents(events) {
-        const topColor = new THREE.Color(0xff00ff);
-        const bottomColor = new THREE.Color(0x00ffff);
+        const killerColor = new THREE.Color(0xff00ff);
+        const victimColor = new THREE.Color(0x00ffff);
 
         const topSize = 0.1;
         const bottomSize = 0.1;
         const sides = 8;
-        
+
         for (let i = 0, len = events.length; i < len; ++i) {
             const event = events[i];
             const {KillerWorldLocation, VictimWorldLocation} = event;
 
-            const buffergeometry = new THREE.BufferGeometry();
-            
-            const position = new THREE.Float32Attribute(sides * 6 * 3, 3);
-            buffergeometry.addAttribute('position', position)
-
-            const customColor = new THREE.Float32Attribute(sides * 6 * 3, 3);
-            buffergeometry.addAttribute('customColor', customColor);
-
             const killer = new THREE.Vector3(KillerWorldLocation.x, KillerWorldLocation.y, KillerWorldLocation.z);
             const victim = new THREE.Vector3(VictimWorldLocation.x, VictimWorldLocation.y, VictimWorldLocation.z);
-            const killvec = new THREE.Vector3().subVectors(killer, victim);
-            const height = killvec.length();
+            const weapon = weapons.get(event.KillerWeaponStockId);
 
-            let index = 0;
-            for (let i = 0; i < sides; ++i) {
-                let start = ((Math.PI * 2.0) / sides) * i;
-                let end = ((Math.PI * 2.0) / sides) * (i + 1);
-                let index = i * 6 * position.itemSize;
-                
-                new THREE.Vector3(Math.cos(end) * topSize, height / 2, Math.sin(end) * topSize)
-                    .toArray(position.array, index);
-                topColor.toArray(customColor.array, index);
-                index += 3;
-                
-                new THREE.Vector3(Math.cos(start) * topSize, height / 2, Math.sin(start) * topSize)
-                    .toArray(position.array, index);
-                topColor.toArray(customColor.array, index);
-                index += 3;
-
-                new THREE.Vector3(Math.cos(start) * bottomSize, -height / 2, Math.sin(start) * bottomSize)
-                    .toArray(position.array, index);
-                bottomColor.toArray(customColor.array, index);
-                index += 3;
-
-                new THREE.Vector3(Math.cos(start) * bottomSize, -height / 2, Math.sin(start) * bottomSize)
-                    .toArray(position.array, index);
-                bottomColor.toArray(customColor.array, index);
-                index += 3;
-
-                new THREE.Vector3(Math.cos(end) * bottomSize, -height / 2, Math.sin(end) * bottomSize)
-                    .toArray(position.array, index);
-                bottomColor.toArray(customColor.array, index);
-                index += 3;
-
-                new THREE.Vector3(Math.cos(end) * topSize, height / 2, Math.sin(end) * topSize)
-                    .toArray(position.array, index);
-                topColor.toArray(customColor.array, index);
-                index += 3;
-            }
-          
-          
-            const mesh = new THREE.Mesh(buffergeometry, shaderMaterial);
-            var arrow = new THREE.ArrowHelper(killvec.clone().normalize(), victim);
-
-            mesh.rotation.setFromQuaternion(arrow.quaternion);
-            mesh.position.addVectors(victim, killvec.multiplyScalar(0.5));
-            this._scene.add(mesh);
+            if (weapon && weapon.Type === 'Gernade' || (event.IsGroundPound || event.IsMelee || event.IsShoulderBash)) {
+                const geometry = new THREE.SphereGeometry(0.2, 32, 23);
+                const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+                const sphere = new THREE.Mesh(geometry, material);
+                sphere.position.add(victim);
+                this._scene.add(sphere);
+            }// else if (weapon) {
+                this._scene.add(this._shotPath(killer, victim));
+            //}
         }
 
         this.animate();
@@ -135,9 +156,9 @@ export class Viewer {
 
         if (!this.mouse)
             return;
-        
+
         this._raycaster.setFromCamera(this.mouse, this._camera);
-        var intersects = this._raycaster.intersectObjects( this._scene.children);
+        var intersects = this._raycaster.intersectObjects(this._scene.children);
 
         // INTERSECTED = the object in the scene currently closest to the camera 
         //		and intersected by the Ray projected from the mouse position 	
@@ -153,15 +174,15 @@ export class Viewer {
                 // store reference to closest object as current intersection object
                 INTERSECTED = intersects[0].object;
                 // store color of closest object (for later restoration)
-               // INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+                // INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
                 // set a new color for closest object
-               // INTERSECTED.material.color.setHex(0xffff00);
-                
-               /* const color = target.geometry.attributes.customColor;
-                for (var i = 0; i < 100; ++i) {
-                    new THREE.Color(0xffffff).toArray(color.array, i * color.itemSize);
-                }
-                color.needsUpdate = true;*/
+                // INTERSECTED.material.color.setHex(0xffff00);
+
+                /* const color = target.geometry.attributes.customColor;
+                 for (var i = 0; i < 100; ++i) {
+                     new THREE.Color(0xffffff).toArray(color.array, i * color.itemSize);
+                 }
+                 color.needsUpdate = true;*/
 
             }
         }
@@ -169,7 +190,7 @@ export class Viewer {
         {
             // restore previous intersection object (if it exists) to its original color
             //if (INTERSECTED)
-             //   INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
+            //   INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
             // remove previous intersection object reference
             //     by setting current intersection object to "nothing"
         }

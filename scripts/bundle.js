@@ -151,9 +151,15 @@
 
 	var _OrbitControls2 = _interopRequireDefault(_OrbitControls);
 
+	var _weapons = __webpack_require__(107);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var killerColor = new _three2.default.Color(0xff00ff);
+
+	var victimColor = new _three2.default.Color(0x00ffff);
 
 	var uniforms = {
 	    opacity: { type: "f", value: 1.0 }
@@ -167,7 +173,7 @@
 	    side: _three2.default.DoubleSide
 	});
 
-	var INTERSECTED;
+	var weapons = (0, _weapons.getWeaponsTable)();
 
 	var Viewer = exports.Viewer = function () {
 	    function Viewer(canvasId) {
@@ -211,10 +217,65 @@
 	            this.update();
 	        }
 	    }, {
+	        key: '_shotPath',
+	        value: function _shotPath(killer, victim) {
+	            var topSize = 0.1;
+	            var bottomSize = 0.1;
+	            var sides = 8;
+
+	            var killvec = new _three2.default.Vector3().subVectors(killer, victim);
+	            var height = killvec.length();
+
+	            var buffergeometry = new _three2.default.BufferGeometry();
+
+	            var position = new _three2.default.Float32Attribute(sides * 6 * 3, 3);
+	            buffergeometry.addAttribute('position', position);
+
+	            var customColor = new _three2.default.Float32Attribute(sides * 6 * 3, 3);
+	            buffergeometry.addAttribute('customColor', customColor);
+
+	            for (var i = 0, index = 0; i < sides; ++i) {
+	                var start = Math.PI * 2.0 / sides * i;
+	                var end = Math.PI * 2.0 / sides * (i + 1);
+	                var index = i * 6 * position.itemSize;
+
+	                new _three2.default.Vector3(Math.cos(end) * topSize, height / 2, Math.sin(end) * topSize).toArray(position.array, index);
+	                killerColor.toArray(customColor.array, index);
+	                index += 3;
+
+	                new _three2.default.Vector3(Math.cos(start) * topSize, height / 2, Math.sin(start) * topSize).toArray(position.array, index);
+	                killerColor.toArray(customColor.array, index);
+	                index += 3;
+
+	                new _three2.default.Vector3(Math.cos(start) * bottomSize, -height / 2, Math.sin(start) * bottomSize).toArray(position.array, index);
+	                victimColor.toArray(customColor.array, index);
+	                index += 3;
+
+	                new _three2.default.Vector3(Math.cos(start) * bottomSize, -height / 2, Math.sin(start) * bottomSize).toArray(position.array, index);
+	                victimColor.toArray(customColor.array, index);
+	                index += 3;
+
+	                new _three2.default.Vector3(Math.cos(end) * bottomSize, -height / 2, Math.sin(end) * bottomSize).toArray(position.array, index);
+	                victimColor.toArray(customColor.array, index);
+	                index += 3;
+
+	                new _three2.default.Vector3(Math.cos(end) * topSize, height / 2, Math.sin(end) * topSize).toArray(position.array, index);
+	                killerColor.toArray(customColor.array, index);
+	                index += 3;
+	            }
+
+	            var mesh = new _three2.default.Mesh(buffergeometry, shaderMaterial);
+	            var arrow = new _three2.default.ArrowHelper(killvec.clone().normalize(), victim);
+
+	            mesh.rotation.setFromQuaternion(arrow.quaternion);
+	            mesh.position.addVectors(victim, killvec.multiplyScalar(0.5));
+	            return mesh;
+	        }
+	    }, {
 	        key: 'drawEvents',
 	        value: function drawEvents(events) {
-	            var topColor = new _three2.default.Color(0xff00ff);
-	            var bottomColor = new _three2.default.Color(0x00ffff);
+	            var killerColor = new _three2.default.Color(0xff00ff);
+	            var victimColor = new _three2.default.Color(0x00ffff);
 
 	            var topSize = 0.1;
 	            var bottomSize = 0.1;
@@ -226,56 +287,19 @@
 	                var VictimWorldLocation = event.VictimWorldLocation;
 
 
-	                var buffergeometry = new _three2.default.BufferGeometry();
-
-	                var position = new _three2.default.Float32Attribute(sides * 6 * 3, 3);
-	                buffergeometry.addAttribute('position', position);
-
-	                var customColor = new _three2.default.Float32Attribute(sides * 6 * 3, 3);
-	                buffergeometry.addAttribute('customColor', customColor);
-
 	                var killer = new _three2.default.Vector3(KillerWorldLocation.x, KillerWorldLocation.y, KillerWorldLocation.z);
 	                var victim = new _three2.default.Vector3(VictimWorldLocation.x, VictimWorldLocation.y, VictimWorldLocation.z);
-	                var killvec = new _three2.default.Vector3().subVectors(killer, victim);
-	                var height = killvec.length();
+	                var weapon = weapons.get(event.KillerWeaponStockId);
 
-	                var index = 0;
-	                for (var _i = 0; _i < sides; ++_i) {
-	                    var start = Math.PI * 2.0 / sides * _i;
-	                    var end = Math.PI * 2.0 / sides * (_i + 1);
-	                    var _index = _i * 6 * position.itemSize;
-
-	                    new _three2.default.Vector3(Math.cos(end) * topSize, height / 2, Math.sin(end) * topSize).toArray(position.array, _index);
-	                    topColor.toArray(customColor.array, _index);
-	                    _index += 3;
-
-	                    new _three2.default.Vector3(Math.cos(start) * topSize, height / 2, Math.sin(start) * topSize).toArray(position.array, _index);
-	                    topColor.toArray(customColor.array, _index);
-	                    _index += 3;
-
-	                    new _three2.default.Vector3(Math.cos(start) * bottomSize, -height / 2, Math.sin(start) * bottomSize).toArray(position.array, _index);
-	                    bottomColor.toArray(customColor.array, _index);
-	                    _index += 3;
-
-	                    new _three2.default.Vector3(Math.cos(start) * bottomSize, -height / 2, Math.sin(start) * bottomSize).toArray(position.array, _index);
-	                    bottomColor.toArray(customColor.array, _index);
-	                    _index += 3;
-
-	                    new _three2.default.Vector3(Math.cos(end) * bottomSize, -height / 2, Math.sin(end) * bottomSize).toArray(position.array, _index);
-	                    bottomColor.toArray(customColor.array, _index);
-	                    _index += 3;
-
-	                    new _three2.default.Vector3(Math.cos(end) * topSize, height / 2, Math.sin(end) * topSize).toArray(position.array, _index);
-	                    topColor.toArray(customColor.array, _index);
-	                    _index += 3;
-	                }
-
-	                var mesh = new _three2.default.Mesh(buffergeometry, shaderMaterial);
-	                var arrow = new _three2.default.ArrowHelper(killvec.clone().normalize(), victim);
-
-	                mesh.rotation.setFromQuaternion(arrow.quaternion);
-	                mesh.position.addVectors(victim, killvec.multiplyScalar(0.5));
-	                this._scene.add(mesh);
+	                if (weapon && weapon.Type === 'Gernade' || event.IsGroundPound || event.IsMelee || event.IsShoulderBash) {
+	                    var geometry = new _three2.default.SphereGeometry(0.2, 32, 23);
+	                    var material = new _three2.default.MeshBasicMaterial({ color: 0xffff00 });
+	                    var sphere = new _three2.default.Mesh(geometry, material);
+	                    sphere.position.add(victim);
+	                    this._scene.add(sphere);
+	                } // else if (weapon) {
+	                this._scene.add(this._shotPath(killer, victim));
+	                //}
 	            }
 
 	            this.animate();
@@ -19353,11 +19377,11 @@
 	var weaponsData = __webpack_require__(108);
 
 	/**
-	 * Get an instance of the weapons table.
+	 * Get an instance of the weapons table that maps weapon id to weapon data.
 	 */
 	var getWeaponsTable = exports.getWeaponsTable = function getWeaponsTable() {
 	    return weaponsData.reduce(function (map, data) {
-	        map.set(data.id, data);
+	        map.set(+data.id, data);
 	        return map;
 	    }, new Map());
 	};
