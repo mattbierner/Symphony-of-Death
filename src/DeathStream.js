@@ -28,7 +28,8 @@ class DeathStream {
                 Id: '' + i,
                 MatchProgress: (eventData.TimeSinceStart + 1.0) / duration
             }));
-        
+            
+        this.duration = duration;
         this._tree = createTreeFromEvents(events);
         this._map = createMapFromEvents(events);
     }

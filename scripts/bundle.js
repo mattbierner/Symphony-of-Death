@@ -4775,6 +4775,8 @@
 
 	var DeathStream = __webpack_require__(165);
 
+	var interval = 30;
+
 	var tryInvoke = function tryInvoke(f, x) {
 	    return f ? f(x) : null;
 	};
@@ -4832,11 +4834,23 @@
 
 	        var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(Timeline).call(this, props));
 
-	        _this2.state = {};
+	        _this2.state = {
+	            progress: 0,
+	            duration: 0
+	        };
 	        return _this2;
 	    }
 
 	    _createClass(Timeline, [{
+	        key: 'componentWillReceiveProps',
+	        value: function componentWillReceiveProps(props) {
+	            if (props.stream) {
+	                this.setState({
+	                    duration: props.stream.duration || 0
+	                });
+	            }
+	        }
+	    }, {
 	        key: 'onEventFocus',
 	        value: function onEventFocus(event) {
 	            this.setState({ focusedEvent: event });
@@ -4847,6 +4861,21 @@
 	        value: function onEventFocusEnd(event) {
 	            this.setState({ focusedEvent: null });
 	            tryInvoke(this.props.onEventFocusEnd, event);
+	        }
+	    }, {
+	        key: 'onPlay',
+	        value: function onPlay() {
+	            var self = this;
+	            (function loop(when) {
+	                var _start = Date.now();
+	                setTimeout(function () {
+	                    var actual = Date.now() - _start;
+	                    var next = Math.max(0, interval - (actual - interval));
+	                    console.log('fdsa');
+	                    self.setState({ progress: self.state.progress + actual / self.state.duration });
+	                    loop(next);
+	                }, when);
+	            })(interval);
 	        }
 	    }, {
 	        key: 'render',
@@ -4875,6 +4904,16 @@
 	                    'div',
 	                    null,
 	                    focusedEvent
+	                ),
+	                React.createElement(
+	                    'div',
+	                    { style: { position: 'absolute', top: 0, left: this.state.progress * 100 + '%' } },
+	                    '|'
+	                ),
+	                React.createElement(
+	                    'button',
+	                    { onClick: this.onPlay.bind(this) },
+	                    'Play'
 	                )
 	            );
 	        }
@@ -24592,6 +24631,7 @@
 	            });
 	        });
 
+	        this.duration = duration;
 	        this._tree = createTreeFromEvents(events);
 	        this._map = createMapFromEvents(events);
 	    }

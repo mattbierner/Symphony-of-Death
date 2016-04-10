@@ -5,6 +5,9 @@ const ReactDOM = require('react-dom');
 
 const DeathStream = require('./DeathStream');
 
+const interval = 30;
+
+
 const tryInvoke = (f, x) =>
     f ? f(x) : null;
 
@@ -40,7 +43,18 @@ class TimelineEvent extends React.Component {
 export default class Timeline extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {};
+        this.state = {
+            progress: 0,
+            duration: 0
+        };
+    }
+    
+    componentWillReceiveProps(props) {
+        if (props.stream) {
+            this.setState({
+                duration: props.stream.duration || 0
+            });
+        }
     }
     
     onEventFocus(event) {
@@ -51,6 +65,20 @@ export default class Timeline extends React.Component {
     onEventFocusEnd(event) {
         this.setState({ focusedEvent: null });
         tryInvoke(this.props.onEventFocusEnd, event);
+    }
+    
+    onPlay() {
+        const self = this;
+        (function loop(when) {
+            var _start = Date.now();
+            setTimeout(() => {
+                const actual = Date.now() - _start;
+                const next = Math.max(0, interval - (actual - interval));
+                console.log('fdsa');
+                self.setState({ progress: self.state.progress + (actual / self.state.duration) })
+                loop(next);
+            }, when);
+        }(interval));
     }
     
     render() {
@@ -68,6 +96,8 @@ export default class Timeline extends React.Component {
             <div id="timeline">
                 <ul className="timeline-events">{events}</ul>
                 <div>{focusedEvent}</div>
+                <div style={{ position: 'absolute', top: 0, left: this.state.progress * 100 + '%'}}>|</div>
+                <button onClick={this.onPlay.bind(this)}>Play</button>
             </div>);
     }
 }; 
