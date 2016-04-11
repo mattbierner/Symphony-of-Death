@@ -2,14 +2,23 @@
 
 const React = require('react');
 const ReactDOM = require('react-dom');
+import {getWeaponsTable} from './weapons';
 
 const DeathStream = require('./DeathStream');
 
 const interval = 30;
 
+const SCALE = 20;
 
 const tryInvoke = (f, x) =>
     f ? f(x) : null;
+
+const getWeaponName = weaponId => {
+    const weapon = getWeaponsTable().get(weaponId);
+    if (weapon)
+        return weapon.name.replace(/\s/g, '-').toLowerCase();
+    return 'unknown'
+};
 
 /**
  * Single event on the timeline.
@@ -28,8 +37,10 @@ class TimelineEvent extends React.Component {
         const style = {
             left: `${progress* 100}%`
         };
+        const weaponName = this.props.event ? getWeaponName(this.props.event.KillerWeaponStockId) : 'unknown';
+        
         return (
-            <li className="timeline-event"
+            <li className={`timeline-event weapon-${weaponName}`} 
                 style={style}
                 onMouseEnter={this.onMouseEnter.bind(this)}
                 onMouseLeave={this.onMouseLeave.bind(this)} />);
@@ -80,11 +91,11 @@ export default class Timeline extends React.Component {
             setTimeout(() => {
                 const actual = Date.now() - _start;
                 const next = Math.max(0, interval - (actual - interval));
-                const progress =  self.state.progress + (actual / self.state.duration);
+                const progress =  self.state.progress + SCALE * (actual / self.state.duration);
                 const offset = progress * self.state.duration;
                 let head = self.state.head;
                 while (head && head.valid && head.key < offset) {
-                    console.log(self.state.head.value);
+                    tryInvoke(self.props.onTimelineEvent, head.value);
                     if (head.hasNext) {
                         head.next();
                     } else {
@@ -93,7 +104,11 @@ export default class Timeline extends React.Component {
                     }
                 }
                 self.setState({ progress: progress, head: head });
-                loop(next);
+                if (progress >= 1) {
+                    
+                } else {
+                    loop(next);
+                }
             }, when);
         }(interval));
     }

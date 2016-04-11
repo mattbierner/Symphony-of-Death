@@ -100,7 +100,7 @@
 	                try {
 	                    _this2.viewer = new _viewer.Viewer('glcanvas');
 	                    stream.forEach(function (key, event) {
-	                        return _this2.viewer.addEvent(event);
+	                        return _this2.viewer.addEvent(event, true);
 	                    });
 	                } catch (e) {
 	                    debugger;
@@ -113,7 +113,19 @@
 	        key: 'onEventFocus',
 	        value: function onEventFocus(event) {
 	            this.viewer.highlightEvent(event);
-	            var bell = new Wad({ source: 'sawtooth' });
+	        }
+	    }, {
+	        key: 'onTimelineEvent',
+	        value: function onTimelineEvent(event) {
+	            this.viewer.showEvent(event);
+	            var pitch = event.KillVectorLength;
+	            var min = 27.5000;
+	            var max = 4186.01;
+
+	            var progress = min + (max - min) / 2.0 + (pitch - 4.0) * 500;
+	            var p0 = Math.min(max, Math.max(min, progress));
+	            console.log(pitch, p0, progress);
+	            var bell = new Wad({ source: 'sawtooth', pitch: p0 });
 	            bell.play();
 	        }
 	    }, {
@@ -124,7 +136,8 @@
 	                { className: 'container' },
 	                React.createElement('canvas', { id: 'glcanvas', className: "glCanvas" }),
 	                React.createElement(_timeline2.default, { stream: this.state.stream,
-	                    onEventFocus: this.onEventFocus.bind(this) })
+	                    onEventFocus: this.onEventFocus.bind(this),
+	                    onTimelineEvent: this.onTimelineEvent.bind(this) })
 	            );
 	        }
 	    }]);
@@ -225,6 +238,14 @@
 	            this.render();
 	        }
 	    }, {
+	        key: 'showEvent',
+	        value: function showEvent(event) {
+	            var target = this._scene.getObjectByName(event.Id);
+	            if (!target) return;
+	            target.visible = true;
+	            this.animate();
+	        }
+	    }, {
 	        key: 'onWindowResize',
 	        value: function onWindowResize() {
 	            var width = this._renderer.domElement.clientWidth;
@@ -310,7 +331,7 @@
 	        }
 	    }, {
 	        key: 'addEvent',
-	        value: function addEvent(event) {
+	        value: function addEvent(event, hidden) {
 	            var KillerWorldLocation = event.KillerWorldLocation;
 	            var VictimWorldLocation = event.VictimWorldLocation;
 
@@ -319,18 +340,23 @@
 	            var victim = new _three2.default.Vector3(VictimWorldLocation.x, VictimWorldLocation.y, VictimWorldLocation.z);
 	            var weapon = weapons.get(event.KillerWeaponStockId);
 
+	            var object = void 0;
 	            if (weapon && weapon.Type === 'Gernade' || event.IsGroundPound || event.IsMelee || event.IsShoulderBash) {
 	                var geometry = new _three2.default.SphereGeometry(0.2, 32, 23);
 	                var material = new _three2.default.MeshBasicMaterial({ color: 0xffff00 });
 	                var sphere = new _three2.default.Mesh(geometry, material);
 	                sphere.position.add(victim);
-	                this._scene.add(sphere);
-	            } // else if (weapon) {
-	            var path = this._shotPath(killer, victim);
-	            path.name = event.Id;
-	            this._scene.add(path);
-	            //}
-	            this.animate();
+	                object = sphere;
+	            } else if (weapon) {
+	                object = this._shotPath(killer, victim);
+	            }
+
+	            if (object) {
+	                object.name = event.Id;
+	                object.visible = !hidden;
+	                this._scene.add(object);
+	                if (!hidden) this.animate();
+	            }
 	        }
 	    }, {
 	        key: 'update',
@@ -4155,14 +4181,21 @@
 	});
 	var weaponsData = __webpack_require__(5);
 
-	/**
-	 * Get an instance of the weapons table that maps weapon id to weapon data.
-	 */
-	var getWeaponsTable = exports.getWeaponsTable = function getWeaponsTable() {
+	var instance = void 0;
+
+	var buildWeaponsTable = function buildWeaponsTable() {
 	    return weaponsData.reduce(function (map, data) {
 	        map.set(+data.id, data);
 	        return map;
 	    }, new Map());
+	};
+
+	/**
+	 * Get an instance of the weapons table that maps weapon id to weapon data.
+	 */
+	var getWeaponsTable = exports.getWeaponsTable = function getWeaponsTable() {
+	    instance = instance || buildWeaponsTable();
+	    return instance;
 	};
 
 /***/ },
@@ -4764,6 +4797,8 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+	var _weapons = __webpack_require__(4);
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -4773,12 +4808,21 @@
 	var React = __webpack_require__(7);
 	var ReactDOM = __webpack_require__(164);
 
+
 	var DeathStream = __webpack_require__(165);
 
 	var interval = 30;
 
+	var SCALE = 20;
+
 	var tryInvoke = function tryInvoke(f, x) {
 	    return f ? f(x) : null;
+	};
+
+	var getWeaponName = function getWeaponName(weaponId) {
+	    var weapon = (0, _weapons.getWeaponsTable)().get(weaponId);
+	    if (weapon) return weapon.name.replace(/\s/g, '-').toLowerCase();
+	    return 'unknown';
 	};
 
 	/**
@@ -4811,7 +4855,9 @@
 	            var style = {
 	                left: progress * 100 + '%'
 	            };
-	            return React.createElement('li', { className: 'timeline-event',
+	            var weaponName = this.props.event ? getWeaponName(this.props.event.KillerWeaponStockId) : 'unknown';
+
+	            return React.createElement('li', { className: 'timeline-event weapon-' + weaponName,
 	                style: style,
 	                onMouseEnter: this.onMouseEnter.bind(this),
 	                onMouseLeave: this.onMouseLeave.bind(this) });
@@ -4876,11 +4922,11 @@
 	                setTimeout(function () {
 	                    var actual = Date.now() - _start;
 	                    var next = Math.max(0, interval - (actual - interval));
-	                    var progress = self.state.progress + actual / self.state.duration;
+	                    var progress = self.state.progress + SCALE * (actual / self.state.duration);
 	                    var offset = progress * self.state.duration;
 	                    var head = self.state.head;
 	                    while (head && head.valid && head.key < offset) {
-	                        console.log(self.state.head.value);
+	                        tryInvoke(self.props.onTimelineEvent, head.value);
 	                        if (head.hasNext) {
 	                            head.next();
 	                        } else {
@@ -4889,7 +4935,9 @@
 	                        }
 	                    }
 	                    self.setState({ progress: progress, head: head });
-	                    loop(next);
+	                    if (progress >= 1) {} else {
+	                        loop(next);
+	                    }
 	                }, when);
 	            })(interval);
 	        }
@@ -24618,6 +24666,10 @@
 
 	var example = __webpack_require__(267);
 
+	var vectorLength = function vectorLength(a, b) {
+	    return Math.sqrt(Math.pow(a.x - b.x, 2), Math.pow(a.y - b.y, 2), Math.pow(a.z - b.z, 2));
+	};
+
 	var createTreeFromEvents = function createTreeFromEvents(events) {
 	    return events.reduce(function (tree, event) {
 	        return tree.insert(event.TimeSinceStart, event);
@@ -24643,7 +24695,8 @@
 	        var events = eventsData.map(function (eventData, i) {
 	            return Object.assign({}, eventData, {
 	                Id: '' + i,
-	                MatchProgress: (eventData.TimeSinceStart + 1.0) / duration
+	                MatchProgress: (eventData.TimeSinceStart + 1.0) / duration,
+	                KillVectorLength: vectorLength(eventData.KillerWorldLocation, eventData.VictimWorldLocation)
 	            });
 	        });
 

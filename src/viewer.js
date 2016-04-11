@@ -60,6 +60,14 @@ export class Viewer {
         }
         this.render();
     }
+    
+    showEvent(event) {
+        const target = this._scene.getObjectByName(event.Id);
+        if (!target)
+            return;
+        target.visible = true;
+        this.animate();
+    }
 
     onWindowResize() {
         const width = this._renderer.domElement.clientWidth;
@@ -150,26 +158,33 @@ export class Viewer {
         return mesh;
     }
 
-    addEvent(event) {
+    addEvent(event, hidden) {
         const {KillerWorldLocation, VictimWorldLocation} = event;
 
         const killer = new THREE.Vector3(KillerWorldLocation.x, KillerWorldLocation.y, KillerWorldLocation.z);
         const victim = new THREE.Vector3(VictimWorldLocation.x, VictimWorldLocation.y, VictimWorldLocation.z);
         const weapon = weapons.get(event.KillerWeaponStockId);
 
+        let object;
         if (weapon && weapon.Type === 'Gernade' || (event.IsGroundPound || event.IsMelee || event.IsShoulderBash)) {
             const geometry = new THREE.SphereGeometry(0.2, 32, 23);
             const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
             const sphere = new THREE.Mesh(geometry, material);
             sphere.position.add(victim);
-            this._scene.add(sphere);
-        }// else if (weapon) {
-        const path = this._shotPath(killer, victim);
-        path.name = event.Id;
-        this._scene.add(path);
-        //}
-        this.animate();
+            object = sphere;
+        } else if (weapon) {
+            object = this._shotPath(killer, victim);
+        }
+        
+        if (object) {
+            object.name = event.Id;
+            object.visible = !hidden;
+            this._scene.add(object);
+            if (!hidden)
+                this.animate();
+        }
     }
+    
 
     update() {
         this._controls.update();

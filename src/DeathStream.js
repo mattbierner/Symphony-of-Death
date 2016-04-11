@@ -4,6 +4,9 @@ const moment = require('moment');
 
 const example = require('./data/example.json');
 
+const vectorLength = (a, b) => 
+    Math.sqrt(Math.pow(a.x - b.x, 2), Math.pow(a.y - b.y, 2), Math.pow(a.z - b.z, 2));
+
 const createTreeFromEvents = events =>
     events.reduce(
         (tree, event) => tree.insert(event.TimeSinceStart, event),
@@ -26,7 +29,8 @@ class DeathStream {
         const events = eventsData.map((eventData, i) =>
             Object.assign({}, eventData, {
                 Id: '' + i,
-                MatchProgress: (eventData.TimeSinceStart + 1.0) / duration
+                MatchProgress: (eventData.TimeSinceStart + 1.0) / duration,
+                KillVectorLength: vectorLength(eventData.KillerWorldLocation, eventData.VictimWorldLocation)
             }));
             
         this.duration = duration;

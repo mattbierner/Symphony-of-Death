@@ -21,14 +21,35 @@ body {
     width: 100%;
     height: 60px;
     background: red;
-    
+}
     .timeline-event {
         width: 10px;
         height: 10px;
         margin-left: -5px;
         border-radius: 100px;
         position: absolute;
-        background: blue;
+        background: white;
         list-style: none;
     }
+
+
+.weapon-spartan {
+    background: green;
+}
+.weapon-magnum {
+    background: gray;
+}
+
+.weapon-splinter-grenade,
+.weapon-environmental-explosives {
+    background: red;
+}
+.weapon-assault-rifle {
+    background: pink;
+}
+.weapon-sniper-rifle {
+    background: black;
+}
+.weapon-scattershot {
+    background: orange;
 }

@@ -25,7 +25,7 @@ class Application extends React.Component {
                 this.setState({ stream: stream });
                 try {
                     this.viewer = new Viewer('glcanvas');
-                    stream.forEach((key, event) => this.viewer.addEvent(event));
+                    stream.forEach((key, event) => this.viewer.addEvent(event, true));
                 } catch (e) {
                     debugger;
                 }
@@ -35,8 +35,19 @@ class Application extends React.Component {
     
     onEventFocus(event) {
         this.viewer.highlightEvent(event);
-        var bell = new Wad({source : 'sawtooth'})
-bell.play()
+    }
+    
+    onTimelineEvent(event) {
+        this.viewer.showEvent(event);
+        const pitch = event.KillVectorLength;
+        const min = 27.5000;
+        const max = 4186.01;
+       
+        let progress = (min + (max - min) / 2.0) + (pitch - 4.0) * 500;
+        let p0 = Math.min(max, Math.max(min, progress));
+        console.log(pitch, p0, progress);
+        const bell = new Wad({source : 'sawtooth', pitch: p0})
+        bell.play()
     }
     
     render() {
@@ -44,7 +55,8 @@ bell.play()
             <div className={'container'}>
                 <canvas id="glcanvas" className={"glCanvas"}></canvas>
                 <Timeline stream={this.state.stream}
-                    onEventFocus={this.onEventFocus.bind(this)}/>
+                    onEventFocus={this.onEventFocus.bind(this)}
+                    onTimelineEvent={this.onTimelineEvent.bind(this)}/>
             </div>);
     }
 }; 
