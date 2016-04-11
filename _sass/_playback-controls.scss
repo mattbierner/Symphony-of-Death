@@ -1,0 +1,7 @@
+#playback-controls {
+    text-align: center;
+    
+    & > * {
+        display: inline-block;
+    }
+}

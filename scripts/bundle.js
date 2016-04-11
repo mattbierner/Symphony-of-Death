@@ -298,12 +298,14 @@
 	    }, {
 	        key: 'onWindowResize',
 	        value: function onWindowResize() {
-	            var width = this._renderer.domElement.clientWidth;
-	            var height = this._renderer.domElement.clientHeight;
+	            var width = window.innerWidth + 0.0;
+	            var height = window.innerHeight + 0.0;
 
 	            this._camera.aspect = width / height;
 	            this._camera.updateProjectionMatrix();
 	            this._renderer.setSize(width, height);
+
+	            this.render();
 	        }
 	    }, {
 	        key: 'onMouseMove',
@@ -5350,11 +5352,15 @@
 	                { id: 'controls' },
 	                React.createElement(
 	                    'div',
-	                    { id: 'panel-controls' },
+	                    { id: 'playback-controls' },
 	                    React.createElement(
-	                        'button',
-	                        { onClick: this.play.bind(this) },
-	                        'Play'
+	                        'div',
+	                        { className: 'button-group' },
+	                        React.createElement(
+	                            'button',
+	                            { onClick: this.play.bind(this) },
+	                            'Play'
+	                        )
 	                    )
 	                ),
 	                React.createElement(_timeline2.default, _extends({}, this.props, { stream: this.props.stream, progress: this.state.progress }))
@@ -5446,23 +5452,43 @@
 	    return TimelineEvent;
 	}(React.Component);
 
+	var TimelineScrubber = function (_React$Component2) {
+	    _inherits(TimelineScrubber, _React$Component2);
+
+	    function TimelineScrubber() {
+	        _classCallCheck(this, TimelineScrubber);
+
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(TimelineScrubber).apply(this, arguments));
+	    }
+
+	    _createClass(TimelineScrubber, [{
+	        key: 'render',
+	        value: function render() {
+	            return React.createElement('div', { className: 'scrubber',
+	                style: { position: 'absolute', top: 0, left: (this.props.progress || 0) * 100 + '%' } });
+	        }
+	    }]);
+
+	    return TimelineScrubber;
+	}(React.Component);
+
 	/**
 	 * 
 	 */
 
 
-	var Timeline = function (_React$Component2) {
-	    _inherits(Timeline, _React$Component2);
+	var Timeline = function (_React$Component3) {
+	    _inherits(Timeline, _React$Component3);
 
 	    function Timeline(props) {
 	        _classCallCheck(this, Timeline);
 
-	        var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(Timeline).call(this, props));
+	        var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(Timeline).call(this, props));
 
-	        _this2.state = {
+	        _this3.state = {
 	            progress: 0
 	        };
-	        return _this2;
+	        return _this3;
 	    }
 
 	    _createClass(Timeline, [{
@@ -5480,15 +5506,15 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var _this3 = this;
+	            var _this4 = this;
 
 	            var events = [];
 	            if (this.props.stream) {
 	                this.props.stream.forEach(function (event) {
 	                    events.push(React.createElement(TimelineEvent, { key: event.Id,
 	                        event: event,
-	                        onFocus: _this3.onEventFocus.bind(_this3),
-	                        onFocusEnd: _this3.onEventFocusEnd.bind(_this3) }));
+	                        onFocus: _this4.onEventFocus.bind(_this4),
+	                        onFocusEnd: _this4.onEventFocusEnd.bind(_this4) }));
 	                });
 	            }
 	            return React.createElement(
@@ -5499,11 +5525,7 @@
 	                    { className: 'timeline-events' },
 	                    events
 	                ),
-	                React.createElement(
-	                    'div',
-	                    { style: { position: 'absolute', top: 0, left: this.props.progress * 100 + '%' } },
-	                    '|'
-	                )
+	                React.createElement(TimelineScrubber, { progress: this.props.progress })
 	            );
 	        }
 	    }]);

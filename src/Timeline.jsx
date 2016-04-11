@@ -43,6 +43,14 @@ class TimelineEvent extends React.Component {
     }
 }
 
+class TimelineScrubber extends React.Component {
+    render() {
+        return (
+            <div className="scrubber"
+                style={{ position: 'absolute', top: 0, left: (this.props.progress || 0) * 100 + '%'}} />);
+    }
+}
+
 /**
  * 
  */
@@ -77,7 +85,7 @@ export default class Timeline extends React.Component {
         return (
             <div id="timeline">
                 <ul className="timeline-events">{events}</ul>
-                <div style={{ position: 'absolute', top: 0, left: this.props.progress * 100 + '%'}}>|</div>
+                <TimelineScrubber progress={this.props.progress} />
             </div>);
     }
 }; 

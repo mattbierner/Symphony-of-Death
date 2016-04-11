@@ -85,12 +85,14 @@ export default class Viewer {
     }
 
     onWindowResize() {
-        const width = this._renderer.domElement.clientWidth;
-        const height = this._renderer.domElement.clientHeight;
+        const width = window.innerWidth + 0.0;
+        const height = window.innerHeight + 0.0;
 
         this._camera.aspect = width / height;
         this._camera.updateProjectionMatrix();
         this._renderer.setSize(width, height);
+        
+        this.render();
     }
 
     onMouseMove(event) {

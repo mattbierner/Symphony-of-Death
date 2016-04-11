@@ -15,7 +15,6 @@ const tryInvoke = (f, x) =>
  * 
  */
 export default class Controls extends React.Component {
-
     constructor(props) {
         super(props);
         this.state = {
@@ -80,8 +79,10 @@ export default class Controls extends React.Component {
     render() {
         return (
             <div id="controls">
-                <div id="panel-controls">
-                    <button onClick={this.play.bind(this)}>Play</button>
+                <div id="playback-controls">
+                    <div className="button-group">
+                        <button onClick={this.play.bind(this)}>Play</button>
+                    </div>
                 </div>
                 <Timeline {...this.props} stream={this.props.stream} progress={this.state.progress} />
             </div>);

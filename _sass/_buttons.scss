@@ -1,5 +1,7 @@
 
 .button-group {
+    @extend %clearfix;
+    
     border: 1px solid white;
     
     button {
