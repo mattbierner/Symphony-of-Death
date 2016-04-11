@@ -5658,7 +5658,9 @@
 	    }, {
 	        key: 'onMouseDown',
 	        value: function onMouseDown(event) {
+	            if (this.state.dragging) return;
 	            this.setState({ dragging: true });
+	            this.setProgressFromMouseEvent(event);
 	        }
 	    }, {
 	        key: 'onMouseUp',
@@ -5669,13 +5671,17 @@
 	        key: 'onMouseMove',
 	        value: function onMouseMove(e) {
 	            if (!this.state.dragging) return;
-	            var node = ReactDOM.findDOMNode(this);
-	            var rect = node.getBoundingClientRect();
-	            var progress = (e.pageX - rect.left) / rect.width;
-	            this.props.onDrag(progress);
-
+	            this.setProgressFromMouseEvent(e);
 	            e.stopPropagation();
 	            e.nativeEvent.stopImmediatePropagation();
+	        }
+	    }, {
+	        key: 'setProgressFromMouseEvent',
+	        value: function setProgressFromMouseEvent(event) {
+	            var node = ReactDOM.findDOMNode(this);
+	            var rect = node.getBoundingClientRect();
+	            var progress = (event.pageX - rect.left) / rect.width;
+	            this.props.onDrag(progress);
 	        }
 	    }, {
 	        key: 'render',

@@ -73,7 +73,10 @@ export default class Timeline extends React.Component {
     }
 
     onMouseDown(event) {
+        if (this.state.dragging)
+            return;
         this.setState({ dragging: true })
+        this.setProgressFromMouseEvent(event);
     }
     
     onMouseUp(event) {
@@ -83,13 +86,16 @@ export default class Timeline extends React.Component {
     onMouseMove(e) {
         if (!this.state.dragging)
             return;
-        const node = ReactDOM.findDOMNode(this);
-        const rect = node.getBoundingClientRect();
-        const progress = (e.pageX - rect.left) / rect.width;
-        this.props.onDrag(progress);
-        
+        this.setProgressFromMouseEvent(e);
         e.stopPropagation();
         e.nativeEvent.stopImmediatePropagation();
+    }
+    
+    setProgressFromMouseEvent(event) {
+        const node = ReactDOM.findDOMNode(this);
+        const rect = node.getBoundingClientRect();
+        const progress = (event.pageX - rect.left) / rect.width;
+        this.props.onDrag(progress);
     }
 
     render() {
