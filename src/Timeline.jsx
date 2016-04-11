@@ -45,14 +45,16 @@ export default class Timeline extends React.Component {
         super(props);
         this.state = {
             progress: 0,
-            duration: 0
+            duration: 0,
+            playing: false
         };
     }
     
     componentWillReceiveProps(props) {
         if (props.stream) {
             this.setState({
-                duration: props.stream.duration || 0
+                duration: props.stream.duration || 0,
+                head: props.stream.times && props.stream.times.begin
             });
         }
     }
@@ -68,14 +70,29 @@ export default class Timeline extends React.Component {
     }
     
     onPlay() {
+        if (this.state.playing)
+            return;
+        this.setState({ playing: true });
+        
         const self = this;
         (function loop(when) {
             var _start = Date.now();
             setTimeout(() => {
                 const actual = Date.now() - _start;
                 const next = Math.max(0, interval - (actual - interval));
-                console.log('fdsa');
-                self.setState({ progress: self.state.progress + (actual / self.state.duration) })
+                const progress =  self.state.progress + (actual / self.state.duration);
+                const offset = progress * self.state.duration;
+                let head = self.state.head;
+                while (head && head.valid && head.key < offset) {
+                    console.log(self.state.head.value);
+                    if (head.hasNext) {
+                        head.next();
+                    } else {
+                        head = null;
+                        break;
+                    }
+                }
+                self.setState({ progress: progress, head: head });
                 loop(next);
             }, when);
         }(interval));

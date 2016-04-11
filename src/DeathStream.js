@@ -30,12 +30,12 @@ class DeathStream {
             }));
             
         this.duration = duration;
-        this._tree = createTreeFromEvents(events);
+        this.times = createTreeFromEvents(events);
         this._map = createMapFromEvents(events);
     }
     
     forEach(f) {
-        this._tree.forEach(f);
+        this.times.forEach(f);
     }
 }
 

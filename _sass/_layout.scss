@@ -23,11 +23,12 @@ body {
     background: red;
     
     .timeline-event {
-        width: 20px;
-        height: 20px;
+        width: 10px;
+        height: 10px;
+        margin-left: -5px;
         border-radius: 100px;
         position: absolute;
-        background: rgba(0, 0, 255, 0.25);
+        background: blue;
         list-style: none;
     }
 }

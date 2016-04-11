@@ -4836,7 +4836,8 @@
 
 	        _this2.state = {
 	            progress: 0,
-	            duration: 0
+	            duration: 0,
+	            playing: false
 	        };
 	        return _this2;
 	    }
@@ -4846,7 +4847,8 @@
 	        value: function componentWillReceiveProps(props) {
 	            if (props.stream) {
 	                this.setState({
-	                    duration: props.stream.duration || 0
+	                    duration: props.stream.duration || 0,
+	                    head: props.stream.times && props.stream.times.begin
 	                });
 	            }
 	        }
@@ -4865,14 +4867,28 @@
 	    }, {
 	        key: 'onPlay',
 	        value: function onPlay() {
+	            if (this.state.playing) return;
+	            this.setState({ playing: true });
+
 	            var self = this;
 	            (function loop(when) {
 	                var _start = Date.now();
 	                setTimeout(function () {
 	                    var actual = Date.now() - _start;
 	                    var next = Math.max(0, interval - (actual - interval));
-	                    console.log('fdsa');
-	                    self.setState({ progress: self.state.progress + actual / self.state.duration });
+	                    var progress = self.state.progress + actual / self.state.duration;
+	                    var offset = progress * self.state.duration;
+	                    var head = self.state.head;
+	                    while (head && head.valid && head.key < offset) {
+	                        console.log(self.state.head.value);
+	                        if (head.hasNext) {
+	                            head.next();
+	                        } else {
+	                            head = null;
+	                            break;
+	                        }
+	                    }
+	                    self.setState({ progress: progress, head: head });
 	                    loop(next);
 	                }, when);
 	            })(interval);
@@ -24632,14 +24648,14 @@
 	        });
 
 	        this.duration = duration;
-	        this._tree = createTreeFromEvents(events);
+	        this.times = createTreeFromEvents(events);
 	        this._map = createMapFromEvents(events);
 	    }
 
 	    _createClass(DeathStream, [{
 	        key: "forEach",
 	        value: function forEach(f) {
-	            this._tree.forEach(f);
+	            this.times.forEach(f);
 	        }
 	    }]);
 
