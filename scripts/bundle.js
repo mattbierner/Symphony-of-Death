@@ -40788,7 +40788,7 @@
 	        value: function render() {
 	            return React.createElement(
 	                'div',
-	                { id: 'view-controls' },
+	                { id: 'view-controls', className: 'button-group' },
 	                React.createElement(ViewControlButton, { label: 'Front', onClick: this.props.onFrontViewSelected }),
 	                React.createElement(ViewControlButton, { label: 'Side', onClick: this.props.onSideViewSelected }),
 	                React.createElement(ViewControlButton, { label: 'Top', onClick: this.props.onTopViewSelected })

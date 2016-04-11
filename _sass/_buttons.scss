@@ -1,0 +1,22 @@
+
+.button-group {
+    border: 1px solid white;
+    
+    button {
+        margin: 0;
+        display: block;
+        float: left;
+        background: none;
+        border: none;
+        color: white;
+        border-right: 1px solid white;
+    }
+    
+    & > button:last-child {
+        border-right: none;
+    }
+    
+    button:hover {
+        background: #333;
+    }
+}
