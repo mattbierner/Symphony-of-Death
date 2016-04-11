@@ -56,13 +56,13 @@
 
 	var _controls2 = _interopRequireDefault(_controls);
 
-	var _view_controls = __webpack_require__(271);
+	var _view_controls = __webpack_require__(269);
 
 	var _view_controls2 = _interopRequireDefault(_view_controls);
 
 	var _weapons = __webpack_require__(4);
 
-	var _weird_male_screams = __webpack_require__(269);
+	var _weird_male_screams = __webpack_require__(270);
 
 	var _weird_male_screams2 = _interopRequireDefault(_weird_male_screams);
 
@@ -79,7 +79,7 @@
 
 	var DeathStream = __webpack_require__(166);
 
-	var Wad = __webpack_require__(270);
+	var Wad = __webpack_require__(271);
 
 	var matchId = "5b27a620-cebf-40a3-b09c-a37f15fd135f";
 
@@ -5316,20 +5316,90 @@
 	 * 
 	 */
 
-	var Controls = function (_React$Component) {
-	    _inherits(Controls, _React$Component);
+	var PlaybackSpeedControls = function (_React$Component) {
+	    _inherits(PlaybackSpeedControls, _React$Component);
+
+	    function PlaybackSpeedControls(props) {
+	        _classCallCheck(this, PlaybackSpeedControls);
+
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(PlaybackSpeedControls).call(this, props));
+
+	        _this.state = {
+	            value: props.value || '1'
+	        };
+	        return _this;
+	    }
+
+	    _createClass(PlaybackSpeedControls, [{
+	        key: 'onChange',
+	        value: function onChange(e) {
+	            var value = e.target.value;
+	            this.setState({ value: value });
+	            this.props.onChange(+value);
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            return React.createElement(
+	                'select',
+	                { style: { zIndex: 999 }, className: 'speed-selector', onChange: this.onChange.bind(this), value: this.state.value },
+	                React.createElement(
+	                    'option',
+	                    { value: '1' },
+	                    '1x'
+	                ),
+	                React.createElement(
+	                    'option',
+	                    { value: '2' },
+	                    '2x'
+	                ),
+	                React.createElement(
+	                    'option',
+	                    { value: '4' },
+	                    '4x'
+	                ),
+	                React.createElement(
+	                    'option',
+	                    { value: '8' },
+	                    '8x'
+	                ),
+	                React.createElement(
+	                    'option',
+	                    { value: '20' },
+	                    '20x'
+	                ),
+	                React.createElement(
+	                    'option',
+	                    { value: 'custom' },
+	                    'custom'
+	                )
+	            );
+	        }
+	    }]);
+
+	    return PlaybackSpeedControls;
+	}(React.Component);
+
+	/**
+	 * 
+	 */
+
+
+	var Controls = function (_React$Component2) {
+	    _inherits(Controls, _React$Component2);
 
 	    function Controls(props) {
 	        _classCallCheck(this, Controls);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Controls).call(this, props));
+	        var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(Controls).call(this, props));
 
-	        _this.state = {
+	        _this2.state = {
 	            progress: 0,
 	            duration: 0,
-	            playing: false
+	            playing: false,
+	            playbackSpeed: 1
 	        };
-	        return _this;
+	        return _this2;
 	    }
 
 	    _createClass(Controls, [{
@@ -5368,7 +5438,7 @@
 
 	                    var actual = Date.now() - _start;
 	                    var next = Math.max(0, interval - (actual - interval));
-	                    var progress = self.state.progress + SCALE * (actual / self.state.duration);
+	                    var progress = self.state.progress + self.state.playbackSpeed * (actual / self.state.duration);
 	                    var offset = progress * self.state.duration;
 	                    var head = self.state.head;
 	                    while (head && head.valid && head.key < offset) {
@@ -5413,6 +5483,11 @@
 	            this.setState({ playing: false });
 	        }
 	    }, {
+	        key: 'onPlaybackSpeedChange',
+	        value: function onPlaybackSpeedChange(speed) {
+	            this.setState({ playbackSpeed: speed });
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
 	            return React.createElement(
@@ -5434,7 +5509,8 @@
 	                            { onClick: this.stop.bind(this) },
 	                            'Stop'
 	                        )
-	                    )
+	                    ),
+	                    React.createElement(PlaybackSpeedControls, { onChange: this.onPlaybackSpeedChange.bind(this) })
 	                ),
 	                React.createElement(_timeline2.default, _extends({}, this.props, {
 	                    stream: this.props.stream,
@@ -40604,6 +40680,93 @@
 
 /***/ },
 /* 269 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var React = __webpack_require__(8);
+	var ReactDOM = __webpack_require__(165);
+
+	var ViewControlButton = function (_React$Component) {
+	    _inherits(ViewControlButton, _React$Component);
+
+	    function ViewControlButton() {
+	        _classCallCheck(this, ViewControlButton);
+
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(ViewControlButton).apply(this, arguments));
+	    }
+
+	    _createClass(ViewControlButton, [{
+	        key: '_onClick',
+	        value: function _onClick(e, callback) {
+	            e.preventDefault();
+	            e.stopPropagation();
+	            this.props.onClick && this.props.onClick();
+	        }
+	    }, {
+	        key: '_onMouseDown',
+	        value: function _onMouseDown(e) {
+	            e.stopPropagation();
+	            e.nativeEvent.stopImmediatePropagation();
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            return React.createElement(
+	                'button',
+	                {
+	                    onMouseDown: this._onMouseDown.bind(this),
+	                    onClick: this._onClick.bind(this) },
+	                this.props.label
+	            );
+	        }
+	    }]);
+
+	    return ViewControlButton;
+	}(React.Component);
+
+	var ViewControls = function (_React$Component2) {
+	    _inherits(ViewControls, _React$Component2);
+
+	    function ViewControls() {
+	        _classCallCheck(this, ViewControls);
+
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(ViewControls).apply(this, arguments));
+	    }
+
+	    _createClass(ViewControls, [{
+	        key: 'render',
+	        value: function render() {
+	            return React.createElement(
+	                'div',
+	                { id: 'view-controls', className: 'button-group' },
+	                React.createElement(ViewControlButton, { label: 'Front', onClick: this.props.onFrontViewSelected }),
+	                React.createElement(ViewControlButton, { label: 'Side', onClick: this.props.onSideViewSelected }),
+	                React.createElement(ViewControlButton, { label: 'Top', onClick: this.props.onTopViewSelected })
+	            );
+	        }
+	    }]);
+
+	    return ViewControls;
+	}(React.Component);
+
+	exports.default = ViewControls;
+	;
+
+/***/ },
+/* 270 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -40632,7 +40795,7 @@
 	};
 
 /***/ },
-/* 270 */
+/* 271 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*** IMPORTS FROM imports-loader ***/
@@ -40683,7 +40846,7 @@
 	          Example:
 		          MediaStreamHelper.initialize(window);
 		          getUserMedia({audio: true}).then(function(stream) {}).catch(function(error) {});
-		*/UNSUPPORT:false,SUPPORT_STANDARD_VERSION:1,SUPPORT_DEPRECATED_VERSION:2,isGetUserMediaSupported:function isGetUserMediaSupported(window){if(window.navigator.mediaDevices.getUserMedia)return this.SUPPORT_STANDARD_VERSION;else if(window.navigator.getUserMedia)return this.SUPPORT_DEPRECATED_VERSION;else return this.UNSUPPORT;},initialize:function initializeMediaStreamHelper(window){var mediaDevices=window.navigator.mediaDevices||{};getUserMedia=window.navigator.getUserMedia||window.navigator.webkitGetUserMedia||window.navigator.mozGetUserMedia;var howIsItSupported=this.isGetUserMediaSupported(window);if(howIsItSupported!=this.UNSUPPORT){getUserMedia=howIsItSupported==this.SUPPORT_STANDARD_VERSION?mediaDevices.getUserMedia.bind(mediaDevices):function(constraints){return new Promise(function(resolve,reject){window.navigator.getUserMedia(constraints,resolve,reject);});};}}};MediaStreamHelper.initialize(window);if(!getUserMedia)console.log("Your browser supports getUserMedia.");else console.log("Your browser does not support getUserMedia."); /////////////////////////////////////////
+		*/UNSUPPORT:false,SUPPORT_STANDARD_VERSION:1,SUPPORT_DEPRECATED_VERSION:2,isGetUserMediaSupported:function isGetUserMediaSupported(window){if(window.navigator.mediaDevices&&window.navigator.mediaDevices.getUserMedia)return this.SUPPORT_STANDARD_VERSION;else if(window.navigator.getUserMedia)return this.SUPPORT_DEPRECATED_VERSION;else return this.UNSUPPORT;},initialize:function initializeMediaStreamHelper(window){var mediaDevices=window.navigator.mediaDevices||{};getUserMedia=window.navigator.getUserMedia||window.navigator.webkitGetUserMedia||window.navigator.mozGetUserMedia;var howIsItSupported=this.isGetUserMediaSupported(window);if(howIsItSupported!=this.UNSUPPORT){getUserMedia=howIsItSupported==this.SUPPORT_STANDARD_VERSION?mediaDevices.getUserMedia.bind(mediaDevices):function(constraints){return new Promise(function(resolve,reject){window.navigator.getUserMedia(constraints,resolve,reject);});};}}};MediaStreamHelper.initialize(window);if(!getUserMedia)console.log("Your browser supports getUserMedia.");else console.log("Your browser does not support getUserMedia."); /////////////////////////////////////////
 	var Wad=function(){ /** Pre-render a noise buffer instead of generating noise on the fly. **/var noiseBuffer=function(){ // the initial seed
 	Math.seed=6;Math.seededRandom=function(max,min){max=max||1;min=min||0;Math.seed=(Math.seed*9301+49297)%233280;var rnd=Math.seed/233280;return min+rnd*(max-min);};var bufferSize=2*context.sampleRate;var noiseBuffer=context.createBuffer(1,bufferSize,context.sampleRate);var output=noiseBuffer.getChannelData(0);for(var i=0;i<bufferSize;i++){output[i]=Math.seededRandom()*2-1;}return noiseBuffer;}(); /////////////////////////////////////////////////////////////////////////
 	/** a lil hack. just be glad it isn't on Object.prototype. **/var isArray=function isArray(object){return Object.prototype.toString.call(object)==='[object Array]';}; /** Set up the default ADSR envelope. **/var constructEnv=function constructEnv(that,arg){that.env={ //default envelope, if one is not specified on play
@@ -40837,93 +41000,6 @@
 	// o.send( [ 0x80, 0x45, 0x7f ], window.performance.now() + 1000 );  // full velocity A4 note off in one second.
 	};var onErrorCallback=function onErrorCallback(err){console.log("uh-oh! Something went wrong!  Error code: "+err.code);};if(navigator&&navigator.requestMIDIAccess){try{navigator.requestMIDIAccess().then(onSuccessCallback,onErrorCallback);}catch(err){var text="There was an error on this page.\n\n";text+="Error description: "+err.message+"\n\n";text+="Click OK to continue.\n\n";console.log(text);}}Wad.presets={hiHatClosed:{source:'noise',env:{attack:.001,decay:.008,sustain:.2,hold:.03,release:.01},filter:{type:'highpass',frequency:400,q:1}},snare:{source:'noise',env:{attack:.001,decay:.01,sustain:.2,hold:.03,release:.02},filter:{type:'bandpass',frequency:300,q:.180}},hiHatOpen:{source:'noise',env:{attack:.001,decay:.008,sustain:.2,hold:.43,release:.01},filter:{type:'highpass',frequency:100,q:.2}},ghost:{source:'square',volume:.3,env:{attack:.01,decay:.002,sustain:.5,hold:2.5,release:.3},filter:{type:'lowpass',frequency:600,q:7,env:{attack:.7,frequency:1600}},vibrato:{attack:8,speed:8,magnitude:100}},piano:{source:'square',volume:1.4,env:{attack:.01,decay:.005,sustain:.2,hold:.015,release:.3},filter:{type:'lowpass',frequency:1200,q:8.5,env:{attack:.2,frequency:600}}}};return Wad;}();if(typeof module!=='undefined'&&module.exports){module.exports=Wad;}return Wad;});
 	}.call(window));
-
-/***/ },
-/* 271 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var React = __webpack_require__(8);
-	var ReactDOM = __webpack_require__(165);
-
-	var ViewControlButton = function (_React$Component) {
-	    _inherits(ViewControlButton, _React$Component);
-
-	    function ViewControlButton() {
-	        _classCallCheck(this, ViewControlButton);
-
-	        return _possibleConstructorReturn(this, Object.getPrototypeOf(ViewControlButton).apply(this, arguments));
-	    }
-
-	    _createClass(ViewControlButton, [{
-	        key: '_onClick',
-	        value: function _onClick(e, callback) {
-	            e.preventDefault();
-	            e.stopPropagation();
-	            this.props.onClick && this.props.onClick();
-	        }
-	    }, {
-	        key: '_onMouseDown',
-	        value: function _onMouseDown(e) {
-	            e.stopPropagation();
-	            e.nativeEvent.stopImmediatePropagation();
-	        }
-	    }, {
-	        key: 'render',
-	        value: function render() {
-	            return React.createElement(
-	                'button',
-	                {
-	                    onMouseDown: this._onMouseDown.bind(this),
-	                    onClick: this._onClick.bind(this) },
-	                this.props.label
-	            );
-	        }
-	    }]);
-
-	    return ViewControlButton;
-	}(React.Component);
-
-	var ViewControls = function (_React$Component2) {
-	    _inherits(ViewControls, _React$Component2);
-
-	    function ViewControls() {
-	        _classCallCheck(this, ViewControls);
-
-	        return _possibleConstructorReturn(this, Object.getPrototypeOf(ViewControls).apply(this, arguments));
-	    }
-
-	    _createClass(ViewControls, [{
-	        key: 'render',
-	        value: function render() {
-	            return React.createElement(
-	                'div',
-	                { id: 'view-controls', className: 'button-group' },
-	                React.createElement(ViewControlButton, { label: 'Front', onClick: this.props.onFrontViewSelected }),
-	                React.createElement(ViewControlButton, { label: 'Side', onClick: this.props.onSideViewSelected }),
-	                React.createElement(ViewControlButton, { label: 'Top', onClick: this.props.onTopViewSelected })
-	            );
-	        }
-	    }]);
-
-	    return ViewControls;
-	}(React.Component);
-
-	exports.default = ViewControls;
-	;
 
 /***/ }
 /******/ ]);
