@@ -64,14 +64,20 @@ export default class Viewer {
             return;
             
         if (this._currentTarget) {
-            this._currentTarget.material.uniforms.mul.value = 1.0;
-            this._currentTarget.material.uniforms.mul.needsUpdate = true;
+            const uniforms = this._currentTarget.material.uniforms;
+            if (uniforms && uniforms.mul) {
+                uniforms.mul.value = 1.0;
+                uniforms.mul.needsUpdate = true;
+            }
         }
 
         this._currentTarget = target;
         if (this._currentTarget) {
-            this._currentTarget.material.uniforms.mul.value = 5.0;
-            this._currentTarget.material.uniforms.mul.needsUpdate = true;
+            const uniforms = this._currentTarget.material.uniforms;
+            if (uniforms && uniforms.mul) {
+                uniforms.mul.value = 5.0;
+                uniforms.mul.needsUpdate = true;
+            }
         }
         this.render();
     }

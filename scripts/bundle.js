@@ -276,14 +276,20 @@
 	            if (this._currentTarget === target) return;
 
 	            if (this._currentTarget) {
-	                this._currentTarget.material.uniforms.mul.value = 1.0;
-	                this._currentTarget.material.uniforms.mul.needsUpdate = true;
+	                var uniforms = this._currentTarget.material.uniforms;
+	                if (uniforms && uniforms.mul) {
+	                    uniforms.mul.value = 1.0;
+	                    uniforms.mul.needsUpdate = true;
+	                }
 	            }
 
 	            this._currentTarget = target;
 	            if (this._currentTarget) {
-	                this._currentTarget.material.uniforms.mul.value = 5.0;
-	                this._currentTarget.material.uniforms.mul.needsUpdate = true;
+	                var _uniforms = this._currentTarget.material.uniforms;
+	                if (_uniforms && _uniforms.mul) {
+	                    _uniforms.mul.value = 5.0;
+	                    _uniforms.mul.needsUpdate = true;
+	                }
 	            }
 	            this.render();
 	        }
@@ -5323,6 +5329,8 @@
 	            (function loop(when) {
 	                var _start = Date.now();
 	                setTimeout(function () {
+	                    if (!self.state.playing) return;
+
 	                    var actual = Date.now() - _start;
 	                    var next = Math.max(0, interval - (actual - interval));
 	                    var progress = self.state.progress + SCALE * (actual / self.state.duration);
@@ -5345,6 +5353,19 @@
 	            })(interval);
 	        }
 	    }, {
+	        key: 'onTimelineDrag',
+	        value: function onTimelineDrag(progress) {
+	            this.setState({
+	                progress: progress,
+	                head: this.props.stream.times.ge(progress * this.state.duration)
+	            });
+	        }
+	    }, {
+	        key: 'stop',
+	        value: function stop() {
+	            this.setState({ playing: false });
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
 	            return React.createElement(
@@ -5360,10 +5381,18 @@
 	                            'button',
 	                            { onClick: this.play.bind(this) },
 	                            'Play'
+	                        ),
+	                        React.createElement(
+	                            'button',
+	                            { onClick: this.stop.bind(this) },
+	                            'Stop'
 	                        )
 	                    )
 	                ),
-	                React.createElement(_timeline2.default, _extends({}, this.props, { stream: this.props.stream, progress: this.state.progress }))
+	                React.createElement(_timeline2.default, _extends({}, this.props, {
+	                    stream: this.props.stream,
+	                    progress: this.state.progress,
+	                    onDrag: this.onTimelineDrag.bind(this) }))
 	            );
 	        }
 	    }]);
@@ -5486,7 +5515,7 @@
 	        var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(Timeline).call(this, props));
 
 	        _this3.state = {
-	            progress: 0
+	            dragging: false
 	        };
 	        return _this3;
 	    }
@@ -5504,6 +5533,28 @@
 	            tryInvoke(this.props.onEventFocusEnd, event);
 	        }
 	    }, {
+	        key: 'onMouseDown',
+	        value: function onMouseDown(event) {
+	            this.setState({ dragging: true });
+	        }
+	    }, {
+	        key: 'onMouseUp',
+	        value: function onMouseUp(event) {
+	            this.setState({ dragging: false });
+	        }
+	    }, {
+	        key: 'onMouseMove',
+	        value: function onMouseMove(e) {
+	            if (!this.state.dragging) return;
+	            var node = ReactDOM.findDOMNode(this);
+	            var rect = node.getBoundingClientRect();
+	            var progress = (e.pageX - rect.left) / rect.width;
+	            this.props.onDrag(progress);
+
+	            e.stopPropagation();
+	            e.nativeEvent.stopImmediatePropagation();
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
 	            var _this4 = this;
@@ -5519,7 +5570,10 @@
 	            }
 	            return React.createElement(
 	                'div',
-	                { id: 'timeline' },
+	                { id: 'timeline',
+	                    onMouseDown: this.onMouseDown.bind(this),
+	                    onMouseUp: this.onMouseUp.bind(this),
+	                    onMouseMove: this.onMouseMove.bind(this) },
 	                React.createElement(
 	                    'ul',
 	                    { className: 'timeline-events' },

@@ -52,6 +52,9 @@ export default class Controls extends React.Component {
         (function loop(when) {
             var _start = Date.now();
             setTimeout(() => {
+                if (!self.state.playing)
+                    return;
+                
                 const actual = Date.now() - _start;
                 const next = Math.max(0, interval - (actual - interval));
                 const progress =  self.state.progress + SCALE * (actual / self.state.duration);
@@ -76,15 +79,30 @@ export default class Controls extends React.Component {
         }(interval));
     }
     
+    onTimelineDrag(progress) {
+        this.setState({
+            progress : progress,
+            head: this.props.stream.times.ge(progress * this.state.duration)
+        });
+    }
+    
+    stop() {
+        this.setState({ playing: false });
+    }
+    
     render() {
         return (
             <div id="controls">
                 <div id="playback-controls">
                     <div className="button-group">
                         <button onClick={this.play.bind(this)}>Play</button>
+                        <button onClick={this.stop.bind(this)}>Stop</button>
                     </div>
                 </div>
-                <Timeline {...this.props} stream={this.props.stream} progress={this.state.progress} />
+                <Timeline {...this.props}
+                    stream={this.props.stream}
+                    progress={this.state.progress}
+                    onDrag={this.onTimelineDrag.bind(this)}/>
             </div>);
     }
 }; 
