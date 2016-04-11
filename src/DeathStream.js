@@ -5,7 +5,7 @@ const moment = require('moment');
 const example = require('./data/example.json');
 
 const vectorLength = (a, b) => 
-    Math.sqrt(Math.pow(a.x - b.x, 2), Math.pow(a.y - b.y, 2), Math.pow(a.z - b.z, 2));
+    Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2));
 
 const createTreeFromEvents = events =>
     events.reduce(

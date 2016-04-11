@@ -4,7 +4,6 @@ import OrbitControls from './OrbitControls'
 import {getWeaponsTable} from './weapons';
 
 const killerColor = new THREE.Color(0xff00ff);
-
 const victimColor = new THREE.Color(0x00ffff);
 
 const topSize = 0.1;

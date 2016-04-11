@@ -7,7 +7,6 @@ import {getWeaponsTable} from './weapons';
 const DeathStream = require('./DeathStream');
 
 const interval = 30;
-
 const SCALE = 20;
 
 const tryInvoke = (f, x) =>

@@ -54,6 +54,12 @@
 
 	var _timeline2 = _interopRequireDefault(_timeline);
 
+	var _weapons = __webpack_require__(4);
+
+	var _weird_male_screams = __webpack_require__(269);
+
+	var _weird_male_screams2 = _interopRequireDefault(_weird_male_screams);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -118,14 +124,23 @@
 	        key: 'onTimelineEvent',
 	        value: function onTimelineEvent(event) {
 	            this.viewer.showEvent(event);
-	            var pitch = event.KillVectorLength;
-	            var min = 27.5000;
-	            var max = 4186.01;
+	            var length = event.KillVectorLength;
+	            var min = 100;
+	            var max = 1200;
 
-	            var progress = 1000 + (pitch - 4.0) * 500;
+	            var progress = 300 + -(length - 3.0) * 100;
 	            var p0 = Math.min(max, Math.max(min, progress));
-	            var bell = new Wad({ source: 'sawtooth', pitch: p0 });
+	            var bell = new Wad({ source: 'sine', pitch: p0, env: { attack: 1, hold: 5, release: 2 } });
+
+	            var weapon = (0, _weapons.getWeaponsTable)().get(event.KillerWeaponStockId);
+	            //  if (weapon) {
+	            //    const sound = sounds(weapon.name);
+	            //  if (sound)
+	            //new Wad({ source: sound }).play({ pitch: p0 })
 	            bell.play();
+	            //  setTimeout(() => bell.stop, 20000);
+	            // }
+	            //bell.play()
 	        }
 	    }, {
 	        key: 'render',
@@ -176,7 +191,6 @@
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var killerColor = new _three2.default.Color(0xff00ff);
-
 	var victimColor = new _three2.default.Color(0x00ffff);
 
 	var topSize = 0.1;
@@ -4841,7 +4855,6 @@
 	var DeathStream = __webpack_require__(165);
 
 	var interval = 30;
-
 	var SCALE = 20;
 
 	var tryInvoke = function tryInvoke(f, x) {
@@ -24696,7 +24709,7 @@
 	var example = __webpack_require__(267);
 
 	var vectorLength = function vectorLength(a, b) {
-	    return Math.sqrt(Math.pow(a.x - b.x, 2), Math.pow(a.y - b.y, 2), Math.pow(a.z - b.z, 2));
+	    return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2));
 	};
 
 	var createTreeFromEvents = function createTreeFromEvents(events) {
@@ -40187,6 +40200,35 @@
 	// o.send( [ 0x80, 0x45, 0x7f ], window.performance.now() + 1000 );  // full velocity A4 note off in one second.
 	};var onErrorCallback=function onErrorCallback(err){console.log("uh-oh! Something went wrong!  Error code: "+err.code);};if(navigator&&navigator.requestMIDIAccess){try{navigator.requestMIDIAccess().then(onSuccessCallback,onErrorCallback);}catch(err){var text="There was an error on this page.\n\n";text+="Error description: "+err.message+"\n\n";text+="Click OK to continue.\n\n";console.log(text);}}Wad.presets={hiHatClosed:{source:'noise',env:{attack:.001,decay:.008,sustain:.2,hold:.03,release:.01},filter:{type:'highpass',frequency:400,q:1}},snare:{source:'noise',env:{attack:.001,decay:.01,sustain:.2,hold:.03,release:.02},filter:{type:'bandpass',frequency:300,q:.180}},hiHatOpen:{source:'noise',env:{attack:.001,decay:.008,sustain:.2,hold:.43,release:.01},filter:{type:'highpass',frequency:100,q:.2}},ghost:{source:'square',volume:.3,env:{attack:.01,decay:.002,sustain:.5,hold:2.5,release:.3},filter:{type:'lowpass',frequency:600,q:7,env:{attack:.7,frequency:1600}},vibrato:{attack:8,speed:8,magnitude:100}},piano:{source:'square',volume:1.4,env:{attack:.01,decay:.005,sustain:.2,hold:.015,release:.3},filter:{type:'lowpass',frequency:1200,q:8.5,env:{attack:.2,frequency:600}}}};return Wad;}();if(typeof module!=='undefined'&&module.exports){module.exports=Wad;}return Wad;});
 	}.call(window));
+
+/***/ },
+/* 269 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var base = '/sounds/weird-male-screams';
+
+	var getSoundFileName = function getSoundFileName(weaponName) {
+	    switch (weaponName) {
+	        case 'spartan':
+	            return '79__plagasul__long-scream.wav';
+	        case 'magnum':
+	            return '70__plagasul__eh.wav';
+	        case 'weapon-splinter-grenade':
+	            return '69__plagasul__ohm-loko.wav';
+	        default:
+	            return '85__plagasul__jeeh.wav';
+	    }
+	};
+
+	exports.default = function (weaponName) {
+	    var file = getSoundFileName(weaponName);
+	    return file && base + '/' + file;
+	};
 
 /***/ }
 /******/ ]);

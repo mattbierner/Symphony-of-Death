@@ -20,18 +20,19 @@ body {
     left: 0;
     width: 100%;
     height: 60px;
-    background: red;
+    background: #333;
+    border-top: 1px solid white;
 }
-    .timeline-event {
-        width: 10px;
-        height: 10px;
-        margin-left: -5px;
-        border-radius: 100px;
-        position: absolute;
-        background: white;
-        list-style: none;
-    }
 
+.timeline-event {
+    width: 10px;
+    height: 10px;
+    margin-left: -5px;
+    border-radius: 100px;
+    position: absolute;
+    background: white;
+    list-style: none;
+}
 
 .weapon-spartan {
     background: green;
