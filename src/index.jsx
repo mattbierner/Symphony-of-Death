@@ -4,8 +4,11 @@ const React = require('react');
 const ReactDOM = require('react-dom');
 
 const DeathStream = require('./DeathStream');
-import {Viewer} from './viewer';
-import Timeline from './timeline';
+
+import Viewer from './viewer';
+import Controls from './controls';
+import ViewControls from './view_controls'
+
 import {getWeaponsTable} from './weapons';
 const Wad = require('imports?this=>window!web-audio-daw');
 
@@ -28,7 +31,7 @@ class Application extends React.Component {
                 this.setState({ stream: stream });
                 try {
                     this.viewer = new Viewer('glcanvas');
-                    stream.forEach((key, event) => this.viewer.addEvent(event, true));
+                    stream.forEach(event => this.viewer.addEvent(event, false));
                 } catch (e) {
                     debugger;
                 }
@@ -65,9 +68,13 @@ class Application extends React.Component {
         return (
             <div className={'container'}>
                 <canvas id="glcanvas" className={"glCanvas"}></canvas>
-                <Timeline stream={this.state.stream}
+                <Controls stream={this.state.stream}
                     onEventFocus={this.onEventFocus.bind(this)}
                     onTimelineEvent={this.onTimelineEvent.bind(this)}/>
+                <ViewControls
+                    onFrontViewSelected={() => this.viewer.goToFrontView()}
+                    onSideViewSelected={() => this.viewer.goToSideView()}
+                    onTopViewSelected={() => this.viewer.goToTopView()}/>
             </div>);
     }
 }; 

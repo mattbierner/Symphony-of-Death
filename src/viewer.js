@@ -12,11 +12,10 @@ const sides = 8;
 
 const weapons = getWeaponsTable();
 
-
 /**
- * 
+ * 3D Game viewer
  */
-export class Viewer {
+export default class Viewer {
     constructor(canvasId) {
         this._scene = new THREE.Scene();
         this._camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 800);
@@ -29,14 +28,31 @@ export class Viewer {
         this._controls.enableZoom = true;
 
         this._renderer = new THREE.WebGLRenderer({
-            canvas: document.getElementById(canvasId)
+            canvas: document.getElementById(canvasId),
+            alpha: true
         });
+        this._renderer.setClearColor(0xffffff, 0);
 
         this._raycaster = new THREE.Raycaster();
 
         window.addEventListener('resize', this.onWindowResize.bind(this), false);
         document.addEventListener('mousemove', this.onMouseMove.bind(this), false);
         this.onWindowResize();
+    }
+
+    goToFrontView() {
+        this._camera.position.set(0, 0, 40);
+        this.animate();
+    }
+    
+    goToSideView() {
+        this._camera.position.set(40, 0, 0);
+        this.animate();
+    }
+    
+    goToTopView() {
+        this._camera.position.set(0, 40, 0);
+        this.animate();
     }
 
     highlightEvent(event) {

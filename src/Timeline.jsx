@@ -6,9 +6,6 @@ import {getWeaponsTable} from './weapons';
 
 const DeathStream = require('./DeathStream');
 
-const interval = 30;
-const SCALE = 20;
-
 const tryInvoke = (f, x) =>
     f ? f(x) : null;
 
@@ -46,7 +43,6 @@ class TimelineEvent extends React.Component {
     }
 }
 
-
 /**
  * 
  */
@@ -54,21 +50,10 @@ export default class Timeline extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            progress: 0,
-            duration: 0,
-            playing: false
+            progress: 0
         };
     }
-    
-    componentWillReceiveProps(props) {
-        if (props.stream) {
-            this.setState({
-                duration: props.stream.duration || 0,
-                head: props.stream.times && props.stream.times.begin
-            });
-        }
-    }
-    
+
     onEventFocus(event) {
         this.setState({ focusedEvent: event });
         tryInvoke(this.props.onEventFocus, event);
@@ -78,57 +63,21 @@ export default class Timeline extends React.Component {
         this.setState({ focusedEvent: null });
         tryInvoke(this.props.onEventFocusEnd, event);
     }
-    
-    onPlay() {
-        if (this.state.playing)
-            return;
-        this.setState({ playing: true });
-        
-        const self = this;
-        (function loop(when) {
-            var _start = Date.now();
-            setTimeout(() => {
-                const actual = Date.now() - _start;
-                const next = Math.max(0, interval - (actual - interval));
-                const progress =  self.state.progress + SCALE * (actual / self.state.duration);
-                const offset = progress * self.state.duration;
-                let head = self.state.head;
-                while (head && head.valid && head.key < offset) {
-                    tryInvoke(self.props.onTimelineEvent, head.value);
-                    if (head.hasNext) {
-                        head.next();
-                    } else {
-                        head = null;
-                        break;
-                    }
-                }
-                self.setState({ progress: progress, head: head });
-                if (progress >= 1) {
-                    
-                } else {
-                    loop(next);
-                }
-            }, when);
-        }(interval));
-    }
-    
+     
     render() {
         const events = [];
         if (this.props.stream) {
-            this.props.stream.forEach((key, value) => {
-                events.push(<TimelineEvent key={key}
-                    event={value}
+            this.props.stream.forEach(event => {
+                events.push(<TimelineEvent key={event.Id}
+                    event={event}
                     onFocus={this.onEventFocus.bind(this)}
                     onFocusEnd={this.onEventFocusEnd.bind(this)} />);
             });
         }
-        const focusedEvent = this.state.focusedEvent ? this.state.focusedEvent.KillerWeaponStockId : '';
         return (
             <div id="timeline">
                 <ul className="timeline-events">{events}</ul>
-                <div>{focusedEvent}</div>
-                <div style={{ position: 'absolute', top: 0, left: this.state.progress * 100 + '%'}}>|</div>
-                <button onClick={this.onPlay.bind(this)}>Play</button>
+                <div style={{ position: 'absolute', top: 0, left: this.props.progress * 100 + '%'}}>|</div>
             </div>);
     }
 }; 

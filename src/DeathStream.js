@@ -39,7 +39,7 @@ class DeathStream {
     }
     
     forEach(f) {
-        this.times.forEach(f);
+        this.times.forEach((_, x) => f(x));
     }
 }
 

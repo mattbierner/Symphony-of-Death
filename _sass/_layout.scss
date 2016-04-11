@@ -4,7 +4,7 @@ html, body, .container {
 }
 
 body {
-    background: black;
+    background: #111;
     color: white;
 }
 
@@ -13,12 +13,18 @@ body {
     height: 100%;
 }
 
-
-#timeline {
+#controls {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 100%;
+}
+
+#panel-controls {
+    margin: 0 auto;
+}
+
+#timeline {
     height: 60px;
     background: #333;
     border-top: 1px solid white;
