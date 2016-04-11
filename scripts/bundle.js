@@ -112,7 +112,7 @@
 	                try {
 	                    _this2.viewer = new _viewer2.default('glcanvas');
 	                    stream.forEach(function (event) {
-	                        return _this2.viewer.addEvent(event, false);
+	                        return _this2.viewer.addEvent(event, true);
 	                    });
 	                } catch (e) {
 	                    debugger;
@@ -149,9 +149,22 @@
 	            //bell.play()
 	        }
 	    }, {
+	        key: 'onPositionChange',
+	        value: function onPositionChange(before, after) {
+	            var _this3 = this;
+
+	            before.forEach(function (e) {
+	                return _this3.viewer.showEvent(e);
+	            });
+	            after.forEach(function (e) {
+	                return _this3.viewer.hideEvent(e);
+	            });
+	            this.viewer.render();
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var _this3 = this;
+	            var _this4 = this;
 
 	            return React.createElement(
 	                'div',
@@ -159,16 +172,17 @@
 	                React.createElement('canvas', { id: 'glcanvas', className: "glCanvas" }),
 	                React.createElement(_controls2.default, { stream: this.state.stream,
 	                    onEventFocus: this.onEventFocus.bind(this),
-	                    onTimelineEvent: this.onTimelineEvent.bind(this) }),
+	                    onTimelineEvent: this.onTimelineEvent.bind(this),
+	                    onPositionChange: this.onPositionChange.bind(this) }),
 	                React.createElement(_view_controls2.default, {
 	                    onFrontViewSelected: function onFrontViewSelected() {
-	                        return _this3.viewer.goToFrontView();
+	                        return _this4.viewer.goToFrontView();
 	                    },
 	                    onSideViewSelected: function onSideViewSelected() {
-	                        return _this3.viewer.goToSideView();
+	                        return _this4.viewer.goToSideView();
 	                    },
 	                    onTopViewSelected: function onTopViewSelected() {
-	                        return _this3.viewer.goToTopView();
+	                        return _this4.viewer.goToTopView();
 	                    } })
 	            );
 	        }
@@ -266,9 +280,30 @@
 	            this.animate();
 	        }
 	    }, {
+	        key: '_getObjectForEvent',
+	        value: function _getObjectForEvent(event) {
+	            return this._scene.getObjectByName(event.Id);
+	        }
+	    }, {
+	        key: 'showEvent',
+	        value: function showEvent(event) {
+	            var obj = this._getObjectForEvent(event);
+	            if (obj) {
+	                obj.visible = true;
+	            }
+	        }
+	    }, {
+	        key: 'hideEvent',
+	        value: function hideEvent(event) {
+	            var obj = this._getObjectForEvent(event);
+	            if (obj) {
+	                obj.visible = false;
+	            }
+	        }
+	    }, {
 	        key: 'highlightEvent',
 	        value: function highlightEvent(event) {
-	            this._highlightTarget(this._scene.getObjectByName(event.Id));
+	            this._highlightTarget(this._getObjectForEvent(event.Id));
 	        }
 	    }, {
 	        key: '_highlightTarget',
@@ -5355,10 +5390,22 @@
 	    }, {
 	        key: 'onTimelineDrag',
 	        value: function onTimelineDrag(progress) {
+	            var offset = progress * this.state.duration;
+	            var head = this.props.stream.times.ge(offset);
 	            this.setState({
 	                progress: progress,
-	                head: this.props.stream.times.ge(progress * this.state.duration)
+	                head: head
 	            });
+
+	            if (this.props.onPositionChange) {
+	                var before = [];
+	                var after = [];
+	                for (var i = head.clone(); i.valid; i.prev()) {
+	                    before.push(i.value);
+	                }for (var _i = head.clone(); _i.valid; _i.next()) {
+	                    after.push(_i.value);
+	                }this.props.onPositionChange(before, after);
+	            }
 	        }
 	    }, {
 	        key: 'stop',

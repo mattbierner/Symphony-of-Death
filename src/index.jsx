@@ -31,7 +31,7 @@ class Application extends React.Component {
                 this.setState({ stream: stream });
                 try {
                     this.viewer = new Viewer('glcanvas');
-                    stream.forEach(event => this.viewer.addEvent(event, false));
+                    stream.forEach(event => this.viewer.addEvent(event, true));
                 } catch (e) {
                     debugger;
                 }
@@ -64,13 +64,20 @@ class Application extends React.Component {
         //bell.play()
     }
     
+    onPositionChange(before, after) {
+        before.forEach(e => this.viewer.showEvent(e));
+        after.forEach(e => this.viewer.hideEvent(e));
+        this.viewer.render();
+    }
+    
     render() {
         return (
             <div className={'container'}>
                 <canvas id="glcanvas" className={"glCanvas"}></canvas>
                 <Controls stream={this.state.stream}
                     onEventFocus={this.onEventFocus.bind(this)}
-                    onTimelineEvent={this.onTimelineEvent.bind(this)}/>
+                    onTimelineEvent={this.onTimelineEvent.bind(this)}
+                    onPositionChange={this.onPositionChange.bind(this)}/>
                 <ViewControls
                     onFrontViewSelected={() => this.viewer.goToFrontView()}
                     onSideViewSelected={() => this.viewer.goToSideView()}

@@ -55,8 +55,26 @@ export default class Viewer {
         this.animate();
     }
 
+    _getObjectForEvent(event) {
+        return this._scene.getObjectByName(event.Id);
+    }
+    
+    showEvent(event) {
+        const obj = this._getObjectForEvent(event);
+        if (obj) {
+            obj.visible = true;
+        }
+    }
+    
+    hideEvent(event) {
+        const obj = this._getObjectForEvent(event);
+        if (obj) {
+            obj.visible = false;
+        }
+    }
+
     highlightEvent(event) {
-        this._highlightTarget(this._scene.getObjectByName(event.Id));
+        this._highlightTarget(this._getObjectForEvent(event.Id));
     }
 
     _highlightTarget(target) {

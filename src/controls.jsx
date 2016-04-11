@@ -80,10 +80,23 @@ export default class Controls extends React.Component {
     }
     
     onTimelineDrag(progress) {
+        const offset = progress * this.state.duration;
+        const head = this.props.stream.times.ge(offset);
         this.setState({
             progress : progress,
-            head: this.props.stream.times.ge(progress * this.state.duration)
+            head: head
         });
+        
+        if (this.props.onPositionChange) {
+            const before = [];
+            const after = [];
+            for (let i = head.clone(); i.valid; i.prev())
+                before.push(i.value);
+            for (let i = head.clone(); i.valid; i.next())
+                after.push(i.value);
+                
+            this.props.onPositionChange(before, after)
+        }
     }
     
     stop() {
