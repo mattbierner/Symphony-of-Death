@@ -122,9 +122,8 @@
 	            var min = 27.5000;
 	            var max = 4186.01;
 
-	            var progress = min + (max - min) / 2.0 + (pitch - 4.0) * 500;
+	            var progress = 1000 + (pitch - 4.0) * 500;
 	            var p0 = Math.min(max, Math.max(min, progress));
-	            console.log(pitch, p0, progress);
 	            var bell = new Wad({ source: 'sawtooth', pitch: p0 });
 	            bell.play();
 	        }
@@ -4179,22 +4178,52 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	var weaponsData = __webpack_require__(5);
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var instance = void 0;
 
-	var buildWeaponsTable = function buildWeaponsTable() {
-	    return weaponsData.reduce(function (map, data) {
-	        map.set(+data.id, data);
-	        return map;
-	    }, new Map());
+	var normalizeWeaponName = function normalizeWeaponName(name) {
+	    return name.replace(/\s/g, '-').toLowerCase();
 	};
+
+	/**
+	 * Map of weapon ids to weapon metadata.
+	 */
+
+	var WeaponsTable = function () {
+	    function WeaponsTable() {
+	        _classCallCheck(this, WeaponsTable);
+
+	        var weaponsData = __webpack_require__(5);
+
+	        this._data = weaponsData.reduce(function (map, data) {
+	            map.set(+data.id, Object.assign({}, data, {
+	                name: normalizeWeaponName(data.name)
+	            }));
+	            return map;
+	        }, new Map());
+	    }
+
+	    _createClass(WeaponsTable, [{
+	        key: 'get',
+	        value: function get(id) {
+	            return this._data.get(+id);
+	        }
+	    }]);
+
+	    return WeaponsTable;
+	}();
 
 	/**
 	 * Get an instance of the weapons table that maps weapon id to weapon data.
 	 */
+
+
 	var getWeaponsTable = exports.getWeaponsTable = function getWeaponsTable() {
-	    instance = instance || buildWeaponsTable();
+	    instance = instance || new WeaponsTable();
 	    return instance;
 	};
 

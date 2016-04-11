@@ -43,9 +43,8 @@ class Application extends React.Component {
         const min = 27.5000;
         const max = 4186.01;
        
-        let progress = (min + (max - min) / 2.0) + (pitch - 4.0) * 500;
+        let progress = 1000 + (pitch - 4.0) * 500;
         let p0 = Math.min(max, Math.max(min, progress));
-        console.log(pitch, p0, progress);
         const bell = new Wad({source : 'sawtooth', pitch: p0})
         bell.play()
     }
