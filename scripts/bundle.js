@@ -66,6 +66,10 @@
 
 	var _sine2 = _interopRequireDefault(_sine);
 
+	var _weird_male_screams = __webpack_require__(276);
+
+	var _weird_male_screams2 = _interopRequireDefault(_weird_male_screams);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -98,7 +102,7 @@
 	            shownEvents: new Set()
 	        };
 
-	        _this._soundManager = new _sound_manager2.default([_sine2.default]);
+	        _this._soundManager = new _sound_manager2.default([_weird_male_screams2.default]);
 	        return _this;
 	    }
 
@@ -359,6 +363,8 @@
 
 	            var self = this;
 	            (function loop(when) {
+	                var _this3 = this;
+
 	                var _start = Date.now();
 	                setTimeout(function () {
 	                    if (!self.state.playing) return;
@@ -378,7 +384,9 @@
 	                        }
 	                    }
 	                    self.setState({ progress: Math.max(0, Math.min(1, progress)), head: head });
-	                    if (progress >= 1) {} else {
+	                    if (progress >= 1) {
+	                        _this3.setState({ playing: false });
+	                    } else {
 	                        loop(next);
 	                    }
 	                }, when);
@@ -41268,6 +41276,150 @@
 	    return {
 	        sound: sound,
 	        duration: 8000
+	    };
+	};
+
+/***/ },
+/* 276 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _file_base = __webpack_require__(277);
+
+	var _file_base2 = _interopRequireDefault(_file_base);
+
+	var _weapon_base = __webpack_require__(278);
+
+	var _weapon_base2 = _interopRequireDefault(_weapon_base);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var sounds = ["65__plagasul__cjipie.wav", "66__plagasul__indios.wav", "67__plagasul__indios2.wav", "68__plagasul__indios3.wav", "69__plagasul__ohm-loko.wav", "70__plagasul__eh.wav", "71__plagasul__hruuhb.wav", "72__plagasul__houb.wav", "73__plagasul__houu.wav", "74__plagasul__jah.wav", "75__plagasul__jhuee.wav", "76__plagasul__joooaah.wav", "77__plagasul__juob.wav", "78__plagasul__jueb.wav", "79__plagasul__long-scream.wav", "80__plagasul__oaaaahmmm.wav", "81__plagasul__uehea.wav", "82__plagasul__uhraa.wav", "83__plagasul__uoh.wav", "84__plagasul__uueh.wav", "85__plagasul__jeeh.wav"];
+
+	exports.default = (0, _file_base2.default)('/sounds/weird-male-screams/', (0, _weapon_base2.default)(function (weapon) {
+	    return sounds[Math.floor(Math.random() * sounds.length)];
+
+	    switch (weapon && weapon.name) {
+	        case 'spartan':
+	            return '79__plagasul__long-scream.wav';
+	        case 'magnum':
+	            return '70__plagasul__eh.wav';
+	        case 'weapon-splinter-grenade':
+	            return '69__plagasul__ohm-loko.wav';
+
+	        case "assault-rifle":
+	        case "ball":
+	        case "banshee":
+	        case "battle-rifle":
+	        case "beam-rifle":
+	        case "binary-rifle":
+	        case "boltshot":
+	        case "carbine":
+	        case "chaingun-turret":
+	        case "dmr":
+	        case "energy-sword":
+	        case "environmental-explosives":
+	        case "flagnum":
+	        case "forerunner-beam-turret":
+	        case "frag-grenade":
+	        case "fuel-rod-cannon":
+	        case "gauss-turret":
+	        case "ghost":
+	        case "gravity-hammer":
+	        case "halo-2-battle-rifle":
+	        case "halo-one-pistol":
+	        case "hydra-launcher":
+	        case "incineration-cannon":
+	        case "lightrifle":
+	        case "magnum":
+	        case "mantis":
+	        case "mongoose":
+	        case "needler":
+	        case "phaeton":
+	        case "phantom-chin-gun":
+	        case "phantom":
+	        case "plasma-caster":
+	        case "plasma-grenade":
+	        case "plasma-pistol":
+	        case "railgun":
+	        case "rocket-launcher":
+	        case "rocket-pod-turret":
+	        case "saw":
+	        case "scattershot":
+	        case "scorpion-anti-infantry-turret":
+	        case "scorpion":
+	        case "shade-aa-turret":
+	        case "shade-plasma-turret":
+	        case "shotgun":
+	        case "smg":
+	        case "sniper-rifle":
+	        case "spartan-laser":
+	        case "spartan":
+	        case "spirit-chin-gun":
+	        case "splinter-grenade":
+	        case "splinter-turret":
+	        case "spnkr-rocket-launcher":
+	        case "storm-rifle":
+	        case "suppressor":
+	        case "unsc-auto-turret":
+	        case "warthog":
+	        case "wraith-anti-infantry-turret":
+	        case "wraith":
+
+	        default:
+	            return '85__plagasul__jeeh.wav';
+	    }
+	}));
+
+/***/ },
+/* 277 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var Wad = __webpack_require__(268);
+
+	/**
+	 * Helper that adds weapon info to generator.
+	 */
+
+	exports.default = function (root, mapper) {
+	    return function (event) {
+	        var fileName = mapper(event);
+	        return {
+	            sound: new Wad({ source: root + fileName })
+	        };
+	    };
+	};
+
+/***/ },
+/* 278 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _weapons = __webpack_require__(3);
+
+	/**
+	 * Helper that adds weapon info to generator.
+	 */
+
+	exports.default = function (mapper) {
+	    return function (event) {
+	        var weapon = (0, _weapons.getWeaponsTable)().get(event.KillerWeaponStockId);
+	        return mapper(weapon, event);
 	    };
 	};
 

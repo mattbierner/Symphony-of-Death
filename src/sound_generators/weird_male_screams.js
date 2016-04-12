@@ -1,9 +1,13 @@
 "use strict";
+import file_base from './file_base'
+import weapon_base from './weapon_base'
 
-const base = '/sounds/weird-male-screams'
+const sounds = ["65__plagasul__cjipie.wav", "66__plagasul__indios.wav", "67__plagasul__indios2.wav", "68__plagasul__indios3.wav", "69__plagasul__ohm-loko.wav", "70__plagasul__eh.wav", "71__plagasul__hruuhb.wav", "72__plagasul__houb.wav", "73__plagasul__houu.wav", "74__plagasul__jah.wav", "75__plagasul__jhuee.wav", "76__plagasul__joooaah.wav", "77__plagasul__juob.wav", "78__plagasul__jueb.wav", "79__plagasul__long-scream.wav", "80__plagasul__oaaaahmmm.wav", "81__plagasul__uehea.wav", "82__plagasul__uhraa.wav", "83__plagasul__uoh.wav", "84__plagasul__uueh.wav", "85__plagasul__jeeh.wav"];
 
-const getSoundFileName = (weaponName) => {
-    switch (weaponName) {
+export default file_base('/sounds/weird-male-screams/', weapon_base(weapon => {
+    return sounds[Math.floor(Math.random() * sounds.length)];
+    
+    switch (weapon && weapon.name) {
     case 'spartan': return '79__plagasul__long-scream.wav';
     case 'magnum': return '70__plagasul__eh.wav';
     case 'weapon-splinter-grenade': return '69__plagasul__ohm-loko.wav'
@@ -67,11 +71,6 @@ const getSoundFileName = (weaponName) => {
     case "wraith-anti-infantry-turret":
     case "wraith":
 
-    default: return '85__plagasul__jeeh.wav'
+    default: return '85__plagasul__jeeh.wav';
     }
-};
-
-export default (weaponName) => {
-    const file = getSoundFileName(weaponName);
-    return file && `${base}/${file}`;
-};
+}));

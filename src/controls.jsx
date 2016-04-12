@@ -140,7 +140,7 @@ export default class Controls extends React.Component {
                 }
                 self.setState({ progress: Math.max(0, Math.min(1, progress)), head: head });
                 if (progress >= 1) {
-
+                    this.setState({ playing: false });
                 } else {
                     loop(next);
                 }
