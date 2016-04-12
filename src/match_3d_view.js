@@ -17,8 +17,13 @@ const weapons = getWeaponsTable();
  */
 export default class Viewer {
     constructor(canvas) {
+        const aspect = window.innerWidth / window.innerHeight;
+        
         this._scene = new THREE.Scene();
-        this._camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 800);
+        this._camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 800);
+        //const d = 20;
+      //  this._camera = new THREE.OrthographicCamera( - d * aspect, d * aspect, d, - d, 1, 1000 );
+
         this._camera.position.z = 40;
 
         this._controls = new OrbitControls(this._camera);
@@ -41,7 +46,7 @@ export default class Viewer {
     }
 
     goToFrontView() {
-        this._camera.position.set(0, 0, 40);
+        this._camera.position.set(40, 40, 40);
         this.animate();
     }
     
@@ -51,7 +56,7 @@ export default class Viewer {
     }
     
     goToTopView() {
-        this._camera.position.set(0, 40, 0);
+        this._camera.position.set(0, 0, 40);
         this.animate();
     }
 

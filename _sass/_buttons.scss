@@ -1,24 +1,29 @@
 
+ button {
+    background: $panel-color;
+    color: $text-color;
+    border: 1px solid $border-color;
+    
+    &:hover {
+        background: rgba(50, 50, 50, 0.85);
+    }
+}
+
+
 .button-group {
     @extend %clearfix;
     
-    border: 1px solid white;
+    border: 1px solid $border-color;
     
     button {
         margin: 0;
         display: block;
         float: left;
-        background: none;
         border: none;
-        color: white;
-        border-right: 1px solid white;
+        border-right: inherit;
     }
     
     & > button:last-child {
         border-right: none;
-    }
-    
-    button:hover {
-        background: #333;
     }
 }

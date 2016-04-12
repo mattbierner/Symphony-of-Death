@@ -11,9 +11,7 @@ const tryInvoke = (f, x) =>
 
 const getWeaponName = weaponId => {
     const weapon = getWeaponsTable().get(weaponId);
-    if (weapon)
-        return weapon.name.replace(/\s/g, '-').toLowerCase();
-    return 'unknown'
+    return weapon ? weapon.name : 'unknown';
 };
 
 /**
@@ -36,7 +34,7 @@ class TimelineEvent extends React.Component {
         const weaponName = this.props.event ? getWeaponName(this.props.event.KillerWeaponStockId) : 'unknown';
 
         return (
-            <li className={`timeline-event weapon-${weaponName}`}
+            <li className={`timeline-event weapon weapon-${weaponName}`}
                 style={style}
                 onMouseEnter={this.onMouseEnter.bind(this) }
                 onMouseLeave={this.onMouseLeave.bind(this) } />);

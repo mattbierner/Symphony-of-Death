@@ -450,8 +450,7 @@
 
 	var getWeaponName = function getWeaponName(weaponId) {
 	    var weapon = (0, _weapons.getWeaponsTable)().get(weaponId);
-	    if (weapon) return weapon.name.replace(/\s/g, '-').toLowerCase();
-	    return 'unknown';
+	    return weapon ? weapon.name : 'unknown';
 	};
 
 	/**
@@ -486,7 +485,7 @@
 	            };
 	            var weaponName = this.props.event ? getWeaponName(this.props.event.KillerWeaponStockId) : 'unknown';
 
-	            return React.createElement('li', { className: 'timeline-event weapon-' + weaponName,
+	            return React.createElement('li', { className: 'timeline-event weapon weapon-' + weaponName,
 	                style: style,
 	                onMouseEnter: this.onMouseEnter.bind(this),
 	                onMouseLeave: this.onMouseLeave.bind(this) });
@@ -36280,6 +36279,11 @@
 	    return ViewControlButton;
 	}(React.Component);
 
+	/**
+	 * Controls for the match display.
+	 */
+
+
 	var ViewControls = function (_React$Component2) {
 	    _inherits(ViewControls, _React$Component2);
 
@@ -36295,9 +36299,9 @@
 	            return React.createElement(
 	                'div',
 	                { id: 'view-controls', className: 'button-group' },
+	                React.createElement(ViewControlButton, { label: 'Top', onClick: this.props.onTopViewSelected }),
 	                React.createElement(ViewControlButton, { label: 'Front', onClick: this.props.onFrontViewSelected }),
-	                React.createElement(ViewControlButton, { label: 'Side', onClick: this.props.onSideViewSelected }),
-	                React.createElement(ViewControlButton, { label: 'Top', onClick: this.props.onTopViewSelected })
+	                React.createElement(ViewControlButton, { label: 'Side', onClick: this.props.onSideViewSelected })
 	            );
 	        }
 	    }]);
@@ -36327,6 +36331,66 @@
 	            return '70__plagasul__eh.wav';
 	        case 'weapon-splinter-grenade':
 	            return '69__plagasul__ohm-loko.wav';
+
+	        case "assault-rifle":
+	        case "ball":
+	        case "banshee":
+	        case "battle-rifle":
+	        case "beam-rifle":
+	        case "binary-rifle":
+	        case "boltshot":
+	        case "carbine":
+	        case "chaingun-turret":
+	        case "dmr":
+	        case "energy-sword":
+	        case "environmental-explosives":
+	        case "flagnum":
+	        case "forerunner-beam-turret":
+	        case "frag-grenade":
+	        case "fuel-rod-cannon":
+	        case "gauss-turret":
+	        case "ghost":
+	        case "gravity-hammer":
+	        case "halo-2-battle-rifle":
+	        case "halo-one-pistol":
+	        case "hydra-launcher":
+	        case "incineration-cannon":
+	        case "lightrifle":
+	        case "magnum":
+	        case "mantis":
+	        case "mongoose":
+	        case "needler":
+	        case "phaeton":
+	        case "phantom-chin-gun":
+	        case "phantom":
+	        case "plasma-caster":
+	        case "plasma-grenade":
+	        case "plasma-pistol":
+	        case "railgun":
+	        case "rocket-launcher":
+	        case "rocket-pod-turret":
+	        case "saw":
+	        case "scattershot":
+	        case "scorpion-anti-infantry-turret":
+	        case "scorpion":
+	        case "shade-aa-turret":
+	        case "shade-plasma-turret":
+	        case "shotgun":
+	        case "smg":
+	        case "sniper-rifle":
+	        case "spartan-laser":
+	        case "spartan":
+	        case "spirit-chin-gun":
+	        case "splinter-grenade":
+	        case "splinter-turret":
+	        case "spnkr-rocket-launcher":
+	        case "storm-rifle":
+	        case "suppressor":
+	        case "unsc-auto-turret":
+	        case "warthog":
+	        case "wraith-anti-infantry-turret":
+	        case "wraith":
+
 	        default:
 	            return '85__plagasul__jeeh.wav';
 	    }
@@ -36709,8 +36773,13 @@
 	    function Viewer(canvas) {
 	        _classCallCheck(this, Viewer);
 
+	        var aspect = window.innerWidth / window.innerHeight;
+
 	        this._scene = new _three2.default.Scene();
-	        this._camera = new _three2.default.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 800);
+	        this._camera = new _three2.default.PerspectiveCamera(75, aspect, 0.1, 800);
+	        //const d = 20;
+	        //  this._camera = new THREE.OrthographicCamera( - d * aspect, d * aspect, d, - d, 1, 1000 );
+
 	        this._camera.position.z = 40;
 
 	        this._controls = new _OrbitControls2.default(this._camera);
@@ -36735,7 +36804,7 @@
 	    _createClass(Viewer, [{
 	        key: 'goToFrontView',
 	        value: function goToFrontView() {
-	            this._camera.position.set(0, 0, 40);
+	            this._camera.position.set(40, 40, 40);
 	            this.animate();
 	        }
 	    }, {
@@ -36747,7 +36816,7 @@
 	    }, {
 	        key: 'goToTopView',
 	        value: function goToTopView() {
-	            this._camera.position.set(0, 40, 0);
+	            this._camera.position.set(0, 0, 40);
 	            this.animate();
 	        }
 	    }, {

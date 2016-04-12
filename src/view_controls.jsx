@@ -23,13 +23,16 @@ class ViewControlButton extends React.Component {
     }
 }
 
+/**
+ * Controls for the match display.
+ */
 export default class ViewControls extends React.Component {
     render() {
         return (
             <div id='view-controls' className="button-group">
+                <ViewControlButton label="Top" onClick={this.props.onTopViewSelected} />
                 <ViewControlButton label="Front" onClick={this.props.onFrontViewSelected} />
                 <ViewControlButton label="Side" onClick={this.props.onSideViewSelected} />
-                <ViewControlButton label="Top" onClick={this.props.onTopViewSelected} />
             </div>);
     }
 }; 
