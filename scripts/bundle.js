@@ -370,7 +370,7 @@
 	                    if (!self.state.playing) return;
 
 	                    var actual = Date.now() - _start;
-	                    var next = Math.max(0, interval - (interval - actual));
+	                    var next = Math.max(0, interval - (actual - interval));
 	                    var progress = self.state.progress + self.state.playbackSpeed * (actual / self.state.duration);
 	                    var offset = progress * self.state.duration;
 	                    var head = self.state.head && self.state.head.clone();

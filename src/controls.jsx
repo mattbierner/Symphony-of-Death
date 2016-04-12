@@ -125,7 +125,7 @@ export default class Controls extends React.Component {
                     return;
 
                 const actual = Date.now() - _start;
-                const next = Math.max(0, interval - (interval - actual));
+                const next = Math.max(0, interval - (actual - interval));
                 const progress = self.state.progress + self.state.playbackSpeed * (actual / self.state.duration);
                 const offset = progress * self.state.duration;
                 let head = self.state.head && self.state.head.clone();
