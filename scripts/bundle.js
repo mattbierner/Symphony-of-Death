@@ -473,6 +473,8 @@
 	    value: true
 	});
 
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 	var _weapons = __webpack_require__(3);
@@ -540,8 +542,49 @@
 	    return TimelineEvent;
 	}(React.Component);
 
-	var TimelineScrubber = function (_React$Component2) {
-	    _inherits(TimelineScrubber, _React$Component2);
+	/**
+	 * Set of timeline events
+	 */
+
+
+	var TimelineEvents = function (_React$Component2) {
+	    _inherits(TimelineEvents, _React$Component2);
+
+	    function TimelineEvents() {
+	        _classCallCheck(this, TimelineEvents);
+
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(TimelineEvents).apply(this, arguments));
+	    }
+
+	    _createClass(TimelineEvents, [{
+	        key: 'render',
+	        value: function render() {
+	            var _this3 = this;
+
+	            var events = [];
+	            if (this.props.stream) {
+	                this.props.stream.forEach(function (event) {
+	                    events.push(React.createElement(TimelineEvent, _extends({ key: event.Id, event: event }, _this3.props)));
+	                });
+	            }
+	            return React.createElement(
+	                'ul',
+	                { className: 'timeline-events' },
+	                events
+	            );
+	        }
+	    }]);
+
+	    return TimelineEvents;
+	}(React.Component);
+
+	/**
+	 * 
+	 */
+
+
+	var TimelineScrubber = function (_React$Component3) {
+	    _inherits(TimelineScrubber, _React$Component3);
 
 	    function TimelineScrubber() {
 	        _classCallCheck(this, TimelineScrubber);
@@ -565,18 +608,93 @@
 	 */
 
 
-	var Timeline = function (_React$Component3) {
-	    _inherits(Timeline, _React$Component3);
+	var TimelineTicks = function (_React$Component4) {
+	    _inherits(TimelineTicks, _React$Component4);
+
+	    function TimelineTicks() {
+	        _classCallCheck(this, TimelineTicks);
+
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(TimelineTicks).apply(this, arguments));
+	    }
+
+	    _createClass(TimelineTicks, [{
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            var _this6 = this;
+
+	            this.drawGrid();
+
+	            window.addEventListener('resize', function () {
+	                _this6.drawGrid(_this6.props.duration);
+	            }, false);
+	        }
+	    }, {
+	        key: 'componentWillReceiveProps',
+	        value: function componentWillReceiveProps(nextProps) {
+	            this.drawGrid(nextProps.duration);
+	        }
+	    }, {
+	        key: 'drawGrid',
+	        value: function drawGrid(duration) {
+	            if (! +duration) return;
+	            var canvas = ReactDOM.findDOMNode(this);
+
+	            var _canvas$getBoundingCl = canvas.getBoundingClientRect();
+
+	            var width = _canvas$getBoundingCl.width;
+	            var height = _canvas$getBoundingCl.height;
+
+	            canvas.width = width;
+	            canvas.height = height;
+
+	            var context = canvas.getContext('2d');
+
+	            context.lineWidth = 1;
+	            context.strokeStyle = 'red';
+	            this.drawTicks(context, width, height, duration, height, 30000.0);
+	            this.drawTicks(context, width, height, duration, height / 4, 5000.0);
+	        }
+	    }, {
+	        key: 'drawTicks',
+	        value: function drawTicks(context, width, height, duration, tickHeight, size) {
+	            var upper = height / 2 - tickHeight / 2;
+	            var lower = height / 2 + tickHeight / 2;
+
+	            context.beginPath();
+	            var stepSize = width / (duration / size);
+	            for (var i = 0; i < width; i += stepSize) {
+	                context.moveTo(i, upper);
+	                context.lineTo(i, lower);
+	            }
+	            context.stroke();
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            return React.createElement('canvas', { className: 'timeline-ticks' });
+	        }
+	    }]);
+
+	    return TimelineTicks;
+	}(React.Component);
+
+	/**
+	 * 
+	 */
+
+
+	var Timeline = function (_React$Component5) {
+	    _inherits(Timeline, _React$Component5);
 
 	    function Timeline(props) {
 	        _classCallCheck(this, Timeline);
 
-	        var _this3 = _possibleConstructorReturn(this, Object.getPrototypeOf(Timeline).call(this, props));
+	        var _this7 = _possibleConstructorReturn(this, Object.getPrototypeOf(Timeline).call(this, props));
 
-	        _this3.state = {
+	        _this7.state = {
 	            dragging: false
 	        };
-	        return _this3;
+	        return _this7;
 	    }
 
 	    _createClass(Timeline, [{
@@ -622,29 +740,26 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var _this4 = this;
-
-	            var events = [];
-	            if (this.props.stream) {
-	                this.props.stream.forEach(function (event) {
-	                    events.push(React.createElement(TimelineEvent, { key: event.Id,
-	                        event: event,
-	                        onFocus: _this4.onEventFocus.bind(_this4),
-	                        onFocusEnd: _this4.onEventFocusEnd.bind(_this4) }));
-	                });
-	            }
 	            return React.createElement(
 	                'div',
-	                { id: 'timeline',
-	                    onMouseDown: this.onMouseDown.bind(this),
-	                    onMouseUp: this.onMouseUp.bind(this),
-	                    onMouseMove: this.onMouseMove.bind(this) },
+	                { id: 'timeline', onMouseDown: this.onMouseDown.bind(this), onMouseUp: this.onMouseUp.bind(this), onMouseMove: this.onMouseMove.bind(this) },
 	                React.createElement(
-	                    'ul',
-	                    { className: 'timeline-events' },
-	                    events
-	                ),
-	                React.createElement(TimelineScrubber, { progress: this.props.progress })
+	                    'div',
+	                    { className: 'timeline-content' },
+	                    React.createElement(TimelineTicks, { duration: this.props.stream && this.props.stream.duration }),
+	                    React.createElement(TimelineEvents, { stream: this.props.stream }),
+	                    React.createElement(TimelineScrubber, { progress: this.props.progress }),
+	                    React.createElement(
+	                        'div',
+	                        { style: { float: 'left' } },
+	                        '0:00.00'
+	                    ),
+	                    React.createElement(
+	                        'div',
+	                        { style: { float: 'right' } },
+	                        this.props.stream && this.props.stream.duration
+	                    )
+	                )
 	            );
 	        }
 	    }]);
