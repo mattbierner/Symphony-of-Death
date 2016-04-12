@@ -88,7 +88,7 @@ export default class Controls extends React.Component {
                     return;
 
                 const actual = Date.now() - _start;
-                const next = Math.max(0, interval - (actual - interval));
+                const next = Math.max(0, interval - (interval - actual));
                 const progress = self.state.progress + self.state.playbackSpeed * (actual / self.state.duration);
                 const offset = progress * self.state.duration;
                 let head = self.state.head;
@@ -101,7 +101,7 @@ export default class Controls extends React.Component {
                         break;
                     }
                 }
-                self.setState({ progress: progress, head: head });
+                self.setState({ progress: Math.min(1, progress), head: head });
                 if (progress >= 1) {
 
                 } else {
@@ -113,7 +113,7 @@ export default class Controls extends React.Component {
 
     onTimelineDrag(progress) {
         const offset = progress * this.state.duration;
-        const head = this.props.stream.times.ge(offset);
+        const head = this.props.stream.times.le(offset);
         this.setState({
             progress: progress,
             head: head

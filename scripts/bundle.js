@@ -329,7 +329,7 @@
 	                    if (!self.state.playing) return;
 
 	                    var actual = Date.now() - _start;
-	                    var next = Math.max(0, interval - (actual - interval));
+	                    var next = Math.max(0, interval - (interval - actual));
 	                    var progress = self.state.progress + self.state.playbackSpeed * (actual / self.state.duration);
 	                    var offset = progress * self.state.duration;
 	                    var head = self.state.head;
@@ -342,7 +342,7 @@
 	                            break;
 	                        }
 	                    }
-	                    self.setState({ progress: progress, head: head });
+	                    self.setState({ progress: Math.min(1, progress), head: head });
 	                    if (progress >= 1) {} else {
 	                        loop(next);
 	                    }
@@ -353,7 +353,7 @@
 	        key: 'onTimelineDrag',
 	        value: function onTimelineDrag(progress) {
 	            var offset = progress * this.state.duration;
-	            var head = this.props.stream.times.ge(offset);
+	            var head = this.props.stream.times.le(offset);
 	            this.setState({
 	                progress: progress,
 	                head: head
