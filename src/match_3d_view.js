@@ -13,10 +13,10 @@ const sides = 8;
 const weapons = getWeaponsTable();
 
 /**
- * 3D Game viewer
+ * 3D match viewer
  */
 export default class Viewer {
-    constructor(canvasId) {
+    constructor(canvas) {
         this._scene = new THREE.Scene();
         this._camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 800);
         this._camera.position.z = 40;
@@ -28,7 +28,7 @@ export default class Viewer {
         this._controls.enableZoom = true;
 
         this._renderer = new THREE.WebGLRenderer({
-            canvas: document.getElementById(canvasId),
+            canvas: canvas,
             alpha: true
         });
         this._renderer.setClearColor(0xffffff, 0);
