@@ -93,11 +93,11 @@ export default class Controls extends React.Component {
         };
     }
 
-    componentWillReceiveProps(props) {
-        if (props.stream) {
+    componentWillReceiveProps(newProps) {
+        if (newProps.stream !== this.props.stream) {
             this.setState({
-                duration: props.stream.duration || 0,
-                head: props.stream.times && props.stream.times.begin
+                duration: newProps.stream.duration || 0,
+                head: newProps.stream.times && newProps.stream.times.begin
             });
         }
     }
@@ -128,7 +128,7 @@ export default class Controls extends React.Component {
                 const next = Math.max(0, interval - (interval - actual));
                 const progress = self.state.progress + self.state.playbackSpeed * (actual / self.state.duration);
                 const offset = progress * self.state.duration;
-                let head = self.state.head;
+                let head = self.state.head && self.state.head.clone();
                 while (head && head.valid && head.key < offset) {
                     tryInvoke(self.props.onTimelineEvent, head.value);
                     if (head.hasNext) {
@@ -138,7 +138,7 @@ export default class Controls extends React.Component {
                         break;
                     }
                 }
-                self.setState({ progress: Math.min(1, progress), head: head });
+                self.setState({ progress: Math.max(0, Math.min(1, progress)), head: head });
                 if (progress >= 1) {
 
                 } else {
@@ -150,7 +150,7 @@ export default class Controls extends React.Component {
 
     onTimelineDrag(progress) {
         const offset = progress * this.state.duration;
-        const head = this.props.stream.times.le(offset);
+        const head = this.props.stream.times.ge(offset);
         this.setState({
             progress: progress,
             head: head
@@ -159,7 +159,9 @@ export default class Controls extends React.Component {
         if (this.props.onPositionChange) {
             const before = [];
             const after = [];
-            for (let i = head.clone(); i.valid; i.prev())
+            let i = head.clone();
+            i.prev();
+            for (; i.valid; i.prev())
                 before.push(i.value);
             for (let i = head.clone(); i.valid; i.next())
                 after.push(i.value);

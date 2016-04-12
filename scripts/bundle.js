@@ -58,9 +58,13 @@
 
 	var _weapons = __webpack_require__(3);
 
-	var _weird_male_screams = __webpack_require__(267);
+	var _sound_manager = __webpack_require__(274);
 
-	var _weird_male_screams2 = _interopRequireDefault(_weird_male_screams);
+	var _sound_manager2 = _interopRequireDefault(_sound_manager);
+
+	var _sine = __webpack_require__(275);
+
+	var _sine2 = _interopRequireDefault(_sine);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -74,8 +78,6 @@
 	var ReactDOM = __webpack_require__(162);
 
 	var DeathStream = __webpack_require__(163);
-
-	var Wad = __webpack_require__(268);
 
 	var matchId = "5b27a620-cebf-40a3-b09c-a37f15fd135f";
 
@@ -95,6 +97,8 @@
 	            matchId: props.matchId,
 	            shownEvents: new Set()
 	        };
+
+	        _this._soundManager = new _sound_manager2.default([_sine2.default]);
 	        return _this;
 	    }
 
@@ -121,28 +125,18 @@
 	        key: 'onTimelineEvent',
 	        value: function onTimelineEvent(event) {
 	            this.setState({ shownEvents: new Set(this.state.shownEvents).add(event) });
-	            var length = event.KillVectorLength;
-	            var min = 100;
-	            var max = 1200;
-
-	            var progress = 300 + -(length - 3.0) * 100;
-	            var p0 = Math.min(max, Math.max(min, progress));
-	            var bell = new Wad({ source: 'sine', pitch: p0, env: { attack: 1, hold: 5, release: 2 } });
-
-	            var weapon = (0, _weapons.getWeaponsTable)().get(event.KillerWeaponStockId);
-	            //  if (weapon) {
-	            //    const sound = sounds(weapon.name);
-	            //  if (sound)
-	            //new Wad({ source: sound }).play({ pitch: p0 })
-	            bell.play();
-	            //  setTimeout(() => bell.stop, 20000);
-	            // }
-	            //bell.play()
+	            this._soundManager.play(event);
 	        }
 	    }, {
 	        key: 'onPositionChange',
 	        value: function onPositionChange(before, after) {
 	            this.setState({ shownEvents: new Set(before) });
+	            this._soundManager.stopAll();
+	        }
+	    }, {
+	        key: 'onPause',
+	        value: function onPause() {
+	            this._soundManager.stopAll();
 	        }
 	    }, {
 	        key: 'render',
@@ -156,7 +150,8 @@
 	                React.createElement(_controls2.default, { stream: this.state.stream,
 	                    onEventFocus: this.onEventFocus.bind(this),
 	                    onTimelineEvent: this.onTimelineEvent.bind(this),
-	                    onPositionChange: this.onPositionChange.bind(this) })
+	                    onPositionChange: this.onPositionChange.bind(this),
+	                    onPause: this.onPause.bind(this) })
 	            );
 	        }
 	    }]);
@@ -336,11 +331,11 @@
 
 	    _createClass(Controls, [{
 	        key: 'componentWillReceiveProps',
-	        value: function componentWillReceiveProps(props) {
-	            if (props.stream) {
+	        value: function componentWillReceiveProps(newProps) {
+	            if (newProps.stream !== this.props.stream) {
 	                this.setState({
-	                    duration: props.stream.duration || 0,
-	                    head: props.stream.times && props.stream.times.begin
+	                    duration: newProps.stream.duration || 0,
+	                    head: newProps.stream.times && newProps.stream.times.begin
 	                });
 	            }
 	        }
@@ -372,7 +367,7 @@
 	                    var next = Math.max(0, interval - (interval - actual));
 	                    var progress = self.state.progress + self.state.playbackSpeed * (actual / self.state.duration);
 	                    var offset = progress * self.state.duration;
-	                    var head = self.state.head;
+	                    var head = self.state.head && self.state.head.clone();
 	                    while (head && head.valid && head.key < offset) {
 	                        tryInvoke(self.props.onTimelineEvent, head.value);
 	                        if (head.hasNext) {
@@ -382,7 +377,7 @@
 	                            break;
 	                        }
 	                    }
-	                    self.setState({ progress: Math.min(1, progress), head: head });
+	                    self.setState({ progress: Math.max(0, Math.min(1, progress)), head: head });
 	                    if (progress >= 1) {} else {
 	                        loop(next);
 	                    }
@@ -393,7 +388,7 @@
 	        key: 'onTimelineDrag',
 	        value: function onTimelineDrag(progress) {
 	            var offset = progress * this.state.duration;
-	            var head = this.props.stream.times.le(offset);
+	            var head = this.props.stream.times.ge(offset);
 	            this.setState({
 	                progress: progress,
 	                head: head
@@ -402,7 +397,9 @@
 	            if (this.props.onPositionChange) {
 	                var before = [];
 	                var after = [];
-	                for (var i = head.clone(); i.valid; i.prev()) {
+	                var i = head.clone();
+	                i.prev();
+	                for (; i.valid; i.prev()) {
 	                    before.push(i.value);
 	                }for (var _i = head.clone(); _i.valid; _i.next()) {
 	                    after.push(_i.value);
@@ -36353,95 +36350,7 @@
 	;
 
 /***/ },
-/* 267 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	var base = '/sounds/weird-male-screams';
-
-	var getSoundFileName = function getSoundFileName(weaponName) {
-	    switch (weaponName) {
-	        case 'spartan':
-	            return '79__plagasul__long-scream.wav';
-	        case 'magnum':
-	            return '70__plagasul__eh.wav';
-	        case 'weapon-splinter-grenade':
-	            return '69__plagasul__ohm-loko.wav';
-
-	        case "assault-rifle":
-	        case "ball":
-	        case "banshee":
-	        case "battle-rifle":
-	        case "beam-rifle":
-	        case "binary-rifle":
-	        case "boltshot":
-	        case "carbine":
-	        case "chaingun-turret":
-	        case "dmr":
-	        case "energy-sword":
-	        case "environmental-explosives":
-	        case "flagnum":
-	        case "forerunner-beam-turret":
-	        case "frag-grenade":
-	        case "fuel-rod-cannon":
-	        case "gauss-turret":
-	        case "ghost":
-	        case "gravity-hammer":
-	        case "halo-2-battle-rifle":
-	        case "halo-one-pistol":
-	        case "hydra-launcher":
-	        case "incineration-cannon":
-	        case "lightrifle":
-	        case "magnum":
-	        case "mantis":
-	        case "mongoose":
-	        case "needler":
-	        case "phaeton":
-	        case "phantom-chin-gun":
-	        case "phantom":
-	        case "plasma-caster":
-	        case "plasma-grenade":
-	        case "plasma-pistol":
-	        case "railgun":
-	        case "rocket-launcher":
-	        case "rocket-pod-turret":
-	        case "saw":
-	        case "scattershot":
-	        case "scorpion-anti-infantry-turret":
-	        case "scorpion":
-	        case "shade-aa-turret":
-	        case "shade-plasma-turret":
-	        case "shotgun":
-	        case "smg":
-	        case "sniper-rifle":
-	        case "spartan-laser":
-	        case "spartan":
-	        case "spirit-chin-gun":
-	        case "splinter-grenade":
-	        case "splinter-turret":
-	        case "spnkr-rocket-launcher":
-	        case "storm-rifle":
-	        case "suppressor":
-	        case "unsc-auto-turret":
-	        case "warthog":
-	        case "wraith-anti-infantry-turret":
-	        case "wraith":
-
-	        default:
-	            return '85__plagasul__jeeh.wav';
-	    }
-	};
-
-	exports.default = function (weaponName) {
-	    var file = getSoundFileName(weaponName);
-	    return file && base + '/' + file;
-	};
-
-/***/ },
+/* 267 */,
 /* 268 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -41228,6 +41137,139 @@
 	});
 
 	exports.default = _three2.default.OrbitControls;
+
+/***/ },
+/* 273 */,
+/* 274 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	/**
+	 * Manages playing sounds
+	 */
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var SoundManager = function () {
+	    function SoundManager(generators) {
+	        _classCallCheck(this, SoundManager);
+
+	        this._playing = new Set();
+	        this._generators = generators || [];
+	    }
+
+	    _createClass(SoundManager, [{
+	        key: "play",
+	        value: function play(event) {
+	            var _this = this;
+
+	            this._generators.forEach(function (generator) {
+	                var _generator = generator(event);
+
+	                var sound = _generator.sound;
+	                var duration = _generator.duration;
+
+	                _this._playSound(sound, duration);
+	            });
+	        }
+
+	        /**
+	         * Stop all playing audio.
+	         */
+
+	    }, {
+	        key: "stopAll",
+	        value: function stopAll() {
+	            var _iteratorNormalCompletion = true;
+	            var _didIteratorError = false;
+	            var _iteratorError = undefined;
+
+	            try {
+	                for (var _iterator = this._playing[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                    var x = _step.value;
+
+	                    x.stop();
+	                }
+	            } catch (err) {
+	                _didIteratorError = true;
+	                _iteratorError = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion && _iterator.return) {
+	                        _iterator.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError) {
+	                        throw _iteratorError;
+	                    }
+	                }
+	            }
+
+	            this._playing = new Set();
+	        }
+
+	        /**
+	        * Play a sound
+	        */
+
+	    }, {
+	        key: "_playSound",
+	        value: function _playSound(sound, duration) {
+	            var _this2 = this;
+
+	            this._playing.add(sound);
+	            sound.play();
+	            if (duration) {
+	                setTimeout(function () {
+	                    sound.stop();
+	                    _this2._playing.delete(sound);
+	                }, duration);
+	            }
+	        }
+	    }]);
+
+	    return SoundManager;
+	}();
+
+	exports.default = SoundManager;
+
+/***/ },
+/* 275 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var Wad = __webpack_require__(268);
+
+	var min = 100;
+	var max = 1200;
+
+	/**
+	 * 
+	 */
+
+	exports.default = function (event) {
+	    var length = event.KillVectorLength;
+
+	    var progress = 300 + -(length - 3.0) * 100;
+	    var p0 = Math.min(max, Math.max(min, progress));
+	    var sound = new Wad({ source: 'sine', pitch: p0, env: { attack: 1, hold: 5, release: 2 } });
+
+	    return {
+	        sound: sound,
+	        duration: 8000
+	    };
+	};
 
 /***/ }
 /******/ ]);
