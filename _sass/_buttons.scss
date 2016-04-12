@@ -1,5 +1,9 @@
 
- button {
+.control {
+    font-size: 11px;
+}
+
+button {
     background: $panel-color;
     color: $text-color;
     border: 1px solid $border-color;
@@ -8,7 +12,6 @@
         background: rgba(50, 50, 50, 0.85);
     }
 }
-
 
 .button-group {
     @extend %clearfix;
@@ -26,4 +29,10 @@
     & > button:last-child {
         border-right: none;
     }
+}
+
+select {
+    background: $panel-color;
+    color: $text-color;
+    border: 1px solid $border-color;
 }

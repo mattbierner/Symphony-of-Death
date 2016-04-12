@@ -18,18 +18,51 @@ class PlaybackSpeedControls extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            value: props.value || '1'
+            speed: +props.value,
+            value: props.value || '1',
+            customValue: '1',
+            custom: false
         };
     }
     
     onChange(e) {
         const value = e.target.value;
-        this.setState({ value: value });
-        this.props.onChange(+value);
+        if (value === 'custom') {
+            if (+this.state.value)
+                this.props.onChange(+value);
+            
+            this.setState({ value: 'custom', custom: true });
+            this.setValue(this.state.customValue);
+        } else {
+            this.setState({ value: value, custom: false, customValue: value });
+            this.setValue(value);
+        }
+    }
+    
+    onCustomChange(e) {
+        const value = e.target.value;
+        this.setValue(value);
+        this.setState({ customValue: value });
+    }
+    
+    setValue(value) {
+        const num = +value;
+        if (isNaN(num)) {
+            //this.
+            return false;
+        }
+        if (num <= 0 || num > 20) {
+            return false;
+        }
+        this.setState({ speed: num });
+        this.props.onChange(+num);
+        return true;
     }
 
     render() {
         return (
+            <span className="control">
+            Speed:
             <select style={{zIndex: 999}} className="speed-selector" onChange={this.onChange.bind(this)} value={this.state.value}>
                 <option value="1">1x</option>
                 <option value="2">2x</option>
@@ -38,6 +71,10 @@ class PlaybackSpeedControls extends React.Component {
                 <option value="20">20x</option>
                 <option value="custom">custom</option>
             </select>
+            <input type="text" className={this.state.custom ? '' : 'hidden'}
+                value={this.state.customValue}
+                onChange={this.onCustomChange.bind(this)} />
+            </span>
         );
     }
 }

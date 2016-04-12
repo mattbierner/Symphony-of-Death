@@ -42,11 +42,26 @@ export default class Viewer {
 
         window.addEventListener('resize', this.onWindowResize.bind(this), false);
         document.addEventListener('mousemove', this.onMouseMove.bind(this), false);
+        
+        //this._addPlanes();
+        
         this.onWindowResize();
+    }
+    
+    _addPlanes() {
+        const size = 40;
+        for (let p of [new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 1)]) {
+            const geometry = new THREE.PlaneGeometry(size, size);
+            const material = new THREE.MeshBasicMaterial({color: 0xffff00, side: THREE.DoubleSide} );
+            const plane = new THREE.GridHelper(size, 5);
+            plane.quaternion.setFromAxisAngle(p, Math.PI / 2.0);
+            plane.setColors(0xffffff, 0x333333)
+            this._scene.add(plane);
+        }
     }
 
     goToFrontView() {
-        this._camera.position.set(40, 40, 40);
+        this._camera.position.set(0, 40, 0);
         this.animate();
     }
     

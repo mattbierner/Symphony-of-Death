@@ -217,7 +217,10 @@
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(PlaybackSpeedControls).call(this, props));
 
 	        _this.state = {
-	            value: props.value || '1'
+	            speed: +props.value,
+	            value: props.value || '1',
+	            customValue: '1',
+	            custom: false
 	        };
 	        return _this;
 	    }
@@ -226,45 +229,82 @@
 	        key: 'onChange',
 	        value: function onChange(e) {
 	            var value = e.target.value;
-	            this.setState({ value: value });
-	            this.props.onChange(+value);
+	            if (value === 'custom') {
+	                if (+this.state.value) this.props.onChange(+value);
+
+	                this.setState({ value: 'custom', custom: true });
+	                this.setValue(this.state.customValue);
+	            } else {
+	                this.setState({ value: value, custom: false, customValue: value });
+	                this.setValue(value);
+	            }
+	        }
+	    }, {
+	        key: 'onCustomChange',
+	        value: function onCustomChange(e) {
+	            var value = e.target.value;
+	            this.setValue(value);
+	            this.setState({ customValue: value });
+	        }
+	    }, {
+	        key: 'setValue',
+	        value: function setValue(value) {
+	            var num = +value;
+	            if (isNaN(num)) {
+	                //this.
+	                return false;
+	            }
+	            if (num <= 0 || num > 20) {
+	                return false;
+	            }
+	            this.setState({ speed: num });
+	            this.props.onChange(+num);
+	            return true;
 	        }
 	    }, {
 	        key: 'render',
 	        value: function render() {
 	            return React.createElement(
-	                'select',
-	                { style: { zIndex: 999 }, className: 'speed-selector', onChange: this.onChange.bind(this), value: this.state.value },
+	                'span',
+	                { className: 'control' },
+	                'Speed:',
 	                React.createElement(
-	                    'option',
-	                    { value: '1' },
-	                    '1x'
+	                    'select',
+	                    { style: { zIndex: 999 }, className: 'speed-selector', onChange: this.onChange.bind(this), value: this.state.value },
+	                    React.createElement(
+	                        'option',
+	                        { value: '1' },
+	                        '1x'
+	                    ),
+	                    React.createElement(
+	                        'option',
+	                        { value: '2' },
+	                        '2x'
+	                    ),
+	                    React.createElement(
+	                        'option',
+	                        { value: '4' },
+	                        '4x'
+	                    ),
+	                    React.createElement(
+	                        'option',
+	                        { value: '8' },
+	                        '8x'
+	                    ),
+	                    React.createElement(
+	                        'option',
+	                        { value: '20' },
+	                        '20x'
+	                    ),
+	                    React.createElement(
+	                        'option',
+	                        { value: 'custom' },
+	                        'custom'
+	                    )
 	                ),
-	                React.createElement(
-	                    'option',
-	                    { value: '2' },
-	                    '2x'
-	                ),
-	                React.createElement(
-	                    'option',
-	                    { value: '4' },
-	                    '4x'
-	                ),
-	                React.createElement(
-	                    'option',
-	                    { value: '8' },
-	                    '8x'
-	                ),
-	                React.createElement(
-	                    'option',
-	                    { value: '20' },
-	                    '20x'
-	                ),
-	                React.createElement(
-	                    'option',
-	                    { value: 'custom' },
-	                    'custom'
-	                )
+	                React.createElement('input', { type: 'text', className: this.state.custom ? '' : 'hidden',
+	                    value: this.state.customValue,
+	                    onChange: this.onCustomChange.bind(this) })
 	            );
 	        }
 	    }]);
@@ -36798,13 +36838,31 @@
 
 	        window.addEventListener('resize', this.onWindowResize.bind(this), false);
 	        document.addEventListener('mousemove', this.onMouseMove.bind(this), false);
+
+	        //this._addPlanes();
+
 	        this.onWindowResize();
 	    }
 
 	    _createClass(Viewer, [{
+	        key: '_addPlanes',
+	        value: function _addPlanes() {
+	            var size = 40;
+	            var _arr = [new _three2.default.Vector3(0, 0, 0), new _three2.default.Vector3(1, 0, 0), new _three2.default.Vector3(0, 0, 1)];
+	            for (var _i = 0; _i < _arr.length; _i++) {
+	                var p = _arr[_i];
+	                var geometry = new _three2.default.PlaneGeometry(size, size);
+	                var material = new _three2.default.MeshBasicMaterial({ color: 0xffff00, side: _three2.default.DoubleSide });
+	                var plane = new _three2.default.GridHelper(size, 5);
+	                plane.quaternion.setFromAxisAngle(p, Math.PI / 2.0);
+	                plane.setColors(0xffffff, 0x333333);
+	                this._scene.add(plane);
+	            }
+	        }
+	    }, {
 	        key: 'goToFrontView',
 	        value: function goToFrontView() {
-	            this._camera.position.set(40, 40, 40);
+	            this._camera.position.set(0, 40, 0);
 	            this.animate();
 	        }
 	    }, {
