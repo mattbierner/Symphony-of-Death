@@ -227,9 +227,9 @@ export default class Viewer {
         const weapon = weapons.get(event.KillerWeaponStockId);
 
         let object;
-        if (weapon && weapon.Type === 'Gernade' || (event.IsGroundPound || event.IsMelee || event.IsShoulderBash)) {
+        if ((weapon && weapon.type === 'Grenade') || event.IsMelee) {
             const geometry = new THREE.SphereGeometry(0.2, 32, 23);
-            const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+            const material = new THREE.MeshBasicMaterial({ color: event.IsMelee ? 0xffff00 : 0xff0000 });
             const sphere = new THREE.Mesh(geometry, material);
             sphere.position.add(victim);
             object = sphere;

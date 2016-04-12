@@ -29,7 +29,7 @@ class Application extends React.Component {
         };
         
         this._soundManager = new SoundManager([
-            WeirdMaleScreams
+            Sine
         ]);
     }
     

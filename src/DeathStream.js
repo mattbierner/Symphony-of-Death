@@ -30,7 +30,8 @@ class DeathStream {
             Object.assign({}, eventData, {
                 Id: '' + i,
                 MatchProgress: (eventData.TimeSinceStart + 1.0) / duration,
-                KillVectorLength: vectorLength(eventData.KillerWorldLocation, eventData.VictimWorldLocation)
+                KillVectorLength: vectorLength(eventData.KillerWorldLocation, eventData.VictimWorldLocation),
+                IsMelee: eventData.IsGroundPound || eventData.IsMelee || eventData.IsShoulderBash
             }));
             
         this.duration = duration;
