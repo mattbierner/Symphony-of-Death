@@ -2,17 +2,16 @@
 
 #timeline {
     position: relative;
-    height: 30px;
+    height: 60px;
     background: $panel-color;
     border-top: 1px solid $border-color;
-    padding: 10px 5px;
+    padding: 5px 16px 20px 16px;
     
     .timeline-content {
         position: relative;
         height: 100%;
     }
 }
-
 
 .timeline-events {
     position: absolute;
@@ -45,4 +44,11 @@
     height: 20px;
     top: 0; left: 0; bottom: 0; right: 0;
     margin: auto 0;
+}
+
+.timeline-label {
+    font-size: 11px;
+    position: absolute;
+    bottom: 0;
+    vertical-align: bottom;
 }

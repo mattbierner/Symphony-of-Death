@@ -170,12 +170,19 @@ export default class Controls extends React.Component {
         }
     }
 
-    stop() {
+    pause() {
         this.setState({ playing: false });
     }
 
     onPlaybackSpeedChange(speed) {
         this.setState({ playbackSpeed: speed });
+    }
+    
+    playPause() {
+        if (this.state.playing)
+            this.pause();
+        else
+            this.play();
     }
 
     render() {
@@ -183,8 +190,7 @@ export default class Controls extends React.Component {
             <div id="controls">
                 <div id="playback-controls">
                     <div className="button-group">
-                        <button onClick={this.play.bind(this)}>Play</button>
-                        <button onClick={this.stop.bind(this)}>Stop</button>
+                        <button onClick={this.playPause.bind(this)} className='material-icons'>{this.state.playing ? 'pause' : 'play_arrow'}</button>
                     </div>
                     <PlaybackSpeedControls onChange={this.onPlaybackSpeedChange.bind(this)} />
                 </div>

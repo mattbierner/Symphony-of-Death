@@ -2,9 +2,9 @@
 
 const React = require('react');
 const ReactDOM = require('react-dom');
-import {getWeaponsTable} from './weapons';
+const moment = require('moment');
 
-const DeathStream = require('./DeathStream');
+import {getWeaponsTable} from './weapons';
 
 const tryInvoke = (f, x) =>
     f ? f(x) : null;
@@ -94,7 +94,7 @@ class TimelineTicks extends React.Component {
         const context = canvas.getContext('2d');
         
         context.lineWidth = 1;
-        context.strokeStyle = 'red';
+        context.strokeStyle = 'white';
         this.drawTicks(context, width, height, duration, height, 30000.0);
         this.drawTicks(context, width, height, duration, height / 4, 5000.0);
     }
@@ -163,17 +163,25 @@ export default class Timeline extends React.Component {
         const progress = (event.pageX - rect.left) / rect.width;
         this.props.onDrag(progress);
     }
+    
+    timeToString(ms) {
+        return moment(moment.duration(ms)._data).format('mm:ss.SSS');
+    }
 
     render() {
+        const end = this.props.stream && this.timeToString(this.props.stream.duration);
+        const middle = this.props.stream && this.timeToString(this.props.stream.duration * this.props.progress);
+
         return (
             <div id="timeline" onMouseDown={this.onMouseDown.bind(this) } onMouseUp={this.onMouseUp.bind(this) } onMouseMove={this.onMouseMove.bind(this) }>
                 <div className='timeline-content'>
                     <TimelineTicks duration={this.props.stream && this.props.stream.duration} />
                     <TimelineEvents stream={this.props.stream} />
                     <TimelineScrubber progress={this.props.progress} />
-                    <div style={{float: 'left'}}>0:00.00</div>
-                    <div style={{float: 'right'}}>{this.props.stream && this.props.stream.duration}</div>
                 </div>
+                <div className="timeline-label" style={{left: 0}}>{this.timeToString(0)}</div>
+                <div className="timeline-label" style={{left: '50%'}}>{middle}</div>
+                <div className="timeline-label" style={{right: 0}}>{end}</div>
             </div>);
     }
 };
