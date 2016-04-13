@@ -24,13 +24,13 @@ class PlaybackSpeedControls extends React.Component {
             custom: false
         };
     }
-    
+
     onChange(e) {
         const value = e.target.value;
         if (value === 'custom') {
             if (+this.state.value)
                 this.props.onChange(+value);
-            
+
             this.setState({ value: 'custom', custom: true });
             this.setValue(this.state.customValue);
         } else {
@@ -38,13 +38,13 @@ class PlaybackSpeedControls extends React.Component {
             this.setValue(value);
         }
     }
-    
+
     onCustomChange(e) {
         const value = e.target.value;
         this.setValue(value);
         this.setState({ customValue: value });
     }
-    
+
     setValue(value) {
         const num = +value;
         if (isNaN(num)) {
@@ -62,18 +62,18 @@ class PlaybackSpeedControls extends React.Component {
     render() {
         return (
             <span className="control">
-            Speed:
-            <select style={{zIndex: 999}} className="speed-selector" onChange={this.onChange.bind(this)} value={this.state.value}>
-                <option value="1">1x</option>
-                <option value="2">2x</option>
-                <option value="4">4x</option>
-                <option value="8">8x</option>
-                <option value="20">20x</option>
-                <option value="custom">custom</option>
-            </select>
-            <input type="text" className={this.state.custom ? '' : 'hidden'}
-                value={this.state.customValue}
-                onChange={this.onCustomChange.bind(this)} />
+                Speed:
+                <select style={{ zIndex: 999 }} className="speed-selector" onChange={this.onChange.bind(this) } value={this.state.value}>
+                    <option value="1">1x</option>
+                    <option value="2">2x</option>
+                    <option value="4">4x</option>
+                    <option value="8">8x</option>
+                    <option value="20">20x</option>
+                    <option value="custom">custom</option>
+                </select>
+                <input type="text" className={this.state.custom ? '' : 'hidden'}
+                    value={this.state.customValue}
+                    onChange={this.onCustomChange.bind(this) } />
             </span>
         );
     }
@@ -89,8 +89,23 @@ export default class Controls extends React.Component {
             progress: 0,
             duration: 0,
             playing: false,
+            dragging: false,
             playbackSpeed: 1
         };
+
+        this._onKeyDown = (e) => {
+            if (e.keyCode === 32)
+                this.toggle();
+        };
+    }
+
+    componentDidMount() {
+        window.removeEventListener('keydown', this._onKeyDown);
+        window.addEventListener('keydown', this._onKeyDown);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('keydown', this._onKeyDown);
     }
 
     componentWillReceiveProps(newProps) {
@@ -123,37 +138,41 @@ export default class Controls extends React.Component {
             setTimeout(() => {
                 if (!self.state.playing)
                     return;
-
+                
                 const actual = Date.now() - _start;
                 const next = Math.max(0, interval - (actual - interval));
-                const progress = self.state.progress + self.state.playbackSpeed * (actual / self.state.duration);
-                const offset = progress * self.state.duration;
-                let head = self.state.head && self.state.head.clone();
-                while (head && head.valid && head.key < offset) {
-                    tryInvoke(self.props.onTimelineEvent, head.value);
-                    if (head.hasNext) {
-                        head.next();
-                    } else {
-                        head = null;
-                        break;
+                
+                if (!self.state.dragging) {
+                    const progress = self.state.progress + self.state.playbackSpeed * (actual / self.state.duration);
+                    const offset = progress * self.state.duration;
+                    let head = self.state.head && self.state.head.clone();
+                    while (head && head.valid && head.key < offset) {
+                        tryInvoke(self.props.onTimelineEvent, head.value);
+                        if (head.hasNext) {
+                            head.next();
+                        } else {
+                            head = null;
+                            break;
+                        }
+                    }
+                    self.setState({ progress: Math.max(0, Math.min(1, progress)), head: head });
+                    if (progress >= 1) {
+                        this.setState({ playing: false });
+                        return
                     }
                 }
-                self.setState({ progress: Math.max(0, Math.min(1, progress)), head: head });
-                if (progress >= 1) {
-                    this.setState({ playing: false });
-                } else {
-                    loop(next);
-                }
+                loop(next);
             }, when);
         } (interval));
     }
 
-    onTimelineDrag(progress) {
+    onTimelineDrag(progress, done) {
         const offset = progress * this.state.duration;
         const head = this.props.stream.times.ge(offset);
         this.setState({
             progress: progress,
-            head: head
+            head: head,
+            dragging: !done
         });
 
         if (this.props.onPositionChange) {
@@ -170,6 +189,10 @@ export default class Controls extends React.Component {
         }
     }
 
+    onTimelineDragDone(progress) {
+        this.onTimelineDrag(progress, true);
+    }
+
     pause() {
         this.setState({ playing: false });
     }
@@ -177,8 +200,8 @@ export default class Controls extends React.Component {
     onPlaybackSpeedChange(speed) {
         this.setState({ playbackSpeed: speed });
     }
-    
-    playPause() {
+
+    toggle() {
         if (this.state.playing)
             this.pause();
         else
@@ -190,14 +213,15 @@ export default class Controls extends React.Component {
             <div id="controls">
                 <div id="playback-controls">
                     <div className="button-group">
-                        <button onClick={this.playPause.bind(this)} className='material-icons'>{this.state.playing ? 'pause' : 'play_arrow'}</button>
+                        <button onClick={this.toggle.bind(this) } className='material-icons'>{this.state.playing ? 'pause' : 'play_arrow'}</button>
                     </div>
-                    <PlaybackSpeedControls onChange={this.onPlaybackSpeedChange.bind(this)} />
+                    <PlaybackSpeedControls onChange={this.onPlaybackSpeedChange.bind(this) } />
                 </div>
                 <Timeline {...this.props}
                     stream={this.props.stream}
                     progress={this.state.progress}
-                    onDrag={this.onTimelineDrag.bind(this) }/>
+                    onDrag={this.onTimelineDrag.bind(this) }
+                    onDragDone={this.onTimelineDragDone.bind(this) } />
             </div>);
     }
 }; 

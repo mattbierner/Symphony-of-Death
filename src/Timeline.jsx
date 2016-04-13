@@ -73,16 +73,16 @@ class TimelineScrubber extends React.Component {
 class TimelineTicks extends React.Component {
     componentDidMount() {
         this.drawGrid();
-        
+
         window.addEventListener('resize', () => {
             this.drawGrid(this.props.duration);
         }, false);
     }
-    
+
     componentWillReceiveProps(nextProps) {
         this.drawGrid(nextProps.duration);
     }
-    
+
     drawGrid(duration) {
         if (!+duration)
             return;
@@ -90,19 +90,19 @@ class TimelineTicks extends React.Component {
         const {width, height} = canvas.getBoundingClientRect();
         canvas.width = width;
         canvas.height = height;
-        
+
         const context = canvas.getContext('2d');
-        
+
         context.lineWidth = 1;
         context.strokeStyle = 'white';
         this.drawTicks(context, width, height, duration, height, 30000.0);
         this.drawTicks(context, width, height, duration, height / 4, 5000.0);
     }
-    
-    drawTicks(context, width, height, duration, tickHeight,  size) {
+
+    drawTicks(context, width, height, duration, tickHeight, size) {
         const upper = height / 2 - tickHeight / 2;
         const lower = height / 2 + tickHeight / 2;
-       
+
         context.beginPath();
         const stepSize = width / (duration / size);
         for (let i = 0; i < width; i += stepSize) {
@@ -111,7 +111,7 @@ class TimelineTicks extends React.Component {
         }
         context.stroke();
     }
-    
+
     render() {
         return <canvas className="timeline-ticks" />;
     }
@@ -142,28 +142,35 @@ export default class Timeline extends React.Component {
         if (this.state.dragging)
             return;
         this.setState({ dragging: true })
-        this.setProgressFromMouseEvent(event);
+        const progress = this.getProgressFromMouseEvent(event);
+        this.props.onDrag(progress);
     }
-    
+
     onMouseUp(event) {
-        this.setState({ dragging: false })
+        if (!this.state.dragging)
+            return;
+        this.setState({ dragging: false });
+        const progress = this.getProgressFromMouseEvent(event);
+        this.props.onDragDone(progress);
     }
 
     onMouseMove(e) {
         if (!this.state.dragging)
             return;
-        this.setProgressFromMouseEvent(e);
         e.stopPropagation();
         e.nativeEvent.stopImmediatePropagation();
-    }
-    
-    setProgressFromMouseEvent(event) {
-        const node = ReactDOM.findDOMNode(this);
-        const rect = node.getBoundingClientRect();
-        const progress = (event.pageX - rect.left) / rect.width;
+        
+        const progress = this.getProgressFromMouseEvent(e);
         this.props.onDrag(progress);
     }
-    
+
+    getProgressFromMouseEvent(event) {
+        const node = ReactDOM.findDOMNode(this).getElementsByClassName('timeline-content')[0];
+        const rect = node.getBoundingClientRect();
+        const progress = Math.min(rect.width, Math.max(0, (event.pageX - rect.left) / rect.width));
+        return progress
+    }
+
     timeToString(ms) {
         return moment(moment.duration(ms)._data).format('mm:ss.SSS');
     }
@@ -179,9 +186,9 @@ export default class Timeline extends React.Component {
                     <TimelineEvents stream={this.props.stream} />
                     <TimelineScrubber progress={this.props.progress} />
                 </div>
-                <div className="timeline-label" style={{left: 0}}>{this.timeToString(0)}</div>
-                <div className="timeline-label" style={{left: '50%'}}>{middle}</div>
-                <div className="timeline-label" style={{right: 0}}>{end}</div>
+                <div className="timeline-label" style={{ left: 0 }}>{this.timeToString(0) }</div>
+                <div className="timeline-label" style={{ left: '50%' }}>{middle}</div>
+                <div className="timeline-label" style={{ right: 0 }}>{end}</div>
             </div>);
     }
 };

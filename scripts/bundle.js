@@ -70,6 +70,10 @@
 
 	var _weird_male_screams2 = _interopRequireDefault(_weird_male_screams);
 
+	var _theremin = __webpack_require__(277);
+
+	var _theremin2 = _interopRequireDefault(_theremin);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -102,7 +106,7 @@
 	            shownEvents: new Set()
 	        };
 
-	        _this._soundManager = new _sound_manager2.default([_sine2.default]);
+	        _this._soundManager = new _sound_manager2.default([_theremin2.default]);
 	        return _this;
 	    }
 
@@ -328,12 +332,28 @@
 	            progress: 0,
 	            duration: 0,
 	            playing: false,
+	            dragging: false,
 	            playbackSpeed: 1
+	        };
+
+	        _this2._onKeyDown = function (e) {
+	            if (e.keyCode === 32) _this2.toggle();
 	        };
 	        return _this2;
 	    }
 
 	    _createClass(Controls, [{
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            window.removeEventListener('keydown', this._onKeyDown);
+	            window.addEventListener('keydown', this._onKeyDown);
+	        }
+	    }, {
+	        key: 'componentWillUnmount',
+	        value: function componentWillUnmount() {
+	            window.removeEventListener('keydown', this._onKeyDown);
+	        }
+	    }, {
 	        key: 'componentWillReceiveProps',
 	        value: function componentWillReceiveProps(newProps) {
 	            if (newProps.stream !== this.props.stream) {
@@ -371,35 +391,39 @@
 
 	                    var actual = Date.now() - _start;
 	                    var next = Math.max(0, interval - (actual - interval));
-	                    var progress = self.state.progress + self.state.playbackSpeed * (actual / self.state.duration);
-	                    var offset = progress * self.state.duration;
-	                    var head = self.state.head && self.state.head.clone();
-	                    while (head && head.valid && head.key < offset) {
-	                        tryInvoke(self.props.onTimelineEvent, head.value);
-	                        if (head.hasNext) {
-	                            head.next();
-	                        } else {
-	                            head = null;
-	                            break;
+
+	                    if (!self.state.dragging) {
+	                        var progress = self.state.progress + self.state.playbackSpeed * (actual / self.state.duration);
+	                        var offset = progress * self.state.duration;
+	                        var head = self.state.head && self.state.head.clone();
+	                        while (head && head.valid && head.key < offset) {
+	                            tryInvoke(self.props.onTimelineEvent, head.value);
+	                            if (head.hasNext) {
+	                                head.next();
+	                            } else {
+	                                head = null;
+	                                break;
+	                            }
+	                        }
+	                        self.setState({ progress: Math.max(0, Math.min(1, progress)), head: head });
+	                        if (progress >= 1) {
+	                            _this3.setState({ playing: false });
+	                            return;
 	                        }
 	                    }
-	                    self.setState({ progress: Math.max(0, Math.min(1, progress)), head: head });
-	                    if (progress >= 1) {
-	                        _this3.setState({ playing: false });
-	                    } else {
-	                        loop(next);
-	                    }
+	                    loop(next);
 	                }, when);
 	            })(interval);
 	        }
 	    }, {
 	        key: 'onTimelineDrag',
-	        value: function onTimelineDrag(progress) {
+	        value: function onTimelineDrag(progress, done) {
 	            var offset = progress * this.state.duration;
 	            var head = this.props.stream.times.ge(offset);
 	            this.setState({
 	                progress: progress,
-	                head: head
+	                head: head,
+	                dragging: !done
 	            });
 
 	            if (this.props.onPositionChange) {
@@ -415,6 +439,11 @@
 	            }
 	        }
 	    }, {
+	        key: 'onTimelineDragDone',
+	        value: function onTimelineDragDone(progress) {
+	            this.onTimelineDrag(progress, true);
+	        }
+	    }, {
 	        key: 'pause',
 	        value: function pause() {
 	            this.setState({ playing: false });
@@ -425,8 +454,8 @@
 	            this.setState({ playbackSpeed: speed });
 	        }
 	    }, {
-	        key: 'playPause',
-	        value: function playPause() {
+	        key: 'toggle',
+	        value: function toggle() {
 	            if (this.state.playing) this.pause();else this.play();
 	        }
 	    }, {
@@ -443,7 +472,7 @@
 	                        { className: 'button-group' },
 	                        React.createElement(
 	                            'button',
-	                            { onClick: this.playPause.bind(this), className: 'material-icons' },
+	                            { onClick: this.toggle.bind(this), className: 'material-icons' },
 	                            this.state.playing ? 'pause' : 'play_arrow'
 	                        )
 	                    ),
@@ -452,7 +481,8 @@
 	                React.createElement(_timeline2.default, _extends({}, this.props, {
 	                    stream: this.props.stream,
 	                    progress: this.state.progress,
-	                    onDrag: this.onTimelineDrag.bind(this) }))
+	                    onDrag: this.onTimelineDrag.bind(this),
+	                    onDragDone: this.onTimelineDragDone.bind(this) }))
 	            );
 	        }
 	    }]);
@@ -712,28 +742,34 @@
 	        value: function onMouseDown(event) {
 	            if (this.state.dragging) return;
 	            this.setState({ dragging: true });
-	            this.setProgressFromMouseEvent(event);
+	            var progress = this.getProgressFromMouseEvent(event);
+	            this.props.onDrag(progress);
 	        }
 	    }, {
 	        key: 'onMouseUp',
 	        value: function onMouseUp(event) {
+	            if (!this.state.dragging) return;
 	            this.setState({ dragging: false });
+	            var progress = this.getProgressFromMouseEvent(event);
+	            this.props.onDragDone(progress);
 	        }
 	    }, {
 	        key: 'onMouseMove',
 	        value: function onMouseMove(e) {
 	            if (!this.state.dragging) return;
-	            this.setProgressFromMouseEvent(e);
 	            e.stopPropagation();
 	            e.nativeEvent.stopImmediatePropagation();
+
+	            var progress = this.getProgressFromMouseEvent(e);
+	            this.props.onDrag(progress);
 	        }
 	    }, {
-	        key: 'setProgressFromMouseEvent',
-	        value: function setProgressFromMouseEvent(event) {
-	            var node = ReactDOM.findDOMNode(this);
+	        key: 'getProgressFromMouseEvent',
+	        value: function getProgressFromMouseEvent(event) {
+	            var node = ReactDOM.findDOMNode(this).getElementsByClassName('timeline-content')[0];
 	            var rect = node.getBoundingClientRect();
-	            var progress = (event.pageX - rect.left) / rect.width;
-	            this.props.onDrag(progress);
+	            var progress = Math.min(rect.width, Math.max(0, (event.pageX - rect.left) / rect.width));
+	            return progress;
 	        }
 	    }, {
 	        key: 'timeToString',
@@ -26297,6 +26333,11 @@
 	            return Object.assign({}, eventData, {
 	                Id: '' + i,
 	                MatchProgress: (eventData.TimeSinceStart + 1.0) / duration,
+	                KillVector: {
+	                    x: eventData.KillerWorldLocation.x - eventData.VictimWorldLocation.x,
+	                    y: eventData.KillerWorldLocation.y - eventData.VictimWorldLocation.y,
+	                    z: eventData.KillerWorldLocation.z - eventData.VictimWorldLocation.z
+	                },
 	                KillVectorLength: vectorLength(eventData.KillerWorldLocation, eventData.VictimWorldLocation),
 	                IsMelee: eventData.IsGroundPound || eventData.IsMelee || eventData.IsShoulderBash
 	            });
@@ -41554,6 +41595,71 @@
 			}
 		],
 		"IsCompleteSetOfEvents": true
+	};
+
+/***/ },
+/* 277 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var Wad = __webpack_require__(171);
+
+	var min = 500;
+	var max = 700;
+
+	var sample = function sample(min, max, value) {
+	    return Math.max(min, Math.min(max, min + (max - min) * value));
+	};
+
+	var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+	var freqX = function freqX(event, progress) {
+	    return Math.min(max, 300 + sample(event.KillerWorldLocation.x, event.VictimWorldLocation.x, progress) / 10 * 100);
+	};
+
+	/**
+	 * 
+	 */
+
+	exports.default = function (event) {
+	    var length = event.KillVectorLength;
+
+	    var duration = length * 2; // seconds
+	    //const sound = new Wad({source : 'sine', pitch: min, env: { attack: duration * 0.2, hold: duration * 0.7, release: duration * 0.1 } })
+
+	    var xOscillator = audioCtx.createOscillator();
+	    xOscillator.type = 'triangle';
+	    xOscillator.frequency.value = freqX(event, 0);
+
+	    var gainNode = audioCtx.createGain();
+	    gainNode.gain.value = 0;
+
+	    xOscillator.connect(gainNode);
+	    gainNode.connect(audioCtx.destination);
+
+	    return {
+	        sound: {
+	            play: function play() {
+	                gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+	                gainNode.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + duration * 0.2);
+	                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime + duration * 0.7);
+	                gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration * 1);
+
+	                xOscillator.frequency.setValueAtTime(freqX(event, 0), audioCtx.currentTime);
+	                xOscillator.frequency.linearRampToValueAtTime(freqX(event, 1), duration * 1);
+	                xOscillator.start();
+	                xOscillator.stop(audioCtx.currentTime + duration);
+	            },
+	            stop: function stop() {
+	                xOscillator.stop();
+	            }
+	        },
+	        duration: duration * 1000
+	    };
 	};
 
 /***/ }
