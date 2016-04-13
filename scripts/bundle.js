@@ -345,13 +345,13 @@
 	    _createClass(Controls, [{
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
-	            window.removeEventListener('keydown', this._onKeyDown);
-	            window.addEventListener('keydown', this._onKeyDown);
+	            window.removeEventListener('keypress', this._onKeyDown);
+	            window.addEventListener('keypress', this._onKeyDown);
 	        }
 	    }, {
 	        key: 'componentWillUnmount',
 	        value: function componentWillUnmount() {
-	            window.removeEventListener('keydown', this._onKeyDown);
+	            window.removeEventListener('keypress', this._onKeyDown);
 	        }
 	    }, {
 	        key: 'componentWillReceiveProps',
@@ -447,6 +447,7 @@
 	        key: 'pause',
 	        value: function pause() {
 	            this.setState({ playing: false });
+	            this.props.onPause();
 	        }
 	    }, {
 	        key: 'onPlaybackSpeedChange',
@@ -41606,19 +41607,23 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+
+	var _num = __webpack_require__(278);
+
+	var num = _interopRequireWildcard(_num);
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
 	var Wad = __webpack_require__(171);
+
 
 	var min = 500;
 	var max = 700;
 
-	var sample = function sample(min, max, value) {
-	    return Math.max(min, Math.min(max, min + (max - min) * value));
-	};
-
 	var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 	var freqX = function freqX(event, progress) {
-	    return Math.min(max, 300 + sample(event.KillerWorldLocation.x, event.VictimWorldLocation.x, progress) / 10 * 100);
+	    return Math.min(max, 300 + num.sample(event.KillerWorldLocation.x, event.VictimWorldLocation.x, progress) / 10 * 100);
 	};
 
 	/**
@@ -41627,9 +41632,7 @@
 
 	exports.default = function (event) {
 	    var length = event.KillVectorLength;
-
 	    var duration = length * 2; // seconds
-	    //const sound = new Wad({source : 'sine', pitch: min, env: { attack: duration * 0.2, hold: duration * 0.7, release: duration * 0.1 } })
 
 	    var xOscillator = audioCtx.createOscillator();
 	    xOscillator.type = 'triangle';
@@ -41660,6 +41663,23 @@
 	        },
 	        duration: duration * 1000
 	    };
+	};
+
+/***/ },
+/* 278 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var clamp = exports.clamp = function clamp(min, max, value) {
+	    return Math.max(min, Math.min(max, value));
+	};
+
+	var sample = exports.sample = function sample(min, max, value) {
+	    return clamp(min, max, min + (max - min) * value);
 	};
 
 /***/ }

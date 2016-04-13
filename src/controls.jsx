@@ -100,12 +100,12 @@ export default class Controls extends React.Component {
     }
 
     componentDidMount() {
-        window.removeEventListener('keydown', this._onKeyDown);
-        window.addEventListener('keydown', this._onKeyDown);
+        window.removeEventListener('keypress', this._onKeyDown);
+        window.addEventListener('keypress', this._onKeyDown);
     }
 
     componentWillUnmount() {
-        window.removeEventListener('keydown', this._onKeyDown);
+        window.removeEventListener('keypress', this._onKeyDown);
     }
 
     componentWillReceiveProps(newProps) {
@@ -195,6 +195,7 @@ export default class Controls extends React.Component {
 
     pause() {
         this.setState({ playing: false });
+        this.props.onPause();
     }
 
     onPlaybackSpeedChange(speed) {
