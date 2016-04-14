@@ -32,6 +32,7 @@ export default class MatchView extends React.Component {
         if (nextProps.stream !== this.props.stream) {
             this.setState({ shownEvents: new Set(nextProps.shownEvents || []) });
             nextProps.stream.forEach(event => this.viewer.addEvent(event, true));
+            this.viewer.setBounds(nextProps.stream.bounds);
             return;
         }
         const next = new Set(nextProps.shownEvents);

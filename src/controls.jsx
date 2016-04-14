@@ -164,6 +164,8 @@ export default class Controls extends React.Component {
                 loop(next);
             }, when);
         } (interval));
+        
+        this.props.onPlay();
     }
 
     onTimelineDrag(progress, done) {

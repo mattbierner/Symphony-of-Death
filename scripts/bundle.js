@@ -106,7 +106,7 @@
 	            shownEvents: new Set()
 	        };
 
-	        _this._soundManager = new _sound_manager2.default([_theremin2.default]);
+	        _this._soundManager = new _sound_manager2.default([_sine2.default]);
 	        return _this;
 	    }
 
@@ -142,6 +142,9 @@
 	            this._soundManager.stopAll();
 	        }
 	    }, {
+	        key: 'onPlay',
+	        value: function onPlay() {}
+	    }, {
 	        key: 'onPause',
 	        value: function onPause() {
 	            this._soundManager.stopAll();
@@ -159,6 +162,7 @@
 	                    onEventFocus: this.onEventFocus.bind(this),
 	                    onTimelineEvent: this.onTimelineEvent.bind(this),
 	                    onPositionChange: this.onPositionChange.bind(this),
+	                    onPlay: this.onPlay.bind(this),
 	                    onPause: this.onPause.bind(this) })
 	            );
 	        }
@@ -414,6 +418,8 @@
 	                    loop(next);
 	                }, when);
 	            })(interval);
+
+	            this.props.onPlay();
 	        }
 	    }, {
 	        key: 'onTimelineDrag',
@@ -20548,6 +20554,7 @@
 	                nextProps.stream.forEach(function (event) {
 	                    return _this2.viewer.addEvent(event, true);
 	                });
+	                this.viewer.setBounds(nextProps.stream.bounds);
 	                return;
 	            }
 	            var next = new Set(nextProps.shownEvents);
@@ -20614,6 +20621,34 @@
 
 	var _three2 = _interopRequireDefault(_three);
 
+	var _HorizontalBlurShader = __webpack_require__(291);
+
+	var _HorizontalBlurShader2 = _interopRequireDefault(_HorizontalBlurShader);
+
+	var _VerticalBlurShader = __webpack_require__(292);
+
+	var _VerticalBlurShader2 = _interopRequireDefault(_VerticalBlurShader);
+
+	var _MaskPass = __webpack_require__(288);
+
+	var _MaskPass2 = _interopRequireDefault(_MaskPass);
+
+	var _RenderPass = __webpack_require__(284);
+
+	var _RenderPass2 = _interopRequireDefault(_RenderPass);
+
+	var _ShaderPass = __webpack_require__(285);
+
+	var _ShaderPass2 = _interopRequireDefault(_ShaderPass);
+
+	var _EffectComposer = __webpack_require__(283);
+
+	var _EffectComposer2 = _interopRequireDefault(_EffectComposer);
+
+	var _additive = __webpack_require__(293);
+
+	var _additive2 = _interopRequireDefault(_additive);
+
 	var _OrbitControls = __webpack_require__(164);
 
 	var _OrbitControls2 = _interopRequireDefault(_OrbitControls);
@@ -20631,8 +20666,6 @@
 	var bottomSize = 0.1;
 	var sides = 8;
 
-	var weapons = (0, _weapons.getWeaponsTable)();
-
 	/**
 	 * 3D match viewer
 	 */
@@ -20641,38 +20674,75 @@
 	    function Viewer(canvas) {
 	        _classCallCheck(this, Viewer);
 
-	        var aspect = window.innerWidth / window.innerHeight;
+	        this._raycaster = new _three2.default.Raycaster();
+	        this.bounds = { x: 40, y: 40, z: 40 };
 
 	        this._scene = new _three2.default.Scene();
-	        this._camera = new _three2.default.PerspectiveCamera(75, aspect, 0.1, 800);
-	        //const d = 20;
-	        //  this._camera = new THREE.OrthographicCamera( - d * aspect, d * aspect, d, - d, 1, 1000 );
 
-	        this._camera.position.z = 40;
-
-	        this._controls = new _OrbitControls2.default(this._camera);
-	        this._controls.addEventListener('change', this.render.bind(this));
-	        this._controls.enableDamping = true;
-	        this._controls.dampingFactor = 0.25;
-	        this._controls.enableZoom = true;
-
-	        this._renderer = new _three2.default.WebGLRenderer({
-	            canvas: canvas,
-	            alpha: true
-	        });
-	        this._renderer.setClearColor(0xffffff, 0);
-
-	        this._raycaster = new _three2.default.Raycaster();
+	        this.initRenderer(canvas);
+	        this.initCamera();
+	        this.initControls();
+	        this.initComposer();
 
 	        window.addEventListener('resize', this.onWindowResize.bind(this), false);
 	        document.addEventListener('mousemove', this.onMouseMove.bind(this), false);
 
 	        //this._addPlanes();
-
 	        this.onWindowResize();
 	    }
 
 	    _createClass(Viewer, [{
+	        key: 'initRenderer',
+	        value: function initRenderer(canvas) {
+	            this._renderer = new _three2.default.WebGLRenderer({
+	                canvas: canvas,
+	                alpha: true
+	            });
+	            this._renderer.setClearColor(0xffffff, 0);
+	        }
+	    }, {
+	        key: 'initCamera',
+	        value: function initCamera() {
+	            var aspect = window.innerWidth / window.innerHeight;
+	            this._camera = new _three2.default.PerspectiveCamera(75, aspect, 0.1, 800);
+	            //const d = 20;
+	            //  this._camera = new THREE.OrthographicCamera( - d * aspect, d * aspect, d, - d, 1, 1000 );
+	            this._camera.position.z = 40;
+	        }
+	    }, {
+	        key: 'initControls',
+	        value: function initControls() {
+	            this._controls = new _OrbitControls2.default(this._camera);
+	            this._controls.addEventListener('change', this.render.bind(this));
+	            this._controls.enableDamping = true;
+	            this._controls.dampingFactor = 0.25;
+	            this._controls.enableZoom = true;
+	        }
+	    }, {
+	        key: 'initComposer',
+	        value: function initComposer() {
+
+	            this._composer = new _three2.default.EffectComposer(this._renderer);
+	            this._composer.addPass(new _three2.default.RenderPass(this._scene, this._camera));
+
+	            var effectHorizBlur = new _three2.default.ShaderPass(_three2.default.HorizontalBlurShader);
+	            var effectVertiBlur = new _three2.default.ShaderPass(_three2.default.VerticalBlurShader);
+	            effectHorizBlur.uniforms["h"].value = 2 / window.innerWidth;
+	            effectVertiBlur.uniforms["v"].value = 2 / window.innerHeight;
+	            this._composer.addPass(effectHorizBlur);
+	            this._composer.addPass(effectVertiBlur);
+
+	            // prepare the final render's passes
+	            this._composer2 = new _three2.default.EffectComposer(this._renderer);
+
+	            this._composer2.addPass(new _three2.default.RenderPass(this._scene, this._camera));
+
+	            var effectBlend = new _three2.default.ShaderPass(_additive2.default, 'tDiffuse1');
+	            effectBlend.uniforms['tDiffuse2'].value = this._composer.renderTarget2;
+	            effectBlend.renderToScreen = true;
+	            this._composer2.addPass(effectBlend);
+	        }
+	    }, {
 	        key: '_addPlanes',
 	        value: function _addPlanes() {
 	            var size = 40;
@@ -20688,21 +20758,27 @@
 	            }
 	        }
 	    }, {
+	        key: 'setBounds',
+	        value: function setBounds(bounds) {
+	            this.bounds = bounds;
+	            this.animate();
+	        }
+	    }, {
 	        key: 'goToFrontView',
 	        value: function goToFrontView() {
-	            this._camera.position.set(0, 40, 0);
+	            this._camera.position.set(0, Math.max(this.bounds.x, this.bounds.z) * 2, 0);
 	            this.animate();
 	        }
 	    }, {
 	        key: 'goToSideView',
 	        value: function goToSideView() {
-	            this._camera.position.set(40, 0, 0);
+	            this._camera.position.set(Math.max(this.bounds.y, this.bounds.z) * 2, 0, 0);
 	            this.animate();
 	        }
 	    }, {
 	        key: 'goToTopView',
 	        value: function goToTopView() {
-	            this._camera.position.set(0, 0, 40);
+	            this._camera.position.set(0, 0, Math.max(this.bounds.x, this.bounds.y) * 2);
 	            this.animate();
 	        }
 	    }, {
@@ -20771,6 +20847,8 @@
 	            this._camera.aspect = width / height;
 	            this._camera.updateProjectionMatrix();
 	            this._renderer.setSize(width, height);
+	            this._composer.setSize(width, height);
+	            this._composer2.setSize(width, height);
 
 	            this.render();
 	        }
@@ -20857,24 +20935,62 @@
 
 	            var killer = new _three2.default.Vector3(KillerWorldLocation.x, KillerWorldLocation.y, KillerWorldLocation.z);
 	            var victim = new _three2.default.Vector3(VictimWorldLocation.x, VictimWorldLocation.y, VictimWorldLocation.z);
-	            var weapon = weapons.get(event.KillerWeaponStockId);
+	            var killvec = new _three2.default.Vector3().subVectors(killer, victim);
+	            var weapon = (0, _weapons.getWeaponsTable)().get(event.KillerWeaponStockId);
+	            var height = killvec.length();
 
-	            var object = void 0;
+	            var objs = [];
 	            if (weapon && weapon.type === 'Grenade' || event.IsMelee) {
 	                var geometry = new _three2.default.SphereGeometry(0.2, 32, 23);
 	                var material = new _three2.default.MeshBasicMaterial({ color: event.IsMelee ? 0xffff00 : 0xff0000 });
 	                var sphere = new _three2.default.Mesh(geometry, material);
 	                sphere.position.add(victim);
-	                object = sphere;
+	                objs.push(sphere);
 	            } else if (weapon) {
-	                object = this._shotPath(killer, victim);
+	                var path = this._shotPath(killer, victim);
+	                /*{
+	                    const geometry = new THREE.SphereGeometry(2, 32, 23);
+	                    const material = new THREE.MeshBasicMaterial({ color: killerColor, transparent: true, opacity: 0.2 });
+	                    const sphere = new THREE.Mesh(geometry, material);
+	                    sphere.position.y = height * 0.5;
+	                    path.add(sphere);
+	                }
+	                {
+	                    const geometry = new THREE.SphereGeometry(2, 32, 23);
+	                    const material = new THREE.MeshBasicMaterial({ color: victimColor , transparent: true, opacity: 0.2});
+	                    const sphere = new THREE.Mesh(geometry, material);
+	                    sphere.position.y = height * -0.5;
+	                    path.add(sphere);
+	                }*/
+	                objs.push(path);
 	            }
 
-	            if (object) {
-	                object.name = event.Id;
-	                object.visible = !hidden;
-	                this._scene.add(object);
-	                if (!hidden) this.animate();
+	            var _iteratorNormalCompletion = true;
+	            var _didIteratorError = false;
+	            var _iteratorError = undefined;
+
+	            try {
+	                for (var _iterator = objs[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                    var obj = _step.value;
+
+	                    obj.name = event.Id;
+	                    obj.visible = !hidden;
+	                    this._scene.add(obj);
+	                    if (!hidden) this.animate();
+	                }
+	            } catch (err) {
+	                _didIteratorError = true;
+	                _iteratorError = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion && _iterator.return) {
+	                        _iterator.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError) {
+	                        throw _iteratorError;
+	                    }
+	                }
 	            }
 	        }
 	    }, {
@@ -20888,13 +21004,13 @@
 	            var intersects = this._raycaster.intersectObjects(this._scene.children);
 
 	            if (intersects.length > 0) {
-	                var _iteratorNormalCompletion = true;
-	                var _didIteratorError = false;
-	                var _iteratorError = undefined;
+	                var _iteratorNormalCompletion2 = true;
+	                var _didIteratorError2 = false;
+	                var _iteratorError2 = undefined;
 
 	                try {
-	                    for (var _iterator = intersects[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	                        var intersect = _step.value;
+	                    for (var _iterator2 = intersects[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	                        var intersect = _step2.value;
 
 	                        var obj = intersect.object;
 	                        if (obj && obj.userData && obj.userData.isEvent) {
@@ -20902,16 +21018,16 @@
 	                        }
 	                    }
 	                } catch (err) {
-	                    _didIteratorError = true;
-	                    _iteratorError = err;
+	                    _didIteratorError2 = true;
+	                    _iteratorError2 = err;
 	                } finally {
 	                    try {
-	                        if (!_iteratorNormalCompletion && _iterator.return) {
-	                            _iterator.return();
+	                        if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	                            _iterator2.return();
 	                        }
 	                    } finally {
-	                        if (_didIteratorError) {
-	                            throw _iteratorError;
+	                        if (_didIteratorError2) {
+	                            throw _iteratorError2;
 	                        }
 	                    }
 	                }
@@ -20928,7 +21044,8 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            this._renderer.render(this._scene, this._camera);
+	            this._composer.render();
+	            this._composer2.render();
 	        }
 	    }]);
 
@@ -26330,7 +26447,15 @@
 	        _classCallCheck(this, DeathStream);
 
 	        var duration = eventsData.length ? eventsData[eventsData.length - 1].TimeSinceStart : 0;
+
+	        var maxX = 0,
+	            maxY = 0,
+	            maxZ = 0;
 	        var events = eventsData.map(function (eventData, i) {
+	            maxX = Math.max(maxX, Math.abs(eventData.KillerWorldLocation.x), Math.abs(eventData.VictimWorldLocation.x));
+	            maxY = Math.max(maxY, Math.abs(eventData.KillerWorldLocation.y), Math.abs(eventData.VictimWorldLocation.y));
+	            maxZ = Math.max(maxZ, Math.abs(eventData.KillerWorldLocation.z), Math.abs(eventData.VictimWorldLocation.z));
+
 	            return Object.assign({}, eventData, {
 	                Id: '' + i,
 	                MatchProgress: (eventData.TimeSinceStart + 1.0) / duration,
@@ -26347,6 +26472,8 @@
 	        this.duration = duration;
 	        this.times = createTreeFromEvents(events);
 	        this._map = createMapFromEvents(events);
+
+	        this.bounds = { x: maxX, y: maxY, z: maxZ };
 	    }
 
 	    _createClass(DeathStream, [{
@@ -41680,6 +41807,462 @@
 
 	var sample = exports.sample = function sample(min, max, value) {
 	    return clamp(min, max, min + (max - min) * value);
+	};
+
+/***/ },
+/* 279 */,
+/* 280 */,
+/* 281 */,
+/* 282 */,
+/* 283 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*** IMPORTS FROM imports-loader ***/
+	var THREE = __webpack_require__(163);
+
+	"use strict";
+
+	/**
+	 * @author alteredq / http://alteredqualia.com/
+	 */
+
+	THREE.EffectComposer = function (renderer, renderTarget) {
+
+		this.renderer = renderer;
+
+		if (renderTarget === undefined) {
+
+			var parameters = {
+				minFilter: THREE.LinearFilter,
+				magFilter: THREE.LinearFilter,
+				format: THREE.RGBAFormat,
+				stencilBuffer: false
+			};
+			var size = renderer.getSize();
+			renderTarget = new THREE.WebGLRenderTarget(size.width, size.height, parameters);
+		}
+
+		this.renderTarget1 = renderTarget;
+		this.renderTarget2 = renderTarget.clone();
+
+		this.writeBuffer = this.renderTarget1;
+		this.readBuffer = this.renderTarget2;
+
+		this.passes = [];
+
+		if (THREE.CopyShader === undefined) console.error("THREE.EffectComposer relies on THREE.CopyShader");
+
+		this.copyPass = new THREE.ShaderPass(THREE.CopyShader);
+	};
+
+	THREE.EffectComposer.prototype = {
+
+		swapBuffers: function swapBuffers() {
+
+			var tmp = this.readBuffer;
+			this.readBuffer = this.writeBuffer;
+			this.writeBuffer = tmp;
+		},
+
+		addPass: function addPass(pass) {
+
+			this.passes.push(pass);
+		},
+
+		insertPass: function insertPass(pass, index) {
+
+			this.passes.splice(index, 0, pass);
+		},
+
+		render: function render(delta) {
+
+			this.writeBuffer = this.renderTarget1;
+			this.readBuffer = this.renderTarget2;
+
+			var maskActive = false;
+
+			var pass,
+			    i,
+			    il = this.passes.length;
+
+			for (i = 0; i < il; i++) {
+
+				pass = this.passes[i];
+
+				if (!pass.enabled) continue;
+
+				pass.render(this.renderer, this.writeBuffer, this.readBuffer, delta, maskActive);
+
+				if (pass.needsSwap) {
+
+					if (maskActive) {
+
+						var context = this.renderer.context;
+
+						context.stencilFunc(context.NOTEQUAL, 1, 0xffffffff);
+
+						this.copyPass.render(this.renderer, this.writeBuffer, this.readBuffer, delta);
+
+						context.stencilFunc(context.EQUAL, 1, 0xffffffff);
+					}
+
+					this.swapBuffers();
+				}
+
+				if (pass instanceof THREE.MaskPass) {
+
+					maskActive = true;
+				} else if (pass instanceof THREE.ClearMaskPass) {
+
+					maskActive = false;
+				}
+			}
+		},
+
+		reset: function reset(renderTarget) {
+
+			if (renderTarget === undefined) {
+
+				var size = this.renderer.getSize();
+
+				renderTarget = this.renderTarget1.clone();
+				renderTarget.setSize(size.width, size.height);
+			}
+
+			this.renderTarget1.dispose();
+			this.renderTarget2.dispose();
+			this.renderTarget1 = renderTarget;
+			this.renderTarget2 = renderTarget.clone();
+
+			this.writeBuffer = this.renderTarget1;
+			this.readBuffer = this.renderTarget2;
+		},
+
+		setSize: function setSize(width, height) {
+
+			this.renderTarget1.setSize(width, height);
+			this.renderTarget2.setSize(width, height);
+		}
+
+	};
+
+
+/***/ },
+/* 284 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*** IMPORTS FROM imports-loader ***/
+	var THREE = __webpack_require__(163);
+
+	"use strict";
+
+	/**
+	 * @author alteredq / http://alteredqualia.com/
+	 */
+
+	THREE.RenderPass = function (scene, camera, overrideMaterial, clearColor, clearAlpha) {
+
+		this.scene = scene;
+		this.camera = camera;
+
+		this.overrideMaterial = overrideMaterial;
+
+		this.clearColor = clearColor;
+		this.clearAlpha = clearAlpha !== undefined ? clearAlpha : 1;
+
+		this.oldClearColor = new THREE.Color();
+		this.oldClearAlpha = 1;
+
+		this.enabled = true;
+		this.clear = true;
+		this.needsSwap = false;
+	};
+
+	THREE.RenderPass.prototype = {
+
+		render: function render(renderer, writeBuffer, readBuffer, delta) {
+
+			this.scene.overrideMaterial = this.overrideMaterial;
+
+			if (this.clearColor) {
+
+				this.oldClearColor.copy(renderer.getClearColor());
+				this.oldClearAlpha = renderer.getClearAlpha();
+
+				renderer.setClearColor(this.clearColor, this.clearAlpha);
+			}
+
+			renderer.render(this.scene, this.camera, readBuffer, this.clear);
+
+			if (this.clearColor) {
+
+				renderer.setClearColor(this.oldClearColor, this.oldClearAlpha);
+			}
+
+			this.scene.overrideMaterial = null;
+		}
+
+	};
+
+
+/***/ },
+/* 285 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*** IMPORTS FROM imports-loader ***/
+	var THREE = __webpack_require__(163);
+
+	"use strict";
+
+	/**
+	 * @author alteredq / http://alteredqualia.com/
+	 */
+
+	THREE.ShaderPass = function (shader, textureID) {
+
+		this.textureID = textureID !== undefined ? textureID : "tDiffuse";
+
+		if (shader instanceof THREE.ShaderMaterial) {
+
+			this.uniforms = shader.uniforms;
+
+			this.material = shader;
+		} else if (shader) {
+
+			this.uniforms = THREE.UniformsUtils.clone(shader.uniforms);
+
+			this.material = new THREE.ShaderMaterial({
+
+				defines: shader.defines || {},
+				uniforms: this.uniforms,
+				vertexShader: shader.vertexShader,
+				fragmentShader: shader.fragmentShader
+
+			});
+		}
+
+		this.renderToScreen = false;
+
+		this.enabled = true;
+		this.needsSwap = true;
+		this.clear = false;
+
+		this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+		this.scene = new THREE.Scene();
+
+		this.quad = new THREE.Mesh(new THREE.PlaneBufferGeometry(2, 2), null);
+		this.scene.add(this.quad);
+	};
+
+	THREE.ShaderPass.prototype = {
+
+		render: function render(renderer, writeBuffer, readBuffer, delta) {
+
+			if (this.uniforms[this.textureID]) {
+
+				this.uniforms[this.textureID].value = readBuffer;
+			}
+
+			this.quad.material = this.material;
+
+			if (this.renderToScreen) {
+
+				renderer.render(this.scene, this.camera);
+			} else {
+
+				renderer.render(this.scene, this.camera, writeBuffer, this.clear);
+			}
+		}
+
+	};
+
+
+/***/ },
+/* 286 */,
+/* 287 */,
+/* 288 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*** IMPORTS FROM imports-loader ***/
+	var THREE = __webpack_require__(163);
+
+	"use strict";
+
+	/**
+	 * @author alteredq / http://alteredqualia.com/
+	 */
+
+	THREE.MaskPass = function (scene, camera) {
+
+			this.scene = scene;
+			this.camera = camera;
+
+			this.enabled = true;
+			this.clear = true;
+			this.needsSwap = false;
+
+			this.inverse = false;
+	};
+
+	THREE.MaskPass.prototype = {
+
+			render: function render(renderer, writeBuffer, readBuffer, delta) {
+
+					var context = renderer.context;
+
+					// don't update color or depth
+
+					context.colorMask(false, false, false, false);
+					context.depthMask(false);
+
+					// set up stencil
+
+					var writeValue, clearValue;
+
+					if (this.inverse) {
+
+							writeValue = 0;
+							clearValue = 1;
+					} else {
+
+							writeValue = 1;
+							clearValue = 0;
+					}
+
+					context.enable(context.STENCIL_TEST);
+					context.stencilOp(context.REPLACE, context.REPLACE, context.REPLACE);
+					context.stencilFunc(context.ALWAYS, writeValue, 0xffffffff);
+					context.clearStencil(clearValue);
+
+					// draw into the stencil buffer
+
+					renderer.render(this.scene, this.camera, readBuffer, this.clear);
+					renderer.render(this.scene, this.camera, writeBuffer, this.clear);
+
+					// re-enable update of color and depth
+
+					context.colorMask(true, true, true, true);
+					context.depthMask(true);
+
+					// only render where stencil is set to 1
+
+					context.stencilFunc(context.EQUAL, 1, 0xffffffff); // draw if == 1
+					context.stencilOp(context.KEEP, context.KEEP, context.KEEP);
+			}
+
+	};
+
+	THREE.ClearMaskPass = function () {
+
+			this.enabled = true;
+	};
+
+	THREE.ClearMaskPass.prototype = {
+
+			render: function render(renderer, writeBuffer, readBuffer, delta) {
+
+					var context = renderer.context;
+
+					context.disable(context.STENCIL_TEST);
+			}
+
+	};
+
+
+/***/ },
+/* 289 */,
+/* 290 */,
+/* 291 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*** IMPORTS FROM imports-loader ***/
+	var THREE = __webpack_require__(163);
+
+	"use strict";
+
+	/**
+	 * @author zz85 / http://www.lab4games.net/zz85/blog
+	 *
+	 * Two pass Gaussian blur filter (horizontal and vertical blur shaders)
+	 * - described in http://www.gamerendering.com/2008/10/11/gaussian-blur-filter-shader/
+	 *   and used in http://www.cake23.de/traveling-wavefronts-lit-up.html
+	 *
+	 * - 9 samples per pass
+	 * - standard deviation 2.7
+	 * - "h" and "v" parameters should be set to "1 / width" and "1 / height"
+	 */
+
+	THREE.HorizontalBlurShader = {
+
+			uniforms: {
+
+					"tDiffuse": { type: "t", value: null },
+					"h": { type: "f", value: 1.0 / 512.0 }
+
+			},
+
+			vertexShader: ["varying vec2 vUv;", "void main() {", "vUv = uv;", "gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );", "}"].join("\n"),
+
+			fragmentShader: ["uniform sampler2D tDiffuse;", "uniform float h;", "varying vec2 vUv;", "void main() {", "vec4 sum = vec4( 0.0 );", "sum += texture2D( tDiffuse, vec2( vUv.x - 4.0 * h, vUv.y ) ) * 0.051;", "sum += texture2D( tDiffuse, vec2( vUv.x - 3.0 * h, vUv.y ) ) * 0.0918;", "sum += texture2D( tDiffuse, vec2( vUv.x - 2.0 * h, vUv.y ) ) * 0.12245;", "sum += texture2D( tDiffuse, vec2( vUv.x - 1.0 * h, vUv.y ) ) * 0.1531;", "sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y ) ) * 0.1633;", "sum += texture2D( tDiffuse, vec2( vUv.x + 1.0 * h, vUv.y ) ) * 0.1531;", "sum += texture2D( tDiffuse, vec2( vUv.x + 2.0 * h, vUv.y ) ) * 0.12245;", "sum += texture2D( tDiffuse, vec2( vUv.x + 3.0 * h, vUv.y ) ) * 0.0918;", "sum += texture2D( tDiffuse, vec2( vUv.x + 4.0 * h, vUv.y ) ) * 0.051;", "gl_FragColor = sum;", "}"].join("\n")
+
+	};
+
+
+/***/ },
+/* 292 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*** IMPORTS FROM imports-loader ***/
+	var THREE = __webpack_require__(163);
+
+	"use strict";
+
+	/**
+	 * @author zz85 / http://www.lab4games.net/zz85/blog
+	 *
+	 * Two pass Gaussian blur filter (horizontal and vertical blur shaders)
+	 * - described in http://www.gamerendering.com/2008/10/11/gaussian-blur-filter-shader/
+	 *   and used in http://www.cake23.de/traveling-wavefronts-lit-up.html
+	 *
+	 * - 9 samples per pass
+	 * - standard deviation 2.7
+	 * - "h" and "v" parameters should be set to "1 / width" and "1 / height"
+	 */
+
+	THREE.VerticalBlurShader = {
+
+			uniforms: {
+
+					"tDiffuse": { type: "t", value: null },
+					"v": { type: "f", value: 1.0 / 512.0 }
+
+			},
+
+			vertexShader: ["varying vec2 vUv;", "void main() {", "vUv = uv;", "gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );", "}"].join("\n"),
+
+			fragmentShader: ["uniform sampler2D tDiffuse;", "uniform float v;", "varying vec2 vUv;", "void main() {", "vec4 sum = vec4( 0.0 );", "sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y - 4.0 * v ) ) * 0.051;", "sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y - 3.0 * v ) ) * 0.0918;", "sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y - 2.0 * v ) ) * 0.12245;", "sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y - 1.0 * v ) ) * 0.1531;", "sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y ) ) * 0.1633;", "sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 1.0 * v ) ) * 0.1531;", "sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 2.0 * v ) ) * 0.12245;", "sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 3.0 * v ) ) * 0.0918;", "sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 4.0 * v ) ) * 0.051;", "gl_FragColor = sum;", "}"].join("\n")
+
+	};
+
+
+/***/ },
+/* 293 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.default = {
+	    uniforms: {
+	        tDiffuse1: { type: 't', value: null },
+	        tDiffuse2: { type: 't', value: null }
+	    },
+
+	    vertexShader: '\n        varying vec2 vUv;\n\n        void main() {\n            vUv = uv;\n            gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );\n        }\n    ',
+
+	    fragmentShader: '\n        uniform sampler2D tDiffuse1;\n        uniform sampler2D tDiffuse2;\n\n        varying vec2 vUv;\n\n        void main() {\n            vec4 texel1 = texture2D(tDiffuse1, vUv);\n            vec4 texel2 = texture2D(tDiffuse2, vUv);\n            gl_FragColor = texel1 + texel2;\n        }\n    '
 	};
 
 /***/ }

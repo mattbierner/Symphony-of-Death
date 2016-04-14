@@ -1,7 +1,19 @@
 "use strict";
 import THREE from 'three';
+
+import HorizontalBlurShader from 'imports?THREE=three!three/examples/js/shaders/HorizontalBlurShader';
+import VerticalBlurShader from 'imports?THREE=three!three/examples/js/shaders/VerticalBlurShader';
+import MaskPass from 'imports?THREE=three!three/examples/js/postprocessing/MaskPass';
+import RenderPass from 'imports?THREE=three!three/examples/js/postprocessing/RenderPass';
+import ShaderPass from 'imports?THREE=three!three/examples/js/postprocessing/ShaderPass';
+import EffectComposer from 'imports?THREE=three!three/examples/js/postprocessing/EffectComposer';
+
+import additive_shader from './3d/shaders/additive';
+
 import OrbitControls from './OrbitControls'
+
 import {getWeaponsTable} from './weapons';
+
 
 const killerColor = new THREE.Color(0xff00ff);
 const victimColor = new THREE.Color(0x00ffff);
@@ -10,49 +22,80 @@ const topSize = 0.1;
 const bottomSize = 0.1;
 const sides = 8;
 
-const weapons = getWeaponsTable();
-
 /**
  * 3D match viewer
  */
 export default class Viewer {
     constructor(canvas) {
-        const aspect = window.innerWidth / window.innerHeight;
-        
+    this._raycaster = new THREE.Raycaster();
+        this.bounds = { x: 40, y: 40, z: 40 };
+
         this._scene = new THREE.Scene();
-        this._camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 800);
-        //const d = 20;
-      //  this._camera = new THREE.OrthographicCamera( - d * aspect, d * aspect, d, - d, 1, 1000 );
 
-        this._camera.position.z = 40;
+        this.initRenderer(canvas);
+        this.initCamera();
+        this.initControls();
+        this.initComposer();
 
-        this._controls = new OrbitControls(this._camera);
-        this._controls.addEventListener('change', this.render.bind(this));
-        this._controls.enableDamping = true;
-        this._controls.dampingFactor = 0.25;
-        this._controls.enableZoom = true;
+        window.addEventListener('resize', this.onWindowResize.bind(this), false);
+        document.addEventListener('mousemove', this.onMouseMove.bind(this), false);
 
+        //this._addPlanes();
+        this.onWindowResize();
+    }
+    
+    initRenderer(canvas) {
         this._renderer = new THREE.WebGLRenderer({
             canvas: canvas,
             alpha: true
         });
         this._renderer.setClearColor(0xffffff, 0);
-
-        this._raycaster = new THREE.Raycaster();
-
-        window.addEventListener('resize', this.onWindowResize.bind(this), false);
-        document.addEventListener('mousemove', this.onMouseMove.bind(this), false);
-        
-        //this._addPlanes();
-        
-        this.onWindowResize();
     }
     
+    initCamera() {
+        const aspect = window.innerWidth / window.innerHeight;
+        this._camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 800);
+        //const d = 20;
+        //  this._camera = new THREE.OrthographicCamera( - d * aspect, d * aspect, d, - d, 1, 1000 );
+        this._camera.position.z = 40;
+    }
+    
+    initControls() {
+        this._controls = new OrbitControls(this._camera);
+        this._controls.addEventListener('change', this.render.bind(this));
+        this._controls.enableDamping = true;
+        this._controls.dampingFactor = 0.25;
+        this._controls.enableZoom = true;
+    }
+    
+    initComposer() {
+
+        this._composer = new THREE.EffectComposer(this._renderer);
+        this._composer.addPass(new THREE.RenderPass(this._scene, this._camera));
+
+        const effectHorizBlur = new THREE.ShaderPass(THREE.HorizontalBlurShader);
+        const effectVertiBlur = new THREE.ShaderPass(THREE.VerticalBlurShader);
+        effectHorizBlur.uniforms["h"].value = 2 / window.innerWidth;
+        effectVertiBlur.uniforms["v"].value = 2 / window.innerHeight;
+        this._composer.addPass(effectHorizBlur);
+        this._composer.addPass(effectVertiBlur);
+
+        // prepare the final render's passes
+        this._composer2 = new THREE.EffectComposer(this._renderer);
+
+        this._composer2.addPass(new THREE.RenderPass(this._scene, this._camera));
+
+        var effectBlend = new THREE.ShaderPass(additive_shader, 'tDiffuse1');
+        effectBlend.uniforms['tDiffuse2'].value = this._composer.renderTarget2;
+        effectBlend.renderToScreen = true;
+        this._composer2.addPass(effectBlend);
+    }
+
     _addPlanes() {
         const size = 40;
         for (let p of [new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 1)]) {
             const geometry = new THREE.PlaneGeometry(size, size);
-            const material = new THREE.MeshBasicMaterial({color: 0xffff00, side: THREE.DoubleSide} );
+            const material = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide });
             const plane = new THREE.GridHelper(size, 5);
             plane.quaternion.setFromAxisAngle(p, Math.PI / 2.0);
             plane.setColors(0xffffff, 0x333333)
@@ -60,32 +103,37 @@ export default class Viewer {
         }
     }
 
+    setBounds(bounds) {
+        this.bounds = bounds;
+        this.animate();
+    }
+
     goToFrontView() {
-        this._camera.position.set(0, 40, 0);
+        this._camera.position.set(0, Math.max(this.bounds.x, this.bounds.z) * 2, 0);
         this.animate();
     }
-    
+
     goToSideView() {
-        this._camera.position.set(40, 0, 0);
+        this._camera.position.set(Math.max(this.bounds.y, this.bounds.z) * 2, 0, 0);
         this.animate();
     }
-    
+
     goToTopView() {
-        this._camera.position.set(0, 0, 40);
+        this._camera.position.set(0, 0, Math.max(this.bounds.x, this.bounds.y) * 2);
         this.animate();
     }
 
     _getObjectForEvent(event) {
         return this._scene.getObjectByName(event.Id);
     }
-    
+
     showEvent(event) {
         const obj = this._getObjectForEvent(event);
         if (obj) {
             obj.visible = true;
         }
     }
-    
+
     hideEvent(event) {
         const obj = this._getObjectForEvent(event);
         if (obj) {
@@ -100,7 +148,7 @@ export default class Viewer {
     _highlightTarget(target) {
         if (this._currentTarget === target)
             return;
-            
+
         if (this._currentTarget) {
             const uniforms = this._currentTarget.material.uniforms;
             if (uniforms && uniforms.mul) {
@@ -119,7 +167,7 @@ export default class Viewer {
         }
         this.render();
     }
-    
+
     showEvent(event) {
         const target = this._scene.getObjectByName(event.Id);
         if (!target)
@@ -135,7 +183,9 @@ export default class Viewer {
         this._camera.aspect = width / height;
         this._camera.updateProjectionMatrix();
         this._renderer.setSize(width, height);
-        
+        this._composer.setSize(width, height);
+        this._composer2.setSize(width, height);
+
         this.render();
     }
 
@@ -214,7 +264,7 @@ export default class Viewer {
 
         mesh.rotation.setFromQuaternion(arrow.quaternion);
         mesh.position.addVectors(victim, killvec.multiplyScalar(0.5));
-        
+
         mesh.userData = { isEvent: true };
         return mesh;
     }
@@ -222,30 +272,48 @@ export default class Viewer {
     addEvent(event, hidden) {
         const {KillerWorldLocation, VictimWorldLocation} = event;
 
+
         const killer = new THREE.Vector3(KillerWorldLocation.x, KillerWorldLocation.y, KillerWorldLocation.z);
         const victim = new THREE.Vector3(VictimWorldLocation.x, VictimWorldLocation.y, VictimWorldLocation.z);
-        const weapon = weapons.get(event.KillerWeaponStockId);
+        const killvec = new THREE.Vector3().subVectors(killer, victim);
+        const weapon = getWeaponsTable().get(event.KillerWeaponStockId);
+        const height = killvec.length();
 
-        let object;
+
+        let objs = [];
         if ((weapon && weapon.type === 'Grenade') || event.IsMelee) {
             const geometry = new THREE.SphereGeometry(0.2, 32, 23);
             const material = new THREE.MeshBasicMaterial({ color: event.IsMelee ? 0xffff00 : 0xff0000 });
             const sphere = new THREE.Mesh(geometry, material);
             sphere.position.add(victim);
-            object = sphere;
+            objs.push(sphere);
         } else if (weapon) {
-            object = this._shotPath(killer, victim);
+            const path = this._shotPath(killer, victim);
+            /*{
+                const geometry = new THREE.SphereGeometry(2, 32, 23);
+                const material = new THREE.MeshBasicMaterial({ color: killerColor, transparent: true, opacity: 0.2 });
+                const sphere = new THREE.Mesh(geometry, material);
+                sphere.position.y = height * 0.5;
+                path.add(sphere);
+            }
+            {
+                const geometry = new THREE.SphereGeometry(2, 32, 23);
+                const material = new THREE.MeshBasicMaterial({ color: victimColor , transparent: true, opacity: 0.2});
+                const sphere = new THREE.Mesh(geometry, material);
+                sphere.position.y = height * -0.5;
+                path.add(sphere);
+            }*/
+            objs.push(path);
         }
-        
-        if (object) {
-            object.name = event.Id;
-            object.visible = !hidden;
-            this._scene.add(object);
+
+        for (let obj of objs) {
+            obj.name = event.Id;
+            obj.visible = !hidden;
+            this._scene.add(obj);
             if (!hidden)
                 this.animate();
         }
     }
-    
 
     update() {
         this._controls.update();
@@ -264,7 +332,7 @@ export default class Viewer {
                 }
             }
         } else {
-           // this._highlightTarget(null);
+            // this._highlightTarget(null);
         }
     }
 
@@ -274,6 +342,7 @@ export default class Viewer {
     }
 
     render() {
-        this._renderer.render(this._scene, this._camera);
+        this._composer.render();
+        this._composer2.render();
     }
 }

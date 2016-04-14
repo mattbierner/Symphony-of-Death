@@ -30,7 +30,7 @@ class Application extends React.Component {
         };
         
         this._soundManager = new SoundManager([
-            Theremin
+            Sine
         ]);
     }
     
@@ -56,6 +56,9 @@ class Application extends React.Component {
         this._soundManager.stopAll();
     }
     
+    onPlay() {
+    }
+    
     onPause() {
         this._soundManager.stopAll();
     }
@@ -70,6 +73,7 @@ class Application extends React.Component {
                     onEventFocus={this.onEventFocus.bind(this)}
                     onTimelineEvent={this.onTimelineEvent.bind(this)}
                     onPositionChange={this.onPositionChange.bind(this)}
+                    onPlay={this.onPlay.bind(this)}
                     onPause={this.onPause.bind(this)}/>
             </div>);
     }

@@ -26,8 +26,14 @@ const createMapFromEvents = events =>
 class DeathStream {
     constructor(eventsData) {
         const duration = eventsData.length ? eventsData[eventsData.length - 1].TimeSinceStart : 0;
-        const events = eventsData.map((eventData, i) =>
-            Object.assign({}, eventData, {
+        
+        let maxX = 0, maxY = 0, maxZ = 0;
+        const events = eventsData.map((eventData, i) => {
+            maxX = Math.max(maxX, Math.abs(eventData.KillerWorldLocation.x), Math.abs(eventData.VictimWorldLocation.x));
+            maxY = Math.max(maxY, Math.abs(eventData.KillerWorldLocation.y), Math.abs(eventData.VictimWorldLocation.y));
+            maxZ = Math.max(maxZ, Math.abs(eventData.KillerWorldLocation.z), Math.abs(eventData.VictimWorldLocation.z));
+
+            return Object.assign({}, eventData, {
                 Id: '' + i,
                 MatchProgress: (eventData.TimeSinceStart + 1.0) / duration,
                 KillVector: {
@@ -37,11 +43,14 @@ class DeathStream {
                 },
                 KillVectorLength: vectorLength(eventData.KillerWorldLocation, eventData.VictimWorldLocation),
                 IsMelee: eventData.IsGroundPound || eventData.IsMelee || eventData.IsShoulderBash
-            }));
+            });
+        });
             
         this.duration = duration;
         this.times = createTreeFromEvents(events);
         this._map = createMapFromEvents(events);
+        
+        this.bounds = { x: maxX, y: maxY, z: maxZ };
     }
     
     forEach(f) {
