@@ -4,6 +4,8 @@ const React = require('react');
 const ReactDOM = require('react-dom');
 const moment = require('moment');
 
+import * as num from './num';
+
 import {getWeaponsTable} from './weapons';
 
 const tryInvoke = (f, x) =>
@@ -167,7 +169,7 @@ export default class Timeline extends React.Component {
     getProgressFromMouseEvent(event) {
         const node = ReactDOM.findDOMNode(this).getElementsByClassName('timeline-content')[0];
         const rect = node.getBoundingClientRect();
-        const progress = Math.min(rect.width, Math.max(0, (event.pageX - rect.left) / rect.width));
+        const progress = num.clamp(0, 1.0, (event.pageX - rect.left) / rect.width);
         return progress
     }
 

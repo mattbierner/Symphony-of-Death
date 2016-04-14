@@ -514,7 +514,13 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+	var _num = __webpack_require__(278);
+
+	var num = _interopRequireWildcard(_num);
+
 	var _weapons = __webpack_require__(165);
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -775,7 +781,7 @@
 	        value: function getProgressFromMouseEvent(event) {
 	            var node = ReactDOM.findDOMNode(this).getElementsByClassName('timeline-content')[0];
 	            var rect = node.getBoundingClientRect();
-	            var progress = Math.min(rect.width, Math.max(0, (event.pageX - rect.left) / rect.width));
+	            var progress = num.clamp(0, 1.0, (event.pageX - rect.left) / rect.width);
 	            return progress;
 	        }
 	    }, {
@@ -20621,6 +20627,10 @@
 
 	var _three2 = _interopRequireDefault(_three);
 
+	var _CopyShader = __webpack_require__(287);
+
+	var _CopyShader2 = _interopRequireDefault(_CopyShader);
+
 	var _HorizontalBlurShader = __webpack_require__(291);
 
 	var _HorizontalBlurShader2 = _interopRequireDefault(_HorizontalBlurShader);
@@ -20689,6 +20699,7 @@
 
 	        //this._addPlanes();
 	        this.onWindowResize();
+	        this.animate();
 	    }
 
 	    _createClass(Viewer, [{
@@ -20713,7 +20724,6 @@
 	        key: 'initControls',
 	        value: function initControls() {
 	            this._controls = new _OrbitControls2.default(this._camera);
-	            this._controls.addEventListener('change', this.render.bind(this));
 	            this._controls.enableDamping = true;
 	            this._controls.dampingFactor = 0.25;
 	            this._controls.enableZoom = true;
@@ -20761,25 +20771,22 @@
 	        key: 'setBounds',
 	        value: function setBounds(bounds) {
 	            this.bounds = bounds;
-	            this.animate();
+	            this.goToTopView();
 	        }
 	    }, {
 	        key: 'goToFrontView',
 	        value: function goToFrontView() {
 	            this._camera.position.set(0, Math.max(this.bounds.x, this.bounds.z) * 2, 0);
-	            this.animate();
 	        }
 	    }, {
 	        key: 'goToSideView',
 	        value: function goToSideView() {
 	            this._camera.position.set(Math.max(this.bounds.y, this.bounds.z) * 2, 0, 0);
-	            this.animate();
 	        }
 	    }, {
 	        key: 'goToTopView',
 	        value: function goToTopView() {
 	            this._camera.position.set(0, 0, Math.max(this.bounds.x, this.bounds.y) * 2);
-	            this.animate();
 	        }
 	    }, {
 	        key: '_getObjectForEvent',
@@ -20836,7 +20843,6 @@
 	            var target = this._scene.getObjectByName(event.Id);
 	            if (!target) return;
 	            target.visible = true;
-	            this.animate();
 	        }
 	    }, {
 	        key: 'onWindowResize',
@@ -20849,8 +20855,6 @@
 	            this._renderer.setSize(width, height);
 	            this._composer.setSize(width, height);
 	            this._composer2.setSize(width, height);
-
-	            this.render();
 	        }
 	    }, {
 	        key: 'onMouseMove',
@@ -20976,7 +20980,6 @@
 	                    obj.name = event.Id;
 	                    obj.visible = !hidden;
 	                    this._scene.add(obj);
-	                    if (!hidden) this.animate();
 	                }
 	            } catch (err) {
 	                _didIteratorError = true;
@@ -21038,6 +21041,11 @@
 	    }, {
 	        key: 'animate',
 	        value: function animate() {
+	            var _this = this;
+
+	            requestAnimationFrame(function () {
+	                return _this.animate();
+	            });
 	            this.update();
 	            this.render();
 	        }
@@ -42079,7 +42087,37 @@
 
 /***/ },
 /* 286 */,
-/* 287 */,
+/* 287 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*** IMPORTS FROM imports-loader ***/
+	var THREE = __webpack_require__(163);
+
+	"use strict";
+
+	/**
+	 * @author alteredq / http://alteredqualia.com/
+	 *
+	 * Full-screen textured quad shader
+	 */
+
+	THREE.CopyShader = {
+
+			uniforms: {
+
+					"tDiffuse": { type: "t", value: null },
+					"opacity": { type: "f", value: 1.0 }
+
+			},
+
+			vertexShader: ["varying vec2 vUv;", "void main() {", "vUv = uv;", "gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );", "}"].join("\n"),
+
+			fragmentShader: ["uniform float opacity;", "uniform sampler2D tDiffuse;", "varying vec2 vUv;", "void main() {", "vec4 texel = texture2D( tDiffuse, vUv );", "gl_FragColor = opacity * texel;", "}"].join("\n")
+
+	};
+
+
+/***/ },
 /* 288 */
 /***/ function(module, exports, __webpack_require__) {
 

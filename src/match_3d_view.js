@@ -1,6 +1,7 @@
 "use strict";
 import THREE from 'three';
 
+import CopyShader from 'imports?THREE=three!three/examples/js/shaders/CopyShader';
 import HorizontalBlurShader from 'imports?THREE=three!three/examples/js/shaders/HorizontalBlurShader';
 import VerticalBlurShader from 'imports?THREE=three!three/examples/js/shaders/VerticalBlurShader';
 import MaskPass from 'imports?THREE=three!three/examples/js/postprocessing/MaskPass';
@@ -42,6 +43,7 @@ export default class Viewer {
 
         //this._addPlanes();
         this.onWindowResize();
+        this.animate();
     }
     
     initRenderer(canvas) {
@@ -62,7 +64,6 @@ export default class Viewer {
     
     initControls() {
         this._controls = new OrbitControls(this._camera);
-        this._controls.addEventListener('change', this.render.bind(this));
         this._controls.enableDamping = true;
         this._controls.dampingFactor = 0.25;
         this._controls.enableZoom = true;
@@ -105,22 +106,19 @@ export default class Viewer {
 
     setBounds(bounds) {
         this.bounds = bounds;
-        this.animate();
+        this.goToTopView();
     }
 
     goToFrontView() {
         this._camera.position.set(0, Math.max(this.bounds.x, this.bounds.z) * 2, 0);
-        this.animate();
     }
 
     goToSideView() {
         this._camera.position.set(Math.max(this.bounds.y, this.bounds.z) * 2, 0, 0);
-        this.animate();
     }
 
     goToTopView() {
         this._camera.position.set(0, 0, Math.max(this.bounds.x, this.bounds.y) * 2);
-        this.animate();
     }
 
     _getObjectForEvent(event) {
@@ -173,7 +171,6 @@ export default class Viewer {
         if (!target)
             return;
         target.visible = true;
-        this.animate();
     }
 
     onWindowResize() {
@@ -185,8 +182,6 @@ export default class Viewer {
         this._renderer.setSize(width, height);
         this._composer.setSize(width, height);
         this._composer2.setSize(width, height);
-
-        this.render();
     }
 
     onMouseMove(event) {
@@ -310,8 +305,6 @@ export default class Viewer {
             obj.name = event.Id;
             obj.visible = !hidden;
             this._scene.add(obj);
-            if (!hidden)
-                this.animate();
         }
     }
 
@@ -337,6 +330,7 @@ export default class Viewer {
     }
 
     animate() {
+        requestAnimationFrame(() => this.animate());
         this.update();
         this.render();
     }
