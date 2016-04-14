@@ -7,6 +7,9 @@
     border-top: 1px solid $border-color;
     padding: 5px 16px 20px 16px;
     
+    -webkit-user-select: none;
+    user-select: none;
+
     .timeline-content {
         position: relative;
         height: 100%;

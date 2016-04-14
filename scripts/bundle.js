@@ -20659,6 +20659,10 @@
 
 	var _additive2 = _interopRequireDefault(_additive);
 
+	var _default = __webpack_require__(294);
+
+	var _default2 = _interopRequireDefault(_default);
+
 	var _OrbitControls = __webpack_require__(164);
 
 	var _OrbitControls2 = _interopRequireDefault(_OrbitControls);
@@ -20731,18 +20735,19 @@
 	    }, {
 	        key: 'initComposer',
 	        value: function initComposer() {
-
 	            this._composer = new _three2.default.EffectComposer(this._renderer);
 	            this._composer.addPass(new _three2.default.RenderPass(this._scene, this._camera));
 
-	            var effectHorizBlur = new _three2.default.ShaderPass(_three2.default.HorizontalBlurShader);
-	            var effectVertiBlur = new _three2.default.ShaderPass(_three2.default.VerticalBlurShader);
+	            /*
+	            const effectHorizBlur = new THREE.ShaderPass(THREE.HorizontalBlurShader);
+	            const effectVertiBlur = new THREE.ShaderPass(THREE.VerticalBlurShader);
 	            effectHorizBlur.uniforms["h"].value = 2 / window.innerWidth;
 	            effectVertiBlur.uniforms["v"].value = 2 / window.innerHeight;
 	            this._composer.addPass(effectHorizBlur);
 	            this._composer.addPass(effectVertiBlur);
+	            */
 
-	            // prepare the final render's passes
+	            //final render pass
 	            this._composer2 = new _three2.default.EffectComposer(this._renderer);
 
 	            this._composer2.addPass(new _three2.default.RenderPass(this._scene, this._camera));
@@ -20910,18 +20915,44 @@
 	                index += 3;
 	            }
 
-	            var shaderMaterial = new _three2.default.ShaderMaterial({
-	                uniforms: {
-	                    opacity: { type: 'f', value: 1.0 },
-	                    mul: { type: 'f', value: 1.0 }
-	                },
-	                vertexShader: document.getElementById('vertexshader').textContent,
-	                fragmentShader: document.getElementById('fragmentshader').textContent,
-	                transparent: true,
-	                side: _three2.default.DoubleSide
-	            });
-
+	            var shaderMaterial = new _three2.default.ShaderMaterial(_default2.default);
 	            var mesh = new _three2.default.Mesh(buffergeometry, shaderMaterial);
+	            var arrow = new _three2.default.ArrowHelper(killvec.clone().normalize(), victim);
+
+	            mesh.rotation.setFromQuaternion(arrow.quaternion);
+	            mesh.position.addVectors(victim, killvec.multiplyScalar(0.5));
+
+	            mesh.userData = { isEvent: true };
+	            return mesh;
+	        }
+	    }, {
+	        key: '_shotLine',
+	        value: function _shotLine(killer, victim) {
+	            var killvec = new _three2.default.Vector3().subVectors(killer, victim);
+	            var height = killvec.length();
+
+	            var buffergeometry = new _three2.default.BufferGeometry();
+	            var len = 10;
+
+	            var position = new _three2.default.Float32Attribute(len * 3, 3);
+	            buffergeometry.addAttribute('position', position);
+
+	            var customColor = new _three2.default.Float32Attribute(len * 3, 3);
+	            buffergeometry.addAttribute('customColor', customColor);
+
+	            var d = height / len;
+	            var y = -height / 2;
+	            var index = 0;
+	            for (var i = 0; i < len; ++i) {
+	                new _three2.default.Vector3(0, y, 0).toArray(position.array, index);
+	                killerColor.toArray(customColor.array, index);
+	                index += 3;
+	                y += d;
+	            }
+
+	            var shaderMaterial = new _three2.default.ShaderMaterial(_default2.default);
+
+	            var mesh = new _three2.default.Line(buffergeometry, shaderMaterial);
 	            var arrow = new _three2.default.ArrowHelper(killvec.clone().normalize(), victim);
 
 	            mesh.rotation.setFromQuaternion(arrow.quaternion);
@@ -20951,7 +20982,7 @@
 	                sphere.position.add(victim);
 	                objs.push(sphere);
 	            } else if (weapon) {
-	                var path = this._shotPath(killer, victim);
+	                var path = this._shotLine(killer, victim);
 	                /*{
 	                    const geometry = new THREE.SphereGeometry(2, 32, 23);
 	                    const material = new THREE.MeshBasicMaterial({ color: killerColor, transparent: true, opacity: 0.2 });
@@ -42301,6 +42332,28 @@
 	    vertexShader: '\n        varying vec2 vUv;\n\n        void main() {\n            vUv = uv;\n            gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );\n        }\n    ',
 
 	    fragmentShader: '\n        uniform sampler2D tDiffuse1;\n        uniform sampler2D tDiffuse2;\n\n        varying vec2 vUv;\n\n        void main() {\n            vec4 texel1 = texture2D(tDiffuse1, vUv);\n            vec4 texel2 = texture2D(tDiffuse2, vUv);\n            gl_FragColor = texel1 + texel2;\n        }\n    '
+	};
+
+/***/ },
+/* 294 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	var THREE = __webpack_require__(163);
+
+	exports.default = {
+	    uniforms: {
+	        opacity: { type: 'f', value: 1.0 },
+	        mul: { type: 'f', value: 1.0 }
+	    },
+	    vertexShader: '\n        attribute vec3 customColor;\n\n        varying vec3 vColor;\n        \n        void main() {\n            vColor = customColor;\n            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n        }\n    ',
+	    fragmentShader: '\n        uniform float opacity;\n        uniform float mul;\n        \n        varying vec3 vColor;\n        \n        void main() {\n            gl_FragColor = vec4(vColor * mul, opacity);\n        }\n    ',
+	    transparent: true,
+	    side: THREE.DoubleSide
 	};
 
 /***/ }

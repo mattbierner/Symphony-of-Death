@@ -21,4 +21,4 @@ github_username:  jekyll
 markdown: kramdown
 
 
-exclude: ['node_modules', 'src']
+exclude: ['node_modules', 'src', 'server', 'webpack.config.js', 'README.md', '*.rb', 'package.json']

@@ -10,6 +10,7 @@ import ShaderPass from 'imports?THREE=three!three/examples/js/postprocessing/Sha
 import EffectComposer from 'imports?THREE=three!three/examples/js/postprocessing/EffectComposer';
 
 import additive_shader from './3d/shaders/additive';
+import default_shader from './3d/shaders/default';
 
 import OrbitControls from './OrbitControls'
 
@@ -70,18 +71,19 @@ export default class Viewer {
     }
     
     initComposer() {
-
         this._composer = new THREE.EffectComposer(this._renderer);
         this._composer.addPass(new THREE.RenderPass(this._scene, this._camera));
 
+        /*
         const effectHorizBlur = new THREE.ShaderPass(THREE.HorizontalBlurShader);
         const effectVertiBlur = new THREE.ShaderPass(THREE.VerticalBlurShader);
         effectHorizBlur.uniforms["h"].value = 2 / window.innerWidth;
         effectVertiBlur.uniforms["v"].value = 2 / window.innerHeight;
         this._composer.addPass(effectHorizBlur);
         this._composer.addPass(effectVertiBlur);
-
-        // prepare the final render's passes
+        */
+        
+        //final render pass
         this._composer2 = new THREE.EffectComposer(this._renderer);
 
         this._composer2.addPass(new THREE.RenderPass(this._scene, this._camera));
@@ -243,18 +245,43 @@ export default class Viewer {
             index += 3;
         }
 
-        const shaderMaterial = new THREE.ShaderMaterial({
-            uniforms: {
-                opacity: { type: 'f', value: 1.0 },
-                mul: { type: 'f', value: 1.0 }
-            },
-            vertexShader: document.getElementById('vertexshader').textContent,
-            fragmentShader: document.getElementById('fragmentshader').textContent,
-            transparent: true,
-            side: THREE.DoubleSide
-        });
-
+        const shaderMaterial = new THREE.ShaderMaterial(default_shader);
         const mesh = new THREE.Mesh(buffergeometry, shaderMaterial);
+        var arrow = new THREE.ArrowHelper(killvec.clone().normalize(), victim);
+
+        mesh.rotation.setFromQuaternion(arrow.quaternion);
+        mesh.position.addVectors(victim, killvec.multiplyScalar(0.5));
+
+        mesh.userData = { isEvent: true };
+        return mesh;
+    }
+    
+    _shotLine(killer, victim) {
+        const killvec = new THREE.Vector3().subVectors(killer, victim);
+        const height = killvec.length();
+
+        const buffergeometry = new THREE.BufferGeometry();
+        const len = 10;
+        
+        const position = new THREE.Float32Attribute(len * 3, 3);
+        buffergeometry.addAttribute('position', position)
+
+        const customColor = new THREE.Float32Attribute(len * 3, 3);
+        buffergeometry.addAttribute('customColor', customColor);
+
+        const d = height / len;
+        let y = -height / 2;
+        let index = 0;
+        for (let i = 0; i < len; ++i) {
+            new THREE.Vector3(0, y, 0).toArray(position.array, index);
+            killerColor.toArray(customColor.array, index);
+            index += 3;
+            y += d;
+        }
+
+        const shaderMaterial = new THREE.ShaderMaterial(default_shader);
+
+        const mesh = new THREE.Line(buffergeometry, shaderMaterial);
         var arrow = new THREE.ArrowHelper(killvec.clone().normalize(), victim);
 
         mesh.rotation.setFromQuaternion(arrow.quaternion);
@@ -283,7 +310,7 @@ export default class Viewer {
             sphere.position.add(victim);
             objs.push(sphere);
         } else if (weapon) {
-            const path = this._shotPath(killer, victim);
+            const path = this._shotLine(killer, victim);
             /*{
                 const geometry = new THREE.SphereGeometry(2, 32, 23);
                 const material = new THREE.MeshBasicMaterial({ color: killerColor, transparent: true, opacity: 0.2 });
