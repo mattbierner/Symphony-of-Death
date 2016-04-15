@@ -23,7 +23,7 @@ export default class MatchView extends React.Component {
 
     componentDidMount() {
         if (!this.viewer) {
-            this.viewer = new Match3dView(document.getElementById('glcanvas'));
+            this.viewer = new Match3dView(document.getElementById('glcanvas'), this);
             this.props.onGetView && this.props.onGetView(this.viewer);
         }
     }
@@ -45,6 +45,10 @@ export default class MatchView extends React.Component {
         this.setState({ shownEvents: next });
         
         this.viewer.render();
+    }
+    
+    onEventActivate(event, activation) {
+        this.props.onEventActivate(event, activation);
     }
 
     render() {

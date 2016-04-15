@@ -1,17 +1,16 @@
 "use strict";
 const Wad = require('imports?this=>window!web-audio-daw');
+import audioCtx from './audio_context';
 import * as num from '../num';
 
 const min = 500;
 const max = 700;
 
-var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
 const freqX = (event, progress) =>
     Math.min(max, 300 + (num.sample(event.KillerWorldLocation.x, event.VictimWorldLocation.x, progress) / 10) * 100);
 
 /**
- * 
+ * Plays sound based on event world location.
  */
 export default (event) => {
     let length = event.KillVectorLength;

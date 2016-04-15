@@ -46,6 +46,10 @@ class Application extends React.Component {
        // this.viewer.highlightEvent(event);
     }
     
+    onEventActivate(event, activation) {
+        this._soundManager.play(event, activation);
+    }
+    
     onTimelineEvent(event) {
         this.setState({ shownEvents: new Set(this.state.shownEvents).add(event) });
         this._soundManager.play(event);
@@ -68,7 +72,8 @@ class Application extends React.Component {
             <div className={'container'}>
                 <MatchView
                     stream={this.state.stream}
-                    shownEvents={this.state.shownEvents} />
+                    shownEvents={this.state.shownEvents}
+                    onEventActivate={this.onEventActivate.bind(this)} />
                 <Controls stream={this.state.stream}
                     onEventFocus={this.onEventFocus.bind(this)}
                     onTimelineEvent={this.onTimelineEvent.bind(this)}

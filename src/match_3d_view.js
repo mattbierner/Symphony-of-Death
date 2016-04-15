@@ -11,6 +11,7 @@ import EffectComposer from 'imports?THREE=three!three/examples/js/postprocessing
 
 import additive_shader from './3d/shaders/additive';
 import default_shader from './3d/shaders/default';
+import wave_shader from './3d/shaders/wave';
 
 import OrbitControls from './OrbitControls'
 
@@ -23,14 +24,25 @@ const victimColor = new THREE.Color(0x00ffff);
 const topSize = 0.1;
 const bottomSize = 0.1;
 const sides = 8;
+const damping = 0.98;
+
+const shaderMaterial = new THREE.ShaderMaterial(wave_shader);
 
 /**
  * 3D match viewer
  */
 export default class Viewer {
-    constructor(canvas) {
-    this._raycaster = new THREE.Raycaster();
+    constructor(canvas, delegate) {
+        this.delegate = delegate;
+        
         this.bounds = { x: 40, y: 40, z: 40 };
+        
+        this._insersecting = new Set();
+        this._active = new Set();
+        this.mouse = null;
+        
+        this._raycaster = new THREE.Raycaster();
+        this._clock = new THREE.Clock();
 
         this._scene = new THREE.Scene();
 
@@ -146,26 +158,13 @@ export default class Viewer {
     }
 
     _highlightTarget(target) {
-        if (this._currentTarget === target)
-            return;
-
-        if (this._currentTarget) {
-            const uniforms = this._currentTarget.material.uniforms;
-            if (uniforms && uniforms.mul) {
-                uniforms.mul.value = 1.0;
-                uniforms.mul.needsUpdate = true;
-            }
+        const uniforms = target.material.uniforms;
+        if (uniforms && uniforms.wave_strength) {
+            uniforms.wave_strength.value = 1.0;
+            uniforms.wave_strength.needsUpdate = true;
+            this._active.add(target);
+            this.delegate.onEventActivate(target.userData.event);
         }
-
-        this._currentTarget = target;
-        if (this._currentTarget) {
-            const uniforms = this._currentTarget.material.uniforms;
-            if (uniforms && uniforms.mul) {
-                uniforms.mul.value = 5.0;
-                uniforms.mul.needsUpdate = true;
-            }
-        }
-        this.render();
     }
 
     showEvent(event) {
@@ -187,113 +186,99 @@ export default class Viewer {
     }
 
     onMouseMove(event) {
-        this.mouse = new THREE.Vector2(
+        const newMouse = new THREE.Vector2(
             (event.clientX / window.innerWidth) * 2 - 1,
             -(event.clientY / window.innerHeight) * 2 + 1);
+        this.checkIntersections(newMouse, this.mouse);
+        this.mouse = newMouse;
         this.update();
     }
 
-    _shotPath(killer, victim) {
-        const topSize = 0.1;
-        const bottomSize = 0.1;
-        const sides = 8;
-
-        const killvec = new THREE.Vector3().subVectors(killer, victim);
-        const height = killvec.length();
-
-        const buffergeometry = new THREE.BufferGeometry();
-
-        const position = new THREE.Float32Attribute(sides * 6 * 3, 3);
-        buffergeometry.addAttribute('position', position)
-
-        const customColor = new THREE.Float32Attribute(sides * 6 * 3, 3);
-        buffergeometry.addAttribute('customColor', customColor);
-
-        for (let i = 0, index = 0; i < sides; ++i) {
+    _createCylinder(index, topSize, bottomSize, y, height, sides, topColor, bottomColor, position, customColor) {
+        for (let i = 0; i < sides; ++i) {
             let start = ((Math.PI * 2.0) / sides) * i;
             let end = ((Math.PI * 2.0) / sides) * (i + 1);
-            let index = i * 6 * position.itemSize;
 
-            new THREE.Vector3(Math.cos(end) * topSize, height / 2, Math.sin(end) * topSize)
+            new THREE.Vector3(Math.cos(end) * topSize, y + height, Math.sin(end) * topSize)
                 .toArray(position.array, index);
-            killerColor.toArray(customColor.array, index);
+            bottomColor.toArray(customColor.array, index);
             index += 3;
 
-            new THREE.Vector3(Math.cos(start) * topSize, height / 2, Math.sin(start) * topSize)
+            new THREE.Vector3(Math.cos(start) * topSize, y + height, Math.sin(start) * topSize)
                 .toArray(position.array, index);
-            killerColor.toArray(customColor.array, index);
+            bottomColor.toArray(customColor.array, index);
             index += 3;
 
-            new THREE.Vector3(Math.cos(start) * bottomSize, -height / 2, Math.sin(start) * bottomSize)
+            new THREE.Vector3(Math.cos(start) * bottomSize, y, Math.sin(start) * bottomSize)
                 .toArray(position.array, index);
-            victimColor.toArray(customColor.array, index);
+            topColor.toArray(customColor.array, index);
             index += 3;
 
-            new THREE.Vector3(Math.cos(start) * bottomSize, -height / 2, Math.sin(start) * bottomSize)
+            new THREE.Vector3(Math.cos(start) * bottomSize, y, Math.sin(start) * bottomSize)
                 .toArray(position.array, index);
-            victimColor.toArray(customColor.array, index);
+            topColor.toArray(customColor.array, index);
             index += 3;
 
-            new THREE.Vector3(Math.cos(end) * bottomSize, -height / 2, Math.sin(end) * bottomSize)
+            new THREE.Vector3(Math.cos(end) * bottomSize, y, Math.sin(end) * bottomSize)
                 .toArray(position.array, index);
-            victimColor.toArray(customColor.array, index);
+            topColor.toArray(customColor.array, index);
             index += 3;
 
-            new THREE.Vector3(Math.cos(end) * topSize, height / 2, Math.sin(end) * topSize)
+            new THREE.Vector3(Math.cos(end) * topSize, y + height, Math.sin(end) * topSize)
                 .toArray(position.array, index);
-            killerColor.toArray(customColor.array, index);
+            bottomColor.toArray(customColor.array, index);
             index += 3;
         }
-
-        const shaderMaterial = new THREE.ShaderMaterial(default_shader);
-        const mesh = new THREE.Mesh(buffergeometry, shaderMaterial);
-        var arrow = new THREE.ArrowHelper(killvec.clone().normalize(), victim);
-
-        mesh.rotation.setFromQuaternion(arrow.quaternion);
-        mesh.position.addVectors(victim, killvec.multiplyScalar(0.5));
-
-        mesh.userData = { isEvent: true };
-        return mesh;
+        return index;
     }
-    
-    _shotLine(killer, victim) {
+
+    _shotLine(event, killer, victim) {
         const killvec = new THREE.Vector3().subVectors(killer, victim);
         const height = killvec.length();
 
         const buffergeometry = new THREE.BufferGeometry();
-        const len = 10;
+        const len = Math.max(5, Math.ceil(height / 1.0));
         
-        const position = new THREE.Float32Attribute(len * 3, 3);
+        const position = new THREE.Float32Attribute(sides * 6 * 3 * len, 3);
         buffergeometry.addAttribute('position', position)
-
-        const customColor = new THREE.Float32Attribute(len * 3, 3);
+        
+        const wave = new THREE.Float32Attribute(sides * 6 * len, 1);
+        buffergeometry.addAttribute('wave', wave)
+        
+        const customColor = new THREE.Float32Attribute(sides * 6 * 3 * len, 3);
         buffergeometry.addAttribute('customColor', customColor);
 
         const d = height / len;
         let y = -height / 2;
         let index = 0;
-        for (let i = 0; i < len; ++i) {
-            new THREE.Vector3(0, y, 0).toArray(position.array, index);
-            killerColor.toArray(customColor.array, index);
-            index += 3;
+        const dWave = Math.PI / (len - 1) * 1;
+        let w = 0;
+        let ii = 0;
+        for (let i = 0; i < len - 1; ++i) {
+            for (let g = 0; g < 3; ++g) {
+                wave.array[ii + 0] = wave.array[ii + 1] = wave.array[ii + 5] = Math.sin(w + dWave);
+                wave.array[ii + 2] = wave.array[ii + 3] = wave.array[ii + 4] =  Math.sin(w);
+                ii += 6;
+            }
+            const color = killerColor.clone().lerp(victimColor, i / len);
+            const nextColor = killerColor.clone().lerp(victimColor, (i + 1) / len);
+            index = this._createCylinder(index, topSize, bottomSize, y, d, 3, color, nextColor, position, customColor);
+            w += dWave;
             y += d;
         }
 
-        const shaderMaterial = new THREE.ShaderMaterial(default_shader);
-
-        const mesh = new THREE.Line(buffergeometry, shaderMaterial);
+        const mesh = new THREE.Mesh(buffergeometry, shaderMaterial.clone());
         var arrow = new THREE.ArrowHelper(killvec.clone().normalize(), victim);
 
         mesh.rotation.setFromQuaternion(arrow.quaternion);
         mesh.position.addVectors(victim, killvec.multiplyScalar(0.5));
 
-        mesh.userData = { isEvent: true };
+        mesh.userData = { event: event };
         return mesh;
     }
 
     addEvent(event, hidden) {
         const {KillerWorldLocation, VictimWorldLocation} = event;
-
 
         const killer = new THREE.Vector3(KillerWorldLocation.x, KillerWorldLocation.y, KillerWorldLocation.z);
         const victim = new THREE.Vector3(VictimWorldLocation.x, VictimWorldLocation.y, VictimWorldLocation.z);
@@ -310,7 +295,7 @@ export default class Viewer {
             sphere.position.add(victim);
             objs.push(sphere);
         } else if (weapon) {
-            const path = this._shotLine(killer, victim);
+            const path = this._shotLine(event, killer, victim);
             /*{
                 const geometry = new THREE.SphereGeometry(2, 32, 23);
                 const material = new THREE.MeshBasicMaterial({ color: killerColor, transparent: true, opacity: 0.2 });
@@ -334,30 +319,56 @@ export default class Viewer {
             this._scene.add(obj);
         }
     }
+    
+    checkIntersections(mouse, previousMouse) {
+        if (!mouse || !previousMouse)
+            return;
+        
+        const samples = 4;
+        const mouseDx = new THREE.Vector2().subVectors(mouse, previousMouse);
+        
+        const found = new Set();
+        
+        for (let i = 0; i < samples; ++i) {
+            this._raycaster.setFromCamera(previousMouse.clone().lerp(mouse, i / samples), this._camera);
+            const intersects = this._raycaster.intersectObjects(this._scene.children);
+
+            for (let {object} of intersects) {
+                if (object && object.userData && object.userData.event)
+                    found.add(object);
+            }
+        }
+        
+        for (let object of found) {
+            if (!this._insersecting.has(object)) 
+                this._highlightTarget(object);
+        }
+        this._insersecting = found;
+    }
 
     update() {
-        this._controls.update();
-
-        if (!this.mouse)
-            return;
-
-        this._raycaster.setFromCamera(this.mouse, this._camera);
-        const intersects = this._raycaster.intersectObjects(this._scene.children);
-
-        if (intersects.length > 0) {
-            for (let intersect of intersects) {
-                var obj = intersect.object;
-                if (obj && obj.userData && obj.userData.isEvent) {
-                    this._highlightTarget(obj);
-                }
+        const delta = this._clock.getDelta();
+        const time = this._clock.getElapsedTime() * 10;
+        
+        for (let child of this._active) {
+            const uniforms = child.material && child.material.uniforms;
+            if (uniforms && uniforms.time) {
+                uniforms.time.value = time;
+                uniforms.time.needsUpdate = true;
             }
-        } else {
-            // this._highlightTarget(null);
+            if (uniforms && uniforms.wave_strength) {
+                uniforms.wave_strength.value *= damping;
+                if (uniforms.wave_strength.value < 0.05)
+                    this._active.delete(child);
+                uniforms.wave_strength.needsUpdate = true;
+            }
         }
+        this._controls.update();
     }
 
     animate() {
         requestAnimationFrame(() => this.animate());
+        
         this.update();
         this.render();
     }
