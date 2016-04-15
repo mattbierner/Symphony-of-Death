@@ -17,6 +17,7 @@ import OrbitControls from './3d/OrbitControls'
 
 import {getWeaponsTable} from './weapons';
 
+const enableGlow = true; 
 
 const killerColor = new THREE.Color(0xff00ff);
 const victimColor = new THREE.Color(0x00ffff);
@@ -86,14 +87,14 @@ export default class Viewer {
         this._composer = new THREE.EffectComposer(this._renderer);
         this._composer.addPass(new THREE.RenderPass(this._scene, this._camera));
 
-        /*
-        const effectHorizBlur = new THREE.ShaderPass(THREE.HorizontalBlurShader);
-        const effectVertiBlur = new THREE.ShaderPass(THREE.VerticalBlurShader);
-        effectHorizBlur.uniforms["h"].value = 2 / window.innerWidth;
-        effectVertiBlur.uniforms["v"].value = 2 / window.innerHeight;
-        this._composer.addPass(effectHorizBlur);
-        this._composer.addPass(effectVertiBlur);
-        */
+        if (enableGlow) { 
+            const effectHorizBlur = new THREE.ShaderPass(THREE.HorizontalBlurShader);
+            const effectVertiBlur = new THREE.ShaderPass(THREE.VerticalBlurShader);
+            effectHorizBlur.uniforms["h"].value = 2 / window.innerWidth;
+            effectVertiBlur.uniforms["v"].value = 2 / window.innerHeight;
+            this._composer.addPass(effectHorizBlur);
+            this._composer.addPass(effectVertiBlur);
+        }
         
         //final render pass
         this._composer2 = new THREE.EffectComposer(this._renderer);
@@ -153,17 +154,40 @@ export default class Viewer {
         }
     }
 
-    highlightEvent(event) {
-        this._highlightTarget(this._getObjectForEvent(event.Id));
+    _drawLine(vec, color) {
+        var material = new THREE.LineBasicMaterial({ color: color });
+        var geometry = new THREE.Geometry(); 
+        geometry.vertices.push( new THREE.Vector3( 0, 0, 0 ), vec );
+        return new THREE.Line( geometry, material );
     }
 
-    _highlightTarget(target) {
+    _highlightTarget(target, mouse, previousMouse) {
         const uniforms = target.material.uniforms;
         if (uniforms && uniforms.wave_strength) {
             uniforms.wave_strength.value = 1.0;
             uniforms.wave_strength.needsUpdate = true;
+            
+            const killVec = target.userData.killVec;
+            if (killVec) {
+                this._raycaster.setFromCamera(mouse, this._camera)
+                const ray = this._raycaster.ray.direction.clone();
+                this._raycaster.setFromCamera(previousMouse, this._camera)
+                const ray2 = this._raycaster.ray.direction.clone();
+
+                const dRay = new THREE.Vector3().subVectors(ray, ray2);
+                const mag = dRay.length();
+                dRay.applyQuaternion(target.quaternion)
+                dRay.y = 0;
+                dRay.normalize().multiplyScalar(mag);
+                
+                uniforms.wave_direction.value = dRay;
+                uniforms.wave_direction.needsUpdate = true;
+            }
+            
             this._active.add(target);
-            this.delegate.onEventActivate(target.userData.event);
+            this.delegate.onEventActivate(target.userData.event, {
+                velocity: new THREE.Vector2().subVectors(mouse, previousMouse).length()
+            });
         }
     }
 
@@ -273,7 +297,7 @@ export default class Viewer {
         mesh.rotation.setFromQuaternion(arrow.quaternion);
         mesh.position.addVectors(victim, killvec.multiplyScalar(0.5));
 
-        mesh.userData = { event: event };
+        mesh.userData = { event: event, killVec: killvec  };
         return mesh;
     }
 
@@ -338,10 +362,10 @@ export default class Viewer {
                     found.add(object);
             }
         }
-        
+        mouseDx.normalize();
         for (let object of found) {
             if (!this._insersecting.has(object)) 
-                this._highlightTarget(object);
+                this._highlightTarget(object, mouse, previousMouse);
         }
         this._insersecting = found;
     }

@@ -46,8 +46,8 @@ class Application extends React.Component {
        // this.viewer.highlightEvent(event);
     }
     
-    onEventActivate(event, activation) {
-        this._soundManager.play(event, activation);
+    onEventActivate(event, data) {
+        this._soundManager.play(event, data);
     }
     
     onTimelineEvent(event) {

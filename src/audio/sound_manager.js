@@ -9,9 +9,9 @@ export default class SoundManager {
         this._generators = generators || [];
     }
     
-    play(event) {
+    play(event, data) {
         this._generators.forEach(generator => {
-            const {sound, duration} = generator(event);
+            const {sound, duration} = generator(event, data);
             this._playSound(sound, duration);
         });
     }

@@ -5,6 +5,8 @@ import weapon_base from './combinators/weapon'
 const min = 100;
 const max = 1200;
 
+const maxGain = 0.1;
+
 const duration = 2;
 
 /**
@@ -17,7 +19,9 @@ export default weapon_base((weapon, event, data) => {
     if (weapon.type === 'Grenade' || event.IsMelee)
         length = 0;
     
-    let progress = 300 + (3.0 - length) * 200;
+    const gain = isNaN(data.velocity) ? maxGain : Math.min(maxGain, data.velocity); 
+    
+    let progress = 400 + (5.0 - length) * 150;
     let p0 = Math.min(max, Math.max(min, progress));
 
     const xOscillator = audioCtx.createOscillator();
@@ -34,8 +38,8 @@ export default weapon_base((weapon, event, data) => {
         sound: {
             play() {
                 gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
-                gainNode.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + duration * 0.2);
-                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime + duration * 0.7);
+                gainNode.gain.linearRampToValueAtTime(gain, audioCtx.currentTime + duration * 0.2);
+                gainNode.gain.setValueAtTime(gain, audioCtx.currentTime + duration * 0.7);
                 gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration * 1);
 
                 xOscillator.start();
