@@ -1,7 +1,7 @@
 "use strict";
 const Wad = require('imports?this=>window!web-audio-daw');
-import audioCtx from './audio_context';
-import * as num from '../num';
+import audioCtx from '../audio_context';
+import * as num from '../../num';
 
 const min = 500;
 const max = 700;

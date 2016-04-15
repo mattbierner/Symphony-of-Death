@@ -13,7 +13,7 @@ import additive_shader from './3d/shaders/additive';
 import default_shader from './3d/shaders/default';
 import wave_shader from './3d/shaders/wave';
 
-import OrbitControls from './OrbitControls'
+import OrbitControls from './3d/OrbitControls'
 
 import {getWeaponsTable} from './weapons';
 

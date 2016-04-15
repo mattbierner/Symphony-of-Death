@@ -11,10 +11,10 @@ import MatchView from './match_view.jsx'
 
 import {getWeaponsTable} from './weapons';
 
-import SoundManager from './sound_manager';
-import Sine from './sound_generators/sine';
-import WeirdMaleScreams from './sound_generators/weird_male_screams'
-import Theremin from './sound_generators/theremin'
+import SoundManager from './audio/sound_manager';
+import Sine from './audio/sound_generators/sine';
+import WeirdMaleScreams from './audio/sound_generators/weird_male_screams'
+import Theremin from './audio/sound_generators/theremin'
 
 const matchId = "5b27a620-cebf-40a3-b09c-a37f15fd135f"
 

@@ -1,7 +1,6 @@
 "use strict";
-const Wad = require('imports?this=>window!web-audio-daw');
-import audioCtx from './audio_context';
-import weapon_base from './weapon_base'
+import audioCtx from '../audio_context';
+import weapon_base from './combinators/weapon'
 
 const min = 100;
 const max = 1200;
