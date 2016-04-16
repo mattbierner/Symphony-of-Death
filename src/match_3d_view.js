@@ -17,7 +17,7 @@ import OrbitControls from './3d/OrbitControls'
 
 import {getWeaponsTable} from './weapons';
 
-const enableGlow = true; 
+const enableGlow = false; 
 
 const killerColor = new THREE.Color(0xff00ff);
 const victimColor = new THREE.Color(0x00ffff);
@@ -28,6 +28,15 @@ const sides = 8;
 const damping = 0.98;
 
 const shaderMaterial = new THREE.ShaderMaterial(wave_shader);
+
+/**
+ * Create a plane from two vectors that share an origin.
+ */
+const planeFromVectors = (r1, r2, origin) => {
+    const norm = new THREE.Vector3().crossVectors(r1, r2);
+    const le = -norm.dot(origin.clone());
+    return new THREE.Plane(norm, le);
+};
 
 /**
  * 3D match viewer
@@ -56,6 +65,11 @@ export default class Viewer {
         document.addEventListener('mousemove', this.onMouseMove.bind(this), false);
 
         //this._addPlanes();
+        
+        const geometry = new THREE.PlaneGeometry(5, 5);
+        const material = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide });
+        this._plane =    new THREE.Mesh(geometry, material);
+      //  this._scene.add(this._plane);
         this.onWindowResize();
         this.animate();
     }
@@ -310,7 +324,6 @@ export default class Viewer {
         const weapon = getWeaponsTable().get(event.KillerWeaponStockId);
         const height = killvec.length();
 
-
         let objs = [];
         if ((weapon && weapon.type === 'Grenade') || event.IsMelee) {
             const geometry = new THREE.SphereGeometry(0.2, 32, 23);
@@ -347,22 +360,35 @@ export default class Viewer {
     checkIntersections(mouse, previousMouse) {
         if (!mouse || !previousMouse)
             return;
+        if (previousMouse.equals(mouse))
+            return;
         
-        const samples = 4;
-        const mouseDx = new THREE.Vector2().subVectors(mouse, previousMouse);
+        this._raycaster.setFromCamera(previousMouse, this._camera);
+        const previousRay = this._raycaster.ray.clone();
         
-        const found = new Set();
+        this._raycaster.setFromCamera(mouse, this._camera);
+        const currentRay = this._raycaster.ray.clone();
         
-        for (let i = 0; i < samples; ++i) {
-            this._raycaster.setFromCamera(previousMouse.clone().lerp(mouse, i / samples), this._camera);
-            const intersects = this._raycaster.intersectObjects(this._scene.children);
+        const plane = planeFromVectors(previousRay.direction, currentRay.direction, currentRay.origin);
+        
+        const upperPlane = planeFromVectors(plane.normal, currentRay.direction, currentRay.origin);
+        const lowerPlane = planeFromVectors(plane.normal, previousRay.direction, currentRay.origin);
 
-            for (let {object} of intersects) {
-                if (object && object.userData && object.userData.event)
-                    found.add(object);
+        const found = new Set();
+
+        this._scene.traverse(obj => {
+            if (!obj.userData || !obj.userData.event || obj.hidden)
+                return;
+            
+            const intersection = plane.intersectLine(obj.userData.event.ShotLine);
+            if (!intersection)
+                return;
+            
+            if (upperPlane.distanceToPoint(intersection) < 0 && lowerPlane.distanceToPoint(intersection) > 0) {
+                found.add(obj);
             }
-        }
-        mouseDx.normalize();
+        });
+
         for (let object of found) {
             if (!this._insersecting.has(object)) 
                 this._highlightTarget(object, mouse, previousMouse);

@@ -31144,7 +31144,7 @@
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	var enableGlow = true;
+	var enableGlow = false;
 
 	var killerColor = new _three2.default.Color(0xff00ff);
 	var victimColor = new _three2.default.Color(0x00ffff);
@@ -31155,6 +31155,15 @@
 	var damping = 0.98;
 
 	var shaderMaterial = new _three2.default.ShaderMaterial(_wave2.default);
+
+	/**
+	 * Create a plane from two vectors that share an origin.
+	 */
+	var planeFromVectors = function planeFromVectors(r1, r2, origin) {
+	    var norm = new _three2.default.Vector3().crossVectors(r1, r2);
+	    var le = -norm.dot(origin.clone());
+	    return new _three2.default.Plane(norm, le);
+	};
 
 	/**
 	 * 3D match viewer
@@ -31186,6 +31195,11 @@
 	        document.addEventListener('mousemove', this.onMouseMove.bind(this), false);
 
 	        //this._addPlanes();
+
+	        var geometry = new _three2.default.PlaneGeometry(5, 5);
+	        var material = new _three2.default.MeshBasicMaterial({ color: 0xffff00, side: _three2.default.DoubleSide });
+	        this._plane = new _three2.default.Mesh(geometry, material);
+	        //  this._scene.add(this._plane);
 	        this.onWindowResize();
 	        this.animate();
 	    }
@@ -31513,63 +31527,53 @@
 	        key: 'checkIntersections',
 	        value: function checkIntersections(mouse, previousMouse) {
 	            if (!mouse || !previousMouse) return;
+	            if (previousMouse.equals(mouse)) return;
 
-	            var samples = 4;
-	            var mouseDx = new _three2.default.Vector2().subVectors(mouse, previousMouse);
+	            this._raycaster.setFromCamera(previousMouse, this._camera);
+	            var previousRay = this._raycaster.ray.clone();
+
+	            this._raycaster.setFromCamera(mouse, this._camera);
+	            var currentRay = this._raycaster.ray.clone();
+
+	            var plane = planeFromVectors(previousRay.direction, currentRay.direction, currentRay.origin);
+
+	            var upperPlane = planeFromVectors(plane.normal, currentRay.direction, currentRay.origin);
+	            var lowerPlane = planeFromVectors(plane.normal, previousRay.direction, currentRay.origin);
 
 	            var found = new Set();
 
-	            for (var i = 0; i < samples; ++i) {
-	                this._raycaster.setFromCamera(previousMouse.clone().lerp(mouse, i / samples), this._camera);
-	                var intersects = this._raycaster.intersectObjects(this._scene.children);
+	            this._scene.traverse(function (obj) {
+	                if (!obj.userData || !obj.userData.event || obj.hidden) return;
 
-	                var _iteratorNormalCompletion2 = true;
-	                var _didIteratorError2 = false;
-	                var _iteratorError2 = undefined;
+	                var intersection = plane.intersectLine(obj.userData.event.ShotLine);
+	                if (!intersection) return;
 
-	                try {
-	                    for (var _iterator2 = intersects[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	                        var object = _step2.value.object;
-
-	                        if (object && object.userData && object.userData.event) found.add(object);
-	                    }
-	                } catch (err) {
-	                    _didIteratorError2 = true;
-	                    _iteratorError2 = err;
-	                } finally {
-	                    try {
-	                        if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	                            _iterator2.return();
-	                        }
-	                    } finally {
-	                        if (_didIteratorError2) {
-	                            throw _iteratorError2;
-	                        }
-	                    }
+	                if (upperPlane.distanceToPoint(intersection) < 0 && lowerPlane.distanceToPoint(intersection) > 0) {
+	                    found.add(obj);
 	                }
-	            }
-	            mouseDx.normalize();
-	            var _iteratorNormalCompletion3 = true;
-	            var _didIteratorError3 = false;
-	            var _iteratorError3 = undefined;
+	            });
+
+	            var _iteratorNormalCompletion2 = true;
+	            var _didIteratorError2 = false;
+	            var _iteratorError2 = undefined;
 
 	            try {
-	                for (var _iterator3 = found[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-	                    var object = _step3.value;
+	                for (var _iterator2 = found[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	                    var object = _step2.value;
 
 	                    if (!this._insersecting.has(object)) this._highlightTarget(object, mouse, previousMouse);
 	                }
 	            } catch (err) {
-	                _didIteratorError3 = true;
-	                _iteratorError3 = err;
+	                _didIteratorError2 = true;
+	                _iteratorError2 = err;
 	            } finally {
 	                try {
-	                    if (!_iteratorNormalCompletion3 && _iterator3.return) {
-	                        _iterator3.return();
+	                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	                        _iterator2.return();
 	                    }
 	                } finally {
-	                    if (_didIteratorError3) {
-	                        throw _iteratorError3;
+	                    if (_didIteratorError2) {
+	                        throw _iteratorError2;
 	                    }
 	                }
 	            }
@@ -31582,13 +31586,13 @@
 	            var delta = this._clock.getDelta();
 	            var time = this._clock.getElapsedTime() * 10;
 
-	            var _iteratorNormalCompletion4 = true;
-	            var _didIteratorError4 = false;
-	            var _iteratorError4 = undefined;
+	            var _iteratorNormalCompletion3 = true;
+	            var _didIteratorError3 = false;
+	            var _iteratorError3 = undefined;
 
 	            try {
-	                for (var _iterator4 = this._active[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-	                    var child = _step4.value;
+	                for (var _iterator3 = this._active[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+	                    var child = _step3.value;
 
 	                    var uniforms = child.material && child.material.uniforms;
 	                    if (uniforms && uniforms.time) {
@@ -31602,16 +31606,16 @@
 	                    }
 	                }
 	            } catch (err) {
-	                _didIteratorError4 = true;
-	                _iteratorError4 = err;
+	                _didIteratorError3 = true;
+	                _iteratorError3 = err;
 	            } finally {
 	                try {
-	                    if (!_iteratorNormalCompletion4 && _iterator4.return) {
-	                        _iterator4.return();
+	                    if (!_iteratorNormalCompletion3 && _iterator3.return) {
+	                        _iterator3.return();
 	                    }
 	                } finally {
-	                    if (_didIteratorError4) {
-	                        throw _iteratorError4;
+	                    if (_didIteratorError3) {
+	                        throw _iteratorError3;
 	                    }
 	                }
 	            }
@@ -36997,14 +37001,11 @@
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+	var THREE = __webpack_require__(266);
 	var createTree = __webpack_require__(288);
 	var moment = __webpack_require__(164);
 
 	var example = __webpack_require__(289);
-
-	var vectorLength = function vectorLength(a, b) {
-	    return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2));
-	};
 
 	var createTreeFromEvents = function createTreeFromEvents(events) {
 	    return events.reduce(function (tree, event) {
@@ -37033,19 +37034,23 @@
 	            maxY = 0,
 	            maxZ = 0;
 	        var events = eventsData.map(function (eventData, i) {
-	            maxX = Math.max(maxX, Math.abs(eventData.KillerWorldLocation.x), Math.abs(eventData.VictimWorldLocation.x));
-	            maxY = Math.max(maxY, Math.abs(eventData.KillerWorldLocation.y), Math.abs(eventData.VictimWorldLocation.y));
-	            maxZ = Math.max(maxZ, Math.abs(eventData.KillerWorldLocation.z), Math.abs(eventData.VictimWorldLocation.z));
+	            var KillerWorldLocation = new THREE.Vector3().copy(eventData.KillerWorldLocation);
+	            var VictimWorldLocation = new THREE.Vector3().copy(eventData.VictimWorldLocation);
+
+	            maxX = Math.max(maxX, Math.abs(KillerWorldLocation.x), Math.abs(VictimWorldLocation.x));
+	            maxY = Math.max(maxY, Math.abs(KillerWorldLocation.y), Math.abs(VictimWorldLocation.y));
+	            maxZ = Math.max(maxZ, Math.abs(KillerWorldLocation.z), Math.abs(VictimWorldLocation.z));
+
+	            var KillVector = new THREE.Vector3().subVectors(KillerWorldLocation, VictimWorldLocation);
 
 	            return Object.assign({}, eventData, {
 	                Id: '' + i,
 	                MatchProgress: (eventData.TimeSinceStart + 1.0) / duration,
-	                KillVector: {
-	                    x: eventData.KillerWorldLocation.x - eventData.VictimWorldLocation.x,
-	                    y: eventData.KillerWorldLocation.y - eventData.VictimWorldLocation.y,
-	                    z: eventData.KillerWorldLocation.z - eventData.VictimWorldLocation.z
-	                },
-	                KillVectorLength: vectorLength(eventData.KillerWorldLocation, eventData.VictimWorldLocation),
+	                KillVector: KillVector,
+	                ShotLine: new THREE.Line3(KillerWorldLocation, VictimWorldLocation),
+	                KillerWorldLocation: KillerWorldLocation,
+	                VictimWorldLocation: VictimWorldLocation,
+	                KillVectorLength: KillVector.length(),
 	                IsMelee: eventData.IsGroundPound || eventData.IsMelee || eventData.IsShoulderBash
 	            });
 	        });

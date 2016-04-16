@@ -1,11 +1,9 @@
 "use strict";
+const THREE = require('three');
 const createTree = require("functional-red-black-tree")
 const moment = require('moment');
 
 const example = require('./data/example.json');
-
-const vectorLength = (a, b) => 
-    Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2));
 
 const createTreeFromEvents = events =>
     events.reduce(
@@ -29,19 +27,23 @@ class DeathStream {
         
         let maxX = 0, maxY = 0, maxZ = 0;
         const events = eventsData.map((eventData, i) => {
-            maxX = Math.max(maxX, Math.abs(eventData.KillerWorldLocation.x), Math.abs(eventData.VictimWorldLocation.x));
-            maxY = Math.max(maxY, Math.abs(eventData.KillerWorldLocation.y), Math.abs(eventData.VictimWorldLocation.y));
-            maxZ = Math.max(maxZ, Math.abs(eventData.KillerWorldLocation.z), Math.abs(eventData.VictimWorldLocation.z));
+            const KillerWorldLocation = new THREE.Vector3().copy(eventData.KillerWorldLocation);
+            const VictimWorldLocation = new THREE.Vector3().copy(eventData.VictimWorldLocation);
+            
+            maxX = Math.max(maxX, Math.abs(KillerWorldLocation.x), Math.abs(VictimWorldLocation.x));
+            maxY = Math.max(maxY, Math.abs(KillerWorldLocation.y), Math.abs(VictimWorldLocation.y));
+            maxZ = Math.max(maxZ, Math.abs(KillerWorldLocation.z), Math.abs(VictimWorldLocation.z));
 
+            const KillVector = new THREE.Vector3().subVectors(KillerWorldLocation, VictimWorldLocation);
+            
             return Object.assign({}, eventData, {
                 Id: '' + i,
                 MatchProgress: (eventData.TimeSinceStart + 1.0) / duration,
-                KillVector: {
-                    x: eventData.KillerWorldLocation.x - eventData.VictimWorldLocation.x,
-                    y: eventData.KillerWorldLocation.y - eventData.VictimWorldLocation.y,
-                    z: eventData.KillerWorldLocation.z - eventData.VictimWorldLocation.z,
-                },
-                KillVectorLength: vectorLength(eventData.KillerWorldLocation, eventData.VictimWorldLocation),
+                KillVector: KillVector,
+                ShotLine: new THREE.Line3(KillerWorldLocation, VictimWorldLocation),
+                KillerWorldLocation: KillerWorldLocation,
+                VictimWorldLocation: VictimWorldLocation,
+                KillVectorLength: KillVector.length(),
                 IsMelee: eventData.IsGroundPound || eventData.IsMelee || eventData.IsShoulderBash
             });
         });
