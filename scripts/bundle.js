@@ -123,6 +123,8 @@
 	            }).catch(function (x) {
 	                return console.error(x);
 	            });
+
+	            this._soundManager.playAmbient('../sounds/spaceambient.wav');
 	        }
 	    }, {
 	        key: 'onEventFocus',
@@ -31543,7 +31545,7 @@
 	            var found = new Set();
 
 	            this._scene.traverse(function (obj) {
-	                if (!obj.userData || !obj.userData.event || obj.hidden) return;
+	                if (!obj.userData || !obj.userData.event || !obj.visible) return;
 
 	                var intersection = plane.intersectLine(obj.userData.event.ShotLine);
 	                if (!intersection) return;
@@ -36385,13 +36387,9 @@
 
 /***/ },
 /* 279 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-
-	/**
-	 * Manages playing sounds
-	 */
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
@@ -36399,18 +36397,38 @@
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+	var _audio_context = __webpack_require__(281);
+
+	var _audio_context2 = _interopRequireDefault(_audio_context);
+
+	var _buffer_loader = __webpack_require__(290);
+
+	var _buffer_loader2 = _interopRequireDefault(_buffer_loader);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	/**
+	 * Manages playing sounds
+	 */
 
 	var SoundManager = function () {
 	    function SoundManager(generators) {
 	        _classCallCheck(this, SoundManager);
 
 	        this._playing = new Set();
+	        this._longPlaying = new Set();
 	        this._generators = generators || [];
 	    }
 
+	    /**
+	     * Play a sound for a given event.
+	     */
+
+
 	    _createClass(SoundManager, [{
-	        key: "play",
+	        key: 'play',
 	        value: function play(event, data) {
 	            var _this = this;
 
@@ -36425,11 +36443,31 @@
 	        }
 
 	        /**
+	         * Play a looping ambient sound.
+	         */
+
+	    }, {
+	        key: 'playAmbient',
+	        value: function playAmbient(file) {
+	            var _this2 = this;
+
+	            var bufferLoader = new _buffer_loader2.default(_audio_context2.default, [file], function (buffers) {
+	                var source = _audio_context2.default.createBufferSource();
+	                source.buffer = buffers[0];
+	                source.loop = true;
+	                source.connect(_audio_context2.default.destination);
+	                source.start();
+	                _this2._longPlaying.add(source);
+	            });
+	            bufferLoader.load();
+	        }
+
+	        /**
 	         * Stop all playing audio.
 	         */
 
 	    }, {
-	        key: "stopAll",
+	        key: 'stopAll',
 	        value: function stopAll() {
 	            var _iteratorNormalCompletion = true;
 	            var _didIteratorError = false;
@@ -36460,20 +36498,20 @@
 	        }
 
 	        /**
-	        * Play a sound
-	        */
+	         * Play a sound
+	         */
 
 	    }, {
-	        key: "_playSound",
+	        key: '_playSound',
 	        value: function _playSound(sound, duration) {
-	            var _this2 = this;
+	            var _this3 = this;
 
 	            this._playing.add(sound);
 	            sound.play();
 	            if (duration) {
 	                setTimeout(function () {
-	                    sound.stop();
-	                    _this2._playing.delete(sound);
+	                    //  sound.stop();
+	                    _this3._playing.delete(sound);
 	                }, duration);
 	            }
 	        }
@@ -42515,6 +42553,60 @@
 			}
 		],
 		"IsCompleteSetOfEvents": true
+	};
+
+/***/ },
+/* 290 */
+/***/ function(module, exports) {
+
+	"use strict";
+	//http://www.html5rocks.com/en/tutorials/webaudio/intro/#toc-abstract
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.default = BufferLoader;
+	function BufferLoader(context, urlList, callback) {
+	    this.context = context;
+	    this.urlList = urlList;
+	    this.onload = callback;
+	    this.bufferList = new Array();
+	    this.loadCount = 0;
+	}
+
+	BufferLoader.prototype.loadBuffer = function (url, index) {
+	    // Load buffer asynchronously
+	    var request = new XMLHttpRequest();
+	    request.open("GET", url, true);
+	    request.responseType = "arraybuffer";
+
+	    var loader = this;
+
+	    request.onload = function () {
+	        // Asynchronously decode the audio file data in request.response
+	        loader.context.decodeAudioData(request.response, function (buffer) {
+	            if (!buffer) {
+	                alert('error decoding file data: ' + url);
+	                return;
+	            }
+	            loader.bufferList[index] = buffer;
+	            if (++loader.loadCount == loader.urlList.length) loader.onload(loader.bufferList);
+	        }, function (error) {
+	            console.error('decodeAudioData error', error);
+	        });
+	    };
+
+	    request.onerror = function () {
+	        alert('BufferLoader: XHR error');
+	    };
+
+	    request.send();
+	};
+
+	BufferLoader.prototype.load = function () {
+	    for (var i = 0; i < this.urlList.length; ++i) {
+	        this.loadBuffer(this.urlList[i], i);
+	    }
 	};
 
 /***/ }

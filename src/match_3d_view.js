@@ -377,7 +377,7 @@ export default class Viewer {
         const found = new Set();
 
         this._scene.traverse(obj => {
-            if (!obj.userData || !obj.userData.event || obj.hidden)
+            if (!obj.userData || !obj.userData.event || !obj.visible)
                 return;
             
             const intersection = plane.intersectLine(obj.userData.event.ShotLine);

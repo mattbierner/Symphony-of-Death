@@ -40,6 +40,8 @@ class Application extends React.Component {
                 this.setState({ stream: stream });
             })
             .catch(x => console.error(x))
+        
+        this._soundManager.playAmbient('../sounds/spaceambient.wav');
     }
     
     onEventFocus(event) {
