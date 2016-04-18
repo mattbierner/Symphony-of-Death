@@ -31475,7 +31475,7 @@
 	            this.mouse = new _three2.default.Vector2(event.clientX / width * 2 - 1, -(event.clientY / height) * 2 + 1);
 
 	            if (this.isMouseDown) {
-	                this.checkIntersections(this.mouse, previousMouse);
+	                this.handleIntersections(this.mouse, previousMouse);
 	            }
 	        }
 	    }, {
@@ -31485,7 +31485,7 @@
 	            var height = killvec.length();
 
 	            var buffergeometry = new _three2.default.BufferGeometry();
-	            var len = Math.max(5, Math.ceil(height / 1.0));
+	            var len = Math.max(3, Math.ceil(height / 1.0));
 
 	            var position = new _three2.default.Float32Attribute(sides * 6 * 3 * len, 3);
 	            buffergeometry.addAttribute('position', position);
@@ -31503,16 +31503,12 @@
 	            var w = 0;
 	            var ii = 0;
 	            for (var i = 0; i < len - 1; ++i) {
-	                for (var g = 0; g < 3; ++g) {
-	                    wave.array[ii + 0] = wave.array[ii + 1] = wave.array[ii + 5] = Math.sin(w + dWave);
-	                    wave.array[ii + 2] = wave.array[ii + 3] = wave.array[ii + 4] = Math.sin(w);
-	                    ii += 6;
-	                }
 	                var color = killerColor.clone().lerp(victimColor, i / len);
 	                var nextColor = killerColor.clone().lerp(victimColor, (i + 1) / len);
 
 	                tube.createGeometry(index, topSize, bottomSize, y, d, 3, position);
 	                index = tube.fillData(index, 3, color, nextColor, customColor);
+	                ii = tube.fillData(ii, 3, Math.sin(w), Math.sin(w + dWave), wave);
 
 	                w += dWave;
 	                y += d;
@@ -31593,36 +31589,15 @@
 	                }
 	            }
 	        }
+
+	        /**
+	         * Handle any objects that mouse intersected with while moving.
+	         */
+
 	    }, {
-	        key: 'checkIntersections',
-	        value: function checkIntersections(mouse, previousMouse) {
-	            if (!mouse || !previousMouse) return;
-	            if (previousMouse.equals(mouse)) return;
-
-	            this._raycaster.setFromCamera(previousMouse, this._camera);
-	            var previousRay = this._raycaster.ray.clone();
-
-	            this._raycaster.setFromCamera(mouse, this._camera);
-	            var currentRay = this._raycaster.ray.clone();
-
-	            var plane = planeFromVectors(previousRay.direction, currentRay.direction, currentRay.origin);
-
-	            var upperPlane = planeFromVectors(plane.normal, currentRay.direction, currentRay.origin);
-	            var lowerPlane = planeFromVectors(plane.normal, previousRay.direction, currentRay.origin);
-
-	            var found = new Set();
-
-	            this._scene.traverse(function (obj) {
-	                if (!obj.userData || !obj.userData.event || !obj.visible) return;
-
-	                var intersection = plane.intersectLine(obj.userData.event.ShotLine);
-	                if (!intersection) return;
-
-	                if (upperPlane.distanceToPoint(intersection) < 0 && lowerPlane.distanceToPoint(intersection) > 0) {
-	                    found.add(obj);
-	                }
-	            });
-
+	        key: 'handleIntersections',
+	        value: function handleIntersections(mouse, previousMouse) {
+	            var found = this.findMouseIntersections(mouse, previousMouse);
 	            var _iteratorNormalCompletion2 = true;
 	            var _didIteratorError2 = false;
 	            var _iteratorError2 = undefined;
@@ -31649,6 +31624,41 @@
 	            }
 
 	            this._insersecting = found;
+	        }
+
+	        /**
+	         * Find all objects that mouse intersected with while moving.
+	         */
+
+	    }, {
+	        key: 'findMouseIntersections',
+	        value: function findMouseIntersections(mouse, previousMouse) {
+	            var found = new Set();
+
+	            if (!mouse || !previousMouse || previousMouse.equals(mouse)) return found;
+
+	            this._raycaster.setFromCamera(previousMouse, this._camera);
+	            var previousRay = this._raycaster.ray.clone();
+
+	            this._raycaster.setFromCamera(mouse, this._camera);
+	            var currentRay = this._raycaster.ray.clone();
+
+	            var plane = planeFromVectors(previousRay.direction, currentRay.direction, currentRay.origin);
+
+	            var upperPlane = planeFromVectors(plane.normal, currentRay.direction, currentRay.origin);
+	            var lowerPlane = planeFromVectors(plane.normal, previousRay.direction, currentRay.origin);
+
+	            this._scene.traverse(function (obj) {
+	                if (!obj.userData || !obj.userData.event || !obj.visible) return;
+
+	                var intersection = plane.intersectLine(obj.userData.event.ShotLine);
+	                if (!intersection) return;
+
+	                if (upperPlane.distanceToPoint(intersection) < 0 && lowerPlane.distanceToPoint(intersection) > 0) {
+	                    found.add(obj);
+	                }
+	            });
+	            return found;
 	        }
 	    }, {
 	        key: 'update',
@@ -42720,25 +42730,35 @@
 	    return index;
 	};
 
+	var simpleCopy = function simpleCopy(element, array, index) {
+	    return array[index] = element;
+	};
+
+	var vectorCopy = function vectorCopy(element, array, index) {
+	    return element.toArray(array, index);
+	};
+
 	var fillData = exports.fillData = function fillData(index, sides, topColor, bottomColor, customColor) {
 	    var elementSize = customColor.itemSize;
+	    var copy = elementSize === 1 ? simpleCopy : vectorCopy;
+
 	    for (var i = 0; i < sides; ++i) {
-	        bottomColor.toArray(customColor.array, index);
+	        copy(bottomColor, customColor.array, index);
 	        index += elementSize;
 
-	        bottomColor.toArray(customColor.array, index);
+	        copy(bottomColor, customColor.array, index);
 	        index += elementSize;
 
-	        topColor.toArray(customColor.array, index);
+	        copy(topColor, customColor.array, index);
 	        index += elementSize;
 
-	        topColor.toArray(customColor.array, index);
+	        copy(topColor, customColor.array, index);
 	        index += elementSize;
 
-	        topColor.toArray(customColor.array, index);
+	        copy(topColor, customColor.array, index);
 	        index += elementSize;
 
-	        bottomColor.toArray(customColor.array, index);
+	        copy(bottomColor, customColor.array, index);
 	        index += elementSize;
 	    }
 	    return index;

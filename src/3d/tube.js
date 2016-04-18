@@ -33,25 +33,33 @@ export const createGeometry = (index, topSize, bottomSize, y, height, sides, pos
     return index;
 };
 
+const simpleCopy = (element, array, index) =>
+    array[index] = element;
+
+const vectorCopy = (element, array, index) =>
+    element.toArray(array, index);
+
 export const fillData = (index, sides, topColor, bottomColor, customColor) => {
     const elementSize = customColor.itemSize;
+    let copy = elementSize === 1 ? simpleCopy : vectorCopy;
+    
     for (let i = 0; i < sides; ++i) {
-        bottomColor.toArray(customColor.array, index);
+        copy(bottomColor, customColor.array, index);
         index += elementSize;
 
-        bottomColor.toArray(customColor.array, index);
+        copy(bottomColor, customColor.array, index);
         index += elementSize;
 
-        topColor.toArray(customColor.array, index);
+        copy(topColor, customColor.array, index);
         index += elementSize;
         
-        topColor.toArray(customColor.array, index);
+        copy(topColor, customColor.array, index);
         index += elementSize;
 
-        topColor.toArray(customColor.array, index);
+        copy(topColor, customColor.array, index);
         index += elementSize;
         
-        bottomColor.toArray(customColor.array, index);
+        copy(bottomColor, customColor.array, index);
         index += elementSize;
     }
     return index;

@@ -274,7 +274,7 @@ export default class Viewer {
             -(event.clientY / height) * 2 + 1);
         
         if (this.isMouseDown) {
-            this.checkIntersections(this.mouse, previousMouse);
+            this.handleIntersections(this.mouse, previousMouse);
         }
     }
 
@@ -283,7 +283,7 @@ export default class Viewer {
         const height = killvec.length();
 
         const buffergeometry = new THREE.BufferGeometry();
-        const len = Math.max(5, Math.ceil(height / 1.0));
+        const len = Math.max(3, Math.ceil(height / 1.0));
         
         const position = new THREE.Float32Attribute(sides * 6 * 3 * len, 3);
         buffergeometry.addAttribute('position', position)
@@ -301,16 +301,12 @@ export default class Viewer {
         let w = 0;
         let ii = 0;
         for (let i = 0; i < len - 1; ++i) {
-            for (let g = 0; g < 3; ++g) {
-                wave.array[ii + 0] = wave.array[ii + 1] = wave.array[ii + 5] = Math.sin(w + dWave);
-                wave.array[ii + 2] = wave.array[ii + 3] = wave.array[ii + 4] =  Math.sin(w);
-                ii += 6;
-            }
             const color = killerColor.clone().lerp(victimColor, i / len);
             const nextColor = killerColor.clone().lerp(victimColor, (i + 1) / len);
             
             tube.createGeometry(index, topSize, bottomSize, y, d, 3, position);
             index = tube.fillData(index, 3, color, nextColor, customColor);
+            ii = tube.fillData(ii, 3, Math.sin(w), Math.sin(w + dWave), wave);
 
             w += dWave;
             y += d;
@@ -368,11 +364,26 @@ export default class Viewer {
         }
     }
     
-    checkIntersections(mouse, previousMouse) {
-        if (!mouse || !previousMouse)
-            return;
-        if (previousMouse.equals(mouse))
-            return;
+    /**
+     * Handle any objects that mouse intersected with while moving.
+     */
+    handleIntersections(mouse, previousMouse) {
+        const found = this.findMouseIntersections(mouse, previousMouse);
+        for (let object of found) {
+            if (!this._insersecting.has(object)) 
+                this._highlightTarget(object, mouse, previousMouse);
+        }
+        this._insersecting = found;
+    }
+    
+    /**
+     * Find all objects that mouse intersected with while moving.
+     */
+    findMouseIntersections(mouse, previousMouse) {
+        const found = new Set();
+
+        if (!mouse || !previousMouse || previousMouse.equals(mouse))
+            return found;
         
         this._raycaster.setFromCamera(previousMouse, this._camera);
         const previousRay = this._raycaster.ray.clone();
@@ -384,8 +395,6 @@ export default class Viewer {
         
         const upperPlane = planeFromVectors(plane.normal, currentRay.direction, currentRay.origin);
         const lowerPlane = planeFromVectors(plane.normal, previousRay.direction, currentRay.origin);
-
-        const found = new Set();
 
         this._scene.traverse(obj => {
             if (!obj.userData || !obj.userData.event || !obj.visible)
@@ -399,12 +408,7 @@ export default class Viewer {
                 found.add(obj);
             }
         });
-
-        for (let object of found) {
-            if (!this._insersecting.has(object)) 
-                this._highlightTarget(object, mouse, previousMouse);
-        }
-        this._insersecting = found;
+        return found;
     }
 
     update() {
