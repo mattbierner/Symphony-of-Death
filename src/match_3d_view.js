@@ -252,14 +252,18 @@ export default class Viewer {
      * Handle mouse down events.
      */
     onMouseDown(event) {
-        this.isMouseDown = true;
+        if (event.button === THREE.MOUSE.RIGHT) {
+            this.isMouseDown = true;
+        }
     }
     
     /**
      * Handle mouse up events.
      */
     onMouseUp(event) {
-        this.isMouseDown = false;
+        if (event.button === THREE.MOUSE.RIGHT) {
+            this.isMouseDown = false;
+        }
     }
 
     /**
@@ -411,6 +415,9 @@ export default class Viewer {
         return found;
     }
 
+    /**
+     * Main update function.
+     */
     update() {
         const delta = this._clock.getDelta();
         const time = this._clock.getElapsedTime() * 10;

@@ -31443,7 +31443,9 @@
 	    }, {
 	        key: 'onMouseDown',
 	        value: function onMouseDown(event) {
-	            this.isMouseDown = true;
+	            if (event.button === _three2.default.MOUSE.RIGHT) {
+	                this.isMouseDown = true;
+	            }
 	        }
 
 	        /**
@@ -31453,7 +31455,9 @@
 	    }, {
 	        key: 'onMouseUp',
 	        value: function onMouseUp(event) {
-	            this.isMouseDown = false;
+	            if (event.button === _three2.default.MOUSE.RIGHT) {
+	                this.isMouseDown = false;
+	            }
 	        }
 
 	        /**
@@ -31660,6 +31664,11 @@
 	            });
 	            return found;
 	        }
+
+	        /**
+	         * Main update function.
+	         */
+
 	    }, {
 	        key: 'update',
 	        value: function update() {
