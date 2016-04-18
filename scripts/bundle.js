@@ -31451,7 +31451,7 @@
 	        }
 
 	        /**
-	         * Handle mouse move event
+	         * Handle mouse move events.
 	         */
 
 	    }, {
