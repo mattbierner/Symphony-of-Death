@@ -171,7 +171,8 @@
 	                    onTimelineEvent: this.onTimelineEvent.bind(this),
 	                    onPositionChange: this.onPositionChange.bind(this),
 	                    onPlay: this.onPlay.bind(this),
-	                    onPause: this.onPause.bind(this) })
+	                    onPause: this.onPause.bind(this) }),
+	                React.createElement('a', { href: '/', className: 'page-logo' })
 	            );
 	        }
 	    }]);
@@ -36510,9 +36511,9 @@
 	            sound.play();
 	            if (duration) {
 	                setTimeout(function () {
-	                    //  sound.stop();
+	                    sound.stop();
 	                    _this3._playing.delete(sound);
-	                }, duration);
+	                }, duration + 1000);
 	            }
 	        }
 	    }]);

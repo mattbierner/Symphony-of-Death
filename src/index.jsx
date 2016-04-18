@@ -82,6 +82,7 @@ class Application extends React.Component {
                     onPositionChange={this.onPositionChange.bind(this)}
                     onPlay={this.onPlay.bind(this)}
                     onPause={this.onPause.bind(this)}/>
+                <a href="/" className="page-logo" />
             </div>);
     }
 }; 

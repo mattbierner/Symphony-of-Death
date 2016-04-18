@@ -54,9 +54,9 @@ export default class SoundManager {
         sound.play();
         if (duration) {
             setTimeout(() => {
-              //  sound.stop();
+                sound.stop();
                 this._playing.delete(sound);
-            }, duration);
+            }, duration + 1000);
         }
     }
 }
