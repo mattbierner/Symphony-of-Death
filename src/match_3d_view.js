@@ -12,6 +12,7 @@ import EffectComposer from 'imports?THREE=three!three/examples/js/postprocessing
 import additive_shader from './3d/shaders/additive';
 import default_shader from './3d/shaders/default';
 import wave_shader from './3d/shaders/wave';
+import * as tube from './3d/tube';
 
 import OrbitControls from './3d/OrbitControls'
 
@@ -277,44 +278,6 @@ export default class Viewer {
         }
     }
 
-    _createCylinder(index, topSize, bottomSize, y, height, sides, topColor, bottomColor, position, customColor) {
-        for (let i = 0; i < sides; ++i) {
-            let start = ((Math.PI * 2.0) / sides) * i;
-            let end = ((Math.PI * 2.0) / sides) * (i + 1);
-
-            new THREE.Vector3(Math.cos(end) * topSize, y + height, Math.sin(end) * topSize)
-                .toArray(position.array, index);
-            bottomColor.toArray(customColor.array, index);
-            index += 3;
-
-            new THREE.Vector3(Math.cos(start) * topSize, y + height, Math.sin(start) * topSize)
-                .toArray(position.array, index);
-            bottomColor.toArray(customColor.array, index);
-            index += 3;
-
-            new THREE.Vector3(Math.cos(start) * bottomSize, y, Math.sin(start) * bottomSize)
-                .toArray(position.array, index);
-            topColor.toArray(customColor.array, index);
-            index += 3;
-
-            new THREE.Vector3(Math.cos(start) * bottomSize, y, Math.sin(start) * bottomSize)
-                .toArray(position.array, index);
-            topColor.toArray(customColor.array, index);
-            index += 3;
-
-            new THREE.Vector3(Math.cos(end) * bottomSize, y, Math.sin(end) * bottomSize)
-                .toArray(position.array, index);
-            topColor.toArray(customColor.array, index);
-            index += 3;
-
-            new THREE.Vector3(Math.cos(end) * topSize, y + height, Math.sin(end) * topSize)
-                .toArray(position.array, index);
-            bottomColor.toArray(customColor.array, index);
-            index += 3;
-        }
-        return index;
-    }
-
     _shotLine(event, killer, victim) {
         const killvec = new THREE.Vector3().subVectors(killer, victim);
         const height = killvec.length();
@@ -345,7 +308,10 @@ export default class Viewer {
             }
             const color = killerColor.clone().lerp(victimColor, i / len);
             const nextColor = killerColor.clone().lerp(victimColor, (i + 1) / len);
-            index = this._createCylinder(index, topSize, bottomSize, y, d, 3, color, nextColor, position, customColor);
+            
+            tube.createGeometry(index, topSize, bottomSize, y, d, 3, position);
+            index = tube.fillData(index, 3, color, nextColor, customColor);
+
             w += dWave;
             y += d;
         }

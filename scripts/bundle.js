@@ -31140,11 +31140,17 @@
 
 	var _wave2 = _interopRequireDefault(_wave);
 
+	var _tube = __webpack_require__(291);
+
+	var tube = _interopRequireWildcard(_tube);
+
 	var _OrbitControls = __webpack_require__(277);
 
 	var _OrbitControls2 = _interopRequireDefault(_OrbitControls);
 
 	var _weapons = __webpack_require__(4);
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -31473,39 +31479,6 @@
 	            }
 	        }
 	    }, {
-	        key: '_createCylinder',
-	        value: function _createCylinder(index, topSize, bottomSize, y, height, sides, topColor, bottomColor, position, customColor) {
-	            for (var i = 0; i < sides; ++i) {
-	                var start = Math.PI * 2.0 / sides * i;
-	                var end = Math.PI * 2.0 / sides * (i + 1);
-
-	                new _three2.default.Vector3(Math.cos(end) * topSize, y + height, Math.sin(end) * topSize).toArray(position.array, index);
-	                bottomColor.toArray(customColor.array, index);
-	                index += 3;
-
-	                new _three2.default.Vector3(Math.cos(start) * topSize, y + height, Math.sin(start) * topSize).toArray(position.array, index);
-	                bottomColor.toArray(customColor.array, index);
-	                index += 3;
-
-	                new _three2.default.Vector3(Math.cos(start) * bottomSize, y, Math.sin(start) * bottomSize).toArray(position.array, index);
-	                topColor.toArray(customColor.array, index);
-	                index += 3;
-
-	                new _three2.default.Vector3(Math.cos(start) * bottomSize, y, Math.sin(start) * bottomSize).toArray(position.array, index);
-	                topColor.toArray(customColor.array, index);
-	                index += 3;
-
-	                new _three2.default.Vector3(Math.cos(end) * bottomSize, y, Math.sin(end) * bottomSize).toArray(position.array, index);
-	                topColor.toArray(customColor.array, index);
-	                index += 3;
-
-	                new _three2.default.Vector3(Math.cos(end) * topSize, y + height, Math.sin(end) * topSize).toArray(position.array, index);
-	                bottomColor.toArray(customColor.array, index);
-	                index += 3;
-	            }
-	            return index;
-	        }
-	    }, {
 	        key: '_shotLine',
 	        value: function _shotLine(event, killer, victim) {
 	            var killvec = new _three2.default.Vector3().subVectors(killer, victim);
@@ -31537,7 +31510,10 @@
 	                }
 	                var color = killerColor.clone().lerp(victimColor, i / len);
 	                var nextColor = killerColor.clone().lerp(victimColor, (i + 1) / len);
-	                index = this._createCylinder(index, topSize, bottomSize, y, d, 3, color, nextColor, position, customColor);
+
+	                tube.createGeometry(index, topSize, bottomSize, y, d, 3, position);
+	                index = tube.fillData(index, 3, color, nextColor, customColor);
+
 	                w += dWave;
 	                y += d;
 	            }
@@ -42699,6 +42675,73 @@
 	    for (var i = 0; i < this.urlList.length; ++i) {
 	        this.loadBuffer(this.urlList[i], i);
 	    }
+	};
+
+/***/ },
+/* 291 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.fillData = exports.createGeometry = undefined;
+
+	var _three = __webpack_require__(266);
+
+	var _three2 = _interopRequireDefault(_three);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var createGeometry = exports.createGeometry = function createGeometry(index, topSize, bottomSize, y, height, sides, position) {
+	    for (var i = 0; i < sides; ++i) {
+	        var start = Math.PI * 2.0 / sides * i;
+	        var end = Math.PI * 2.0 / sides * (i + 1);
+
+	        new _three2.default.Vector3(Math.cos(end) * topSize, y + height, Math.sin(end) * topSize).toArray(position.array, index);
+	        index += 3;
+
+	        new _three2.default.Vector3(Math.cos(start) * topSize, y + height, Math.sin(start) * topSize).toArray(position.array, index);
+	        index += 3;
+
+	        new _three2.default.Vector3(Math.cos(start) * bottomSize, y, Math.sin(start) * bottomSize).toArray(position.array, index);
+	        index += 3;
+
+	        new _three2.default.Vector3(Math.cos(start) * bottomSize, y, Math.sin(start) * bottomSize).toArray(position.array, index);
+	        index += 3;
+
+	        new _three2.default.Vector3(Math.cos(end) * bottomSize, y, Math.sin(end) * bottomSize).toArray(position.array, index);
+	        index += 3;
+
+	        new _three2.default.Vector3(Math.cos(end) * topSize, y + height, Math.sin(end) * topSize).toArray(position.array, index);
+	        index += 3;
+	    }
+	    return index;
+	};
+
+	var fillData = exports.fillData = function fillData(index, sides, topColor, bottomColor, customColor) {
+	    var elementSize = customColor.itemSize;
+	    for (var i = 0; i < sides; ++i) {
+	        bottomColor.toArray(customColor.array, index);
+	        index += elementSize;
+
+	        bottomColor.toArray(customColor.array, index);
+	        index += elementSize;
+
+	        topColor.toArray(customColor.array, index);
+	        index += elementSize;
+
+	        topColor.toArray(customColor.array, index);
+	        index += elementSize;
+
+	        topColor.toArray(customColor.array, index);
+	        index += elementSize;
+
+	        bottomColor.toArray(customColor.array, index);
+	        index += elementSize;
+	    }
+	    return index;
 	};
 
 /***/ }
