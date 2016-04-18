@@ -8,6 +8,12 @@ const max = 1200;
 const maxGain = 0.1;
 
 const duration = 2;
+var reverbUrl = "../sounds/reverb/TerrysFactoryWarehouse.m4a";
+
+var reverbNode = audioCtx.createReverbFromUrl(reverbUrl, function() {
+    reverbNode.connect(audioCtx.destination);
+
+});
 
 /**
  * Simple sine wave sound generator.
@@ -30,16 +36,16 @@ export default weapon_base((weapon, event, data) => {
 
     const gainNode = audioCtx.createGain();
     gainNode.gain.value = 0;
-    
+      
     xOscillator.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
+    gainNode.connect(reverbNode);
 
     return {
         sound: {
             play() {
                 gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
                 gainNode.gain.linearRampToValueAtTime(gain, audioCtx.currentTime + duration * 0.2);
-                gainNode.gain.setValueAtTime(gain, audioCtx.currentTime + duration * 0.7);
+                gainNode.gain.setValueAtTime(gain, audioCtx.currentTime + duration * 0.5);
                 gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + duration * 1);
 
                 xOscillator.start();

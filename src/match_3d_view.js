@@ -9,6 +9,8 @@ import RenderPass from 'imports?THREE=three!three/examples/js/postprocessing/Ren
 import ShaderPass from 'imports?THREE=three!three/examples/js/postprocessing/ShaderPass';
 import EffectComposer from 'imports?THREE=three!three/examples/js/postprocessing/EffectComposer';
 
+import SPE from 'imports?THREE=three!shader-particle-engine';
+
 import additive_shader from './3d/shaders/additive';
 import default_shader from './3d/shaders/default';
 import wave_shader from './3d/shaders/wave';
@@ -18,7 +20,7 @@ import OrbitControls from './3d/OrbitControls'
 
 import {getWeaponsTable} from './weapons';
 
-const enableGlow = false; 
+const enableGlow = false;
 
 const killerColor = new THREE.Color(0xff00ff);
 const victimColor = new THREE.Color(0x00ffff);
@@ -47,13 +49,13 @@ export default class Viewer {
         this.delegate = delegate;
         this.isMouseDown = false;
         this.container = container;
-        
+
         this.bounds = { x: 40, y: 40, z: 40 };
-        
+
         this._insersecting = new Set();
         this._active = new Set();
         this.mouse = null;
-        
+
         this._raycaster = new THREE.Raycaster();
         this._clock = new THREE.Clock();
 
@@ -63,23 +65,17 @@ export default class Viewer {
         this.initCamera();
         this.initControls();
         this.initComposer();
+        this.initParticles();
 
         window.addEventListener('resize', this.onWindowResize.bind(this), false);
-        
         document.addEventListener('mousedown', this.onMouseDown.bind(this), false);
         document.addEventListener('mouseup', this.onMouseUp.bind(this), false);
         document.addEventListener('mousemove', this.onMouseMove.bind(this), false);
 
-        //this._addPlanes();
-        
-        const geometry = new THREE.PlaneGeometry(5, 5);
-        const material = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide });
-        this._plane =    new THREE.Mesh(geometry, material);
-      //  this._scene.add(this._plane);
         this.onWindowResize();
         this.animate();
     }
-    
+
     /**
      * Setup the initial renderer.
      */
@@ -90,7 +86,7 @@ export default class Viewer {
         });
         this._renderer.setClearColor(0xffffff, 0);
     }
-    
+
     /**
      * Setup the initial camera.
      */
@@ -100,14 +96,14 @@ export default class Viewer {
         this._camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 800);
         this._camera.position.z = 40;
     }
-    
+
     initControls() {
         this._controls = new OrbitControls(this._camera);
         this._controls.enableDamping = true;
         this._controls.dampingFactor = 0.25;
         this._controls.enableZoom = true;
     }
-    
+
     /**
      * Setup the composer.
      */
@@ -115,17 +111,17 @@ export default class Viewer {
         this._composer = new THREE.EffectComposer(this._renderer);
         this._composer.addPass(new THREE.RenderPass(this._scene, this._camera));
 
-        if (enableGlow) { 
+        if (enableGlow) {
             const effectHorizBlur = new THREE.ShaderPass(THREE.HorizontalBlurShader);
             const effectVertiBlur = new THREE.ShaderPass(THREE.VerticalBlurShader);
-            
+
             const [viewWidth, viewHeight] = this.getViewportSize();
-            effectHorizBlur.uniforms["h"].value = 2 /viewWidth;
+            effectHorizBlur.uniforms["h"].value = 2 / viewWidth;
             effectVertiBlur.uniforms["v"].value = 2 / viewHeight;
             this._composer.addPass(effectHorizBlur);
             this._composer.addPass(effectVertiBlur);
         }
-        
+
         //final render pass
         this._composer2 = new THREE.EffectComposer(this._renderer);
 
@@ -138,27 +134,68 @@ export default class Viewer {
     }
 
     /**
+     * Setup the particle system
+     */
+    initParticles() {
+        this.createDustEmitter(100);
+    }
+    
+    createDustEmitter(bounds) {
+        if (this._particleGroup) {
+            this._particleGroup.removeEmitter(this._emitter);
+            this._scene.remove(this._particleGroup.mesh);
+        }
+        
+        this._particleGroup = new SPE.Group({
+            texture: {
+                value: THREE.ImageUtils.loadTexture('./images/smokeparticle.png')
+            },
+            fog: true,
+            scale: 100,
+            depthWrite: false
+        });
+        this._emitter = new SPE.Emitter({
+            type: SPE.distributions.BOX,
+            maxAge: {
+                value: 15,
+            },
+            opacity: {
+                value: [ 0, 0.05, 0 ]
+            },
+            position: {
+                value: new THREE.Vector3(0, 0, 0),
+                spread: new THREE.Vector3(bounds, bounds, bounds),
+                randomise: true
+            },
+            velocity: {
+                value: new THREE.Vector3(0, -0.05, 0),
+                randomise: true
+            },
+            wiggle: {
+                spread: 10
+            },
+            particleCount: 5000
+        });
+        this._particleGroup.addEmitter(this._emitter);
+        this._scene.add(this._particleGroup.mesh);
+    }
+
+    /**
      * Get the size of the viewport.
      */
     getViewportSize() {
         const rect = this.container.getBoundingClientRect();
         return [rect.width, rect.height];
     }
-    
-    _addPlanes() {
-        const size = 40;
-        for (let p of [new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 1)]) {
-            const geometry = new THREE.PlaneGeometry(size, size);
-            const material = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide });
-            const plane = new THREE.GridHelper(size, 5);
-            plane.quaternion.setFromAxisAngle(p, Math.PI / 2.0);
-            plane.setColors(0xffffff, 0x333333)
-            this._scene.add(plane);
-        }
-    }
 
+    /**
+     * Set the bounds of the scene being rendered.
+     */
     setBounds(bounds) {
         this.bounds = bounds;
+        
+        this._controls.maxDistance = Math.max(this.bounds.x, this.bounds.y, this.bounds.z) * 2 * 1.5;
+        this.createDustEmitter(this._controls.maxDistance * 2);
         this.goToTopView();
     }
 
@@ -194,9 +231,9 @@ export default class Viewer {
 
     _drawLine(vec, color) {
         var material = new THREE.LineBasicMaterial({ color: color });
-        var geometry = new THREE.Geometry(); 
-        geometry.vertices.push( new THREE.Vector3( 0, 0, 0 ), vec );
-        return new THREE.Line( geometry, material );
+        var geometry = new THREE.Geometry();
+        geometry.vertices.push(new THREE.Vector3(0, 0, 0), vec);
+        return new THREE.Line(geometry, material);
     }
 
     _highlightTarget(target, mouse, previousMouse) {
@@ -204,7 +241,7 @@ export default class Viewer {
         if (uniforms && uniforms.wave_strength) {
             uniforms.wave_strength.value = 1.0;
             uniforms.wave_strength.needsUpdate = true;
-            
+
             const killVec = target.userData.killVec;
             if (killVec) {
                 this._raycaster.setFromCamera(mouse, this._camera)
@@ -217,11 +254,11 @@ export default class Viewer {
                 dRay.applyQuaternion(target.quaternion)
                 dRay.y = 0;
                 dRay.normalize().multiplyScalar(mag);
-                
+
                 uniforms.wave_direction.value = dRay;
                 uniforms.wave_direction.needsUpdate = true;
             }
-            
+
             this._active.add(target);
             this.delegate.onEventActivate(target.userData.event, {
                 velocity: new THREE.Vector2().subVectors(mouse, previousMouse).length()
@@ -252,16 +289,16 @@ export default class Viewer {
      * Handle mouse down events.
      */
     onMouseDown(event) {
-        if (event.button === THREE.MOUSE.RIGHT) {
+        if (event.button === THREE.MOUSE.LEFT) {
             this.isMouseDown = true;
         }
     }
-    
+
     /**
      * Handle mouse up events.
      */
     onMouseUp(event) {
-        if (event.button === THREE.MOUSE.RIGHT) {
+        if (event.button === THREE.MOUSE.LEFT) {
             this.isMouseDown = false;
         }
     }
@@ -276,7 +313,7 @@ export default class Viewer {
         this.mouse = new THREE.Vector2(
             (event.clientX / width) * 2 - 1,
             -(event.clientY / height) * 2 + 1);
-        
+
         if (this.isMouseDown) {
             this.handleIntersections(this.mouse, previousMouse);
         }
@@ -288,13 +325,13 @@ export default class Viewer {
 
         const buffergeometry = new THREE.BufferGeometry();
         const len = Math.max(3, Math.ceil(height / 1.0));
-        
+
         const position = new THREE.Float32Attribute(sides * 6 * 3 * len, 3);
         buffergeometry.addAttribute('position', position)
-        
+
         const wave = new THREE.Float32Attribute(sides * 6 * len, 1);
         buffergeometry.addAttribute('wave', wave)
-        
+
         const customColor = new THREE.Float32Attribute(sides * 6 * 3 * len, 3);
         buffergeometry.addAttribute('customColor', customColor);
 
@@ -307,7 +344,7 @@ export default class Viewer {
         for (let i = 0; i < len - 1; ++i) {
             const color = killerColor.clone().lerp(victimColor, i / len);
             const nextColor = killerColor.clone().lerp(victimColor, (i + 1) / len);
-            
+
             tube.createGeometry(index, topSize, bottomSize, y, d, 3, position);
             index = tube.fillData(index, 3, color, nextColor, customColor);
             ii = tube.fillData(ii, 3, Math.sin(w), Math.sin(w + dWave), wave);
@@ -322,7 +359,7 @@ export default class Viewer {
         mesh.rotation.setFromQuaternion(arrow.quaternion);
         mesh.position.addVectors(victim, killvec.multiplyScalar(0.5));
 
-        mesh.userData = { event: event, killVec: killvec  };
+        mesh.userData = { event: event, killVec: killvec };
         return mesh;
     }
 
@@ -367,19 +404,19 @@ export default class Viewer {
             this._scene.add(obj);
         }
     }
-    
+
     /**
      * Handle any objects that mouse intersected with while moving.
      */
     handleIntersections(mouse, previousMouse) {
         const found = this.findMouseIntersections(mouse, previousMouse);
         for (let object of found) {
-            if (!this._insersecting.has(object)) 
+            if (!this._insersecting.has(object))
                 this._highlightTarget(object, mouse, previousMouse);
         }
         this._insersecting = found;
     }
-    
+
     /**
      * Find all objects that mouse intersected with while moving.
      */
@@ -388,26 +425,26 @@ export default class Viewer {
 
         if (!mouse || !previousMouse || previousMouse.equals(mouse))
             return found;
-        
+
         this._raycaster.setFromCamera(previousMouse, this._camera);
         const previousRay = this._raycaster.ray.clone();
-        
+
         this._raycaster.setFromCamera(mouse, this._camera);
         const currentRay = this._raycaster.ray.clone();
-        
+
         const plane = planeFromVectors(previousRay.direction, currentRay.direction, currentRay.origin);
-        
+
         const upperPlane = planeFromVectors(plane.normal, currentRay.direction, currentRay.origin);
         const lowerPlane = planeFromVectors(plane.normal, previousRay.direction, currentRay.origin);
 
         this._scene.traverse(obj => {
             if (!obj.userData || !obj.userData.event || !obj.visible)
                 return;
-            
+
             const intersection = plane.intersectLine(obj.userData.event.ShotLine);
             if (!intersection)
                 return;
-            
+
             if (upperPlane.distanceToPoint(intersection) < 0 && lowerPlane.distanceToPoint(intersection) > 0) {
                 found.add(obj);
             }
@@ -418,10 +455,9 @@ export default class Viewer {
     /**
      * Main update function.
      */
-    update() {
-        const delta = this._clock.getDelta();
+    update(delta) {
         const time = this._clock.getElapsedTime() * 10;
-        
+
         for (let child of this._active) {
             const uniforms = child.material && child.material.uniforms;
             if (uniforms && uniforms.time) {
@@ -441,12 +477,15 @@ export default class Viewer {
     animate() {
         requestAnimationFrame(() => this.animate());
         
-        this.update();
-        this.render();
+        const delta = this._clock.getDelta();
+        this.update(delta);
+        this._particleGroup.tick(delta);
+        this.render(delta);
     }
 
-    render() {
+    render(delta) {
         this._composer.render();
         this._composer2.render();
+        
     }
 }
