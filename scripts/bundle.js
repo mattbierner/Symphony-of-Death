@@ -31177,6 +31177,7 @@
 	        _classCallCheck(this, Viewer);
 
 	        this.delegate = delegate;
+	        this.isMouseDown = false;
 
 	        this.bounds = { x: 40, y: 40, z: 40 };
 
@@ -31195,6 +31196,9 @@
 	        this.initComposer();
 
 	        window.addEventListener('resize', this.onWindowResize.bind(this), false);
+
+	        document.addEventListener('mousedown', this.onMouseDown.bind(this), false);
+	        document.addEventListener('mouseup', this.onMouseUp.bind(this), false);
 	        document.addEventListener('mousemove', this.onMouseMove.bind(this), false);
 
 	        //this._addPlanes();
@@ -31373,13 +31377,40 @@
 	            this._composer.setSize(width, height);
 	            this._composer2.setSize(width, height);
 	        }
+
+	        /**
+	         * Handle mouse down events.
+	         */
+
+	    }, {
+	        key: 'onMouseDown',
+	        value: function onMouseDown(event) {
+	            this.isMouseDown = true;
+	        }
+
+	        /**
+	         * Handle mouse up events.
+	         */
+
+	    }, {
+	        key: 'onMouseUp',
+	        value: function onMouseUp(event) {
+	            this.isMouseDown = false;
+	        }
+
+	        /**
+	         * Handle mouse move event
+	         */
+
 	    }, {
 	        key: 'onMouseMove',
 	        value: function onMouseMove(event) {
 	            var newMouse = new _three2.default.Vector2(event.clientX / window.innerWidth * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
-	            this.checkIntersections(newMouse, this.mouse);
+
+	            if (this.isMouseDown) {
+	                this.checkIntersections(newMouse, this.mouse);
+	            }
 	            this.mouse = newMouse;
-	            this.update();
 	        }
 	    }, {
 	        key: '_createCylinder',
@@ -35398,7 +35429,7 @@
 	    this.keys = { LEFT: 37, UP: 38, RIGHT: 39, BOTTOM: 40 };
 
 	    // Mouse buttons
-	    this.mouseButtons = { ORBIT: _three2.default.MOUSE.LEFT, ZOOM: _three2.default.MOUSE.MIDDLE, PAN: _three2.default.MOUSE.RIGHT };
+	    this.mouseButtons = { ORBIT: _three2.default.MOUSE.RIGHT, ZOOM: null, PAN: _three2.default.MOUSE.MIDDLE };
 
 	    // for reset
 	    this.target0 = this.target.clone();

@@ -44,6 +44,7 @@ const planeFromVectors = (r1, r2, origin) => {
 export default class Viewer {
     constructor(canvas, delegate) {
         this.delegate = delegate;
+        this.isMouseDown = false;
         
         this.bounds = { x: 40, y: 40, z: 40 };
         
@@ -62,6 +63,9 @@ export default class Viewer {
         this.initComposer();
 
         window.addEventListener('resize', this.onWindowResize.bind(this), false);
+        
+        document.addEventListener('mousedown', this.onMouseDown.bind(this), false);
+        document.addEventListener('mouseup', this.onMouseUp.bind(this), false);
         document.addEventListener('mousemove', this.onMouseMove.bind(this), false);
 
         //this._addPlanes();
@@ -223,13 +227,32 @@ export default class Viewer {
         this._composer2.setSize(width, height);
     }
 
+    /**
+     * Handle mouse down events.
+     */
+    onMouseDown(event) {
+        this.isMouseDown = true;
+    }
+    
+    /**
+     * Handle mouse up events.
+     */
+    onMouseUp(event) {
+        this.isMouseDown = false;
+    }
+
+    /**
+     * Handle mouse move event
+     */
     onMouseMove(event) {
         const newMouse = new THREE.Vector2(
             (event.clientX / window.innerWidth) * 2 - 1,
             -(event.clientY / window.innerHeight) * 2 + 1);
-        this.checkIntersections(newMouse, this.mouse);
+        
+        if (this.isMouseDown) {
+            this.checkIntersections(newMouse, this.mouse);
+        }
         this.mouse = newMouse;
-        this.update();
     }
 
     _createCylinder(index, topSize, bottomSize, y, height, sides, topColor, bottomColor, position, customColor) {
