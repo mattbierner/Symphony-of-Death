@@ -31005,15 +31005,16 @@
 	    _createClass(MatchView, [{
 	        key: 'onEventFocus',
 	        value: function onEventFocus(event) {
-	            this.viewer.highlightEvent(event);
+	            this._3dview.highlightEvent(event);
 	        }
 	    }, {
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
-	            if (!this.viewer) {
-	                this.viewer = new _match_3d_view2.default(document.getElementById('glcanvas'), this);
-	                this.props.onGetView && this.props.onGetView(this.viewer);
-	            }
+	            if (this._3dview) return;
+
+	            var element = ReactDOM.findDOMNode(this);
+	            var canvas = element.getElementsByClassName('glCanvas')[0];
+	            this._3dview = new _match_3d_view2.default(canvas, element, this);
 	        }
 	    }, {
 	        key: 'componentWillReceiveProps',
@@ -31023,9 +31024,9 @@
 	            if (nextProps.stream !== this.props.stream) {
 	                this.setState({ shownEvents: new Set(nextProps.shownEvents || []) });
 	                nextProps.stream.forEach(function (event) {
-	                    return _this2.viewer.addEvent(event, true);
+	                    return _this2._3dview.addEvent(event, true);
 	                });
-	                this.viewer.setBounds(nextProps.stream.bounds);
+	                this._3dview.setBounds(nextProps.stream.bounds);
 	                return;
 	            }
 	            var next = new Set(nextProps.shownEvents);
@@ -31037,15 +31038,15 @@
 	            });
 
 	            added.forEach(function (e) {
-	                return _this2.viewer.showEvent(e);
+	                return _this2._3dview.showEvent(e);
 	            });
 	            removed.forEach(function (e) {
-	                return _this2.viewer.hideEvent(e);
+	                return _this2._3dview.hideEvent(e);
 	            });
 
 	            this.setState({ shownEvents: next });
 
-	            this.viewer.render();
+	            this._3dview.render();
 	        }
 	    }, {
 	        key: 'onEventActivate',
@@ -31059,17 +31060,17 @@
 
 	            return React.createElement(
 	                'div',
-	                null,
-	                React.createElement('canvas', { id: 'glcanvas', className: "glCanvas" }),
+	                { className: 'match-view' },
+	                React.createElement('canvas', { className: "glCanvas" }),
 	                React.createElement(_view_controls2.default, {
 	                    onFrontViewSelected: function onFrontViewSelected() {
-	                        return _this3.viewer.goToFrontView();
+	                        return _this3._3dview.goToFrontView();
 	                    },
 	                    onSideViewSelected: function onSideViewSelected() {
-	                        return _this3.viewer.goToSideView();
+	                        return _this3._3dview.goToSideView();
 	                    },
 	                    onTopViewSelected: function onTopViewSelected() {
-	                        return _this3.viewer.goToTopView();
+	                        return _this3._3dview.goToTopView();
 	                    } })
 	            );
 	        }
@@ -31090,6 +31091,8 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -31173,11 +31176,12 @@
 	 */
 
 	var Viewer = function () {
-	    function Viewer(canvas, delegate) {
+	    function Viewer(canvas, container, delegate) {
 	        _classCallCheck(this, Viewer);
 
 	        this.delegate = delegate;
 	        this.isMouseDown = false;
+	        this.container = container;
 
 	        this.bounds = { x: 40, y: 40, z: 40 };
 
@@ -31211,6 +31215,11 @@
 	        this.animate();
 	    }
 
+	    /**
+	     * Setup the initial renderer.
+	     */
+
+
 	    _createClass(Viewer, [{
 	        key: 'initRenderer',
 	        value: function initRenderer(canvas) {
@@ -31220,13 +31229,23 @@
 	            });
 	            this._renderer.setClearColor(0xffffff, 0);
 	        }
+
+	        /**
+	         * Setup the initial camera.
+	         */
+
 	    }, {
 	        key: 'initCamera',
 	        value: function initCamera() {
-	            var aspect = window.innerWidth / window.innerHeight;
+	            var _getViewportSize = this.getViewportSize();
+
+	            var _getViewportSize2 = _slicedToArray(_getViewportSize, 2);
+
+	            var viewWidth = _getViewportSize2[0];
+	            var viewHeight = _getViewportSize2[1];
+
+	            var aspect = viewWidth / viewHeight;
 	            this._camera = new _three2.default.PerspectiveCamera(75, aspect, 0.1, 800);
-	            //const d = 20;
-	            //  this._camera = new THREE.OrthographicCamera( - d * aspect, d * aspect, d, - d, 1, 1000 );
 	            this._camera.position.z = 40;
 	        }
 	    }, {
@@ -31237,6 +31256,11 @@
 	            this._controls.dampingFactor = 0.25;
 	            this._controls.enableZoom = true;
 	        }
+
+	        /**
+	         * Setup the composer.
+	         */
+
 	    }, {
 	        key: 'initComposer',
 	        value: function initComposer() {
@@ -31246,8 +31270,16 @@
 	            if (enableGlow) {
 	                var effectHorizBlur = new _three2.default.ShaderPass(_three2.default.HorizontalBlurShader);
 	                var effectVertiBlur = new _three2.default.ShaderPass(_three2.default.VerticalBlurShader);
-	                effectHorizBlur.uniforms["h"].value = 2 / window.innerWidth;
-	                effectVertiBlur.uniforms["v"].value = 2 / window.innerHeight;
+
+	                var _getViewportSize3 = this.getViewportSize();
+
+	                var _getViewportSize4 = _slicedToArray(_getViewportSize3, 2);
+
+	                var viewWidth = _getViewportSize4[0];
+	                var viewHeight = _getViewportSize4[1];
+
+	                effectHorizBlur.uniforms["h"].value = 2 / viewWidth;
+	                effectVertiBlur.uniforms["v"].value = 2 / viewHeight;
 	                this._composer.addPass(effectHorizBlur);
 	                this._composer.addPass(effectVertiBlur);
 	            }
@@ -31261,6 +31293,17 @@
 	            effectBlend.uniforms['tDiffuse2'].value = this._composer.renderTarget2;
 	            effectBlend.renderToScreen = true;
 	            this._composer2.addPass(effectBlend);
+	        }
+
+	        /**
+	         * Get the size of the viewport.
+	         */
+
+	    }, {
+	        key: 'getViewportSize',
+	        value: function getViewportSize() {
+	            var rect = this.container.getBoundingClientRect();
+	            return [rect.width, rect.height];
 	        }
 	    }, {
 	        key: '_addPlanes',
@@ -31365,11 +31408,20 @@
 	            if (!target) return;
 	            target.visible = true;
 	        }
+
+	        /**
+	         * Handle window resize events.
+	         */
+
 	    }, {
 	        key: 'onWindowResize',
 	        value: function onWindowResize() {
-	            var width = window.innerWidth + 0.0;
-	            var height = window.innerHeight + 0.0;
+	            var _getViewportSize5 = this.getViewportSize();
+
+	            var _getViewportSize6 = _slicedToArray(_getViewportSize5, 2);
+
+	            var width = _getViewportSize6[0];
+	            var height = _getViewportSize6[1];
 
 	            this._camera.aspect = width / height;
 	            this._camera.updateProjectionMatrix();
@@ -31405,12 +31457,20 @@
 	    }, {
 	        key: 'onMouseMove',
 	        value: function onMouseMove(event) {
-	            var newMouse = new _three2.default.Vector2(event.clientX / window.innerWidth * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1);
+	            var _getViewportSize7 = this.getViewportSize();
+
+	            var _getViewportSize8 = _slicedToArray(_getViewportSize7, 2);
+
+	            var width = _getViewportSize8[0];
+	            var height = _getViewportSize8[1];
+
+
+	            var previousMouse = this.mouse;
+	            this.mouse = new _three2.default.Vector2(event.clientX / width * 2 - 1, -(event.clientY / height) * 2 + 1);
 
 	            if (this.isMouseDown) {
-	                this.checkIntersections(newMouse, this.mouse);
+	                this.checkIntersections(this.mouse, previousMouse);
 	            }
-	            this.mouse = newMouse;
 	        }
 	    }, {
 	        key: '_createCylinder',

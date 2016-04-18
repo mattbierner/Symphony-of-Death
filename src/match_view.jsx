@@ -18,33 +18,35 @@ export default class MatchView extends React.Component {
     }
 
     onEventFocus(event) {
-        this.viewer.highlightEvent(event);
+        this._3dview.highlightEvent(event);
     }
 
     componentDidMount() {
-        if (!this.viewer) {
-            this.viewer = new Match3dView(document.getElementById('glcanvas'), this);
-            this.props.onGetView && this.props.onGetView(this.viewer);
-        }
+        if (this._3dview)
+            return;
+        
+        const element = ReactDOM.findDOMNode(this);
+        const canvas = element.getElementsByClassName('glCanvas')[0];
+        this._3dview = new Match3dView(canvas, element, this);
     }
     
     componentWillReceiveProps(nextProps) {
         if (nextProps.stream !== this.props.stream) {
             this.setState({ shownEvents: new Set(nextProps.shownEvents || []) });
-            nextProps.stream.forEach(event => this.viewer.addEvent(event, true));
-            this.viewer.setBounds(nextProps.stream.bounds);
+            nextProps.stream.forEach(event => this._3dview.addEvent(event, true));
+            this._3dview.setBounds(nextProps.stream.bounds);
             return;
         }
         const next = new Set(nextProps.shownEvents);
         const added = Array.from(next).filter(x => !this.state.shownEvents.has(x));
         const removed = Array.from(this.state.shownEvents).filter(x => !next.has(x));
         
-        added.forEach(e => this.viewer.showEvent(e));
-        removed.forEach(e => this.viewer.hideEvent(e));
+        added.forEach(e => this._3dview.showEvent(e));
+        removed.forEach(e => this._3dview.hideEvent(e));
         
         this.setState({ shownEvents: next });
         
-        this.viewer.render();
+        this._3dview.render();
     }
     
     onEventActivate(event, activation) {
@@ -53,12 +55,12 @@ export default class MatchView extends React.Component {
 
     render() {
         return (
-            <div>
-                <canvas id="glcanvas" className={"glCanvas"}></canvas>
+            <div className="match-view">
+                <canvas className={"glCanvas"}></canvas>
                 <ViewControls
-                    onFrontViewSelected={() => this.viewer.goToFrontView()}
-                    onSideViewSelected={() => this.viewer.goToSideView()}
-                    onTopViewSelected={() => this.viewer.goToTopView()}/>
+                    onFrontViewSelected={() => this._3dview.goToFrontView()}
+                    onSideViewSelected={() => this._3dview.goToSideView()}
+                    onTopViewSelected={() => this._3dview.goToTopView()}/>
             </div>);
     }
 };

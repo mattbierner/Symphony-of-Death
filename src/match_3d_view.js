@@ -42,9 +42,10 @@ const planeFromVectors = (r1, r2, origin) => {
  * 3D match viewer
  */
 export default class Viewer {
-    constructor(canvas, delegate) {
+    constructor(canvas, container, delegate) {
         this.delegate = delegate;
         this.isMouseDown = false;
+        this.container = container;
         
         this.bounds = { x: 40, y: 40, z: 40 };
         
@@ -78,6 +79,9 @@ export default class Viewer {
         this.animate();
     }
     
+    /**
+     * Setup the initial renderer.
+     */
     initRenderer(canvas) {
         this._renderer = new THREE.WebGLRenderer({
             canvas: canvas,
@@ -86,11 +90,13 @@ export default class Viewer {
         this._renderer.setClearColor(0xffffff, 0);
     }
     
+    /**
+     * Setup the initial camera.
+     */
     initCamera() {
-        const aspect = window.innerWidth / window.innerHeight;
+        const [viewWidth, viewHeight] = this.getViewportSize();
+        const aspect = viewWidth / viewHeight;
         this._camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 800);
-        //const d = 20;
-        //  this._camera = new THREE.OrthographicCamera( - d * aspect, d * aspect, d, - d, 1, 1000 );
         this._camera.position.z = 40;
     }
     
@@ -101,6 +107,9 @@ export default class Viewer {
         this._controls.enableZoom = true;
     }
     
+    /**
+     * Setup the composer.
+     */
     initComposer() {
         this._composer = new THREE.EffectComposer(this._renderer);
         this._composer.addPass(new THREE.RenderPass(this._scene, this._camera));
@@ -108,8 +117,10 @@ export default class Viewer {
         if (enableGlow) { 
             const effectHorizBlur = new THREE.ShaderPass(THREE.HorizontalBlurShader);
             const effectVertiBlur = new THREE.ShaderPass(THREE.VerticalBlurShader);
-            effectHorizBlur.uniforms["h"].value = 2 / window.innerWidth;
-            effectVertiBlur.uniforms["v"].value = 2 / window.innerHeight;
+            
+            const [viewWidth, viewHeight] = this.getViewportSize();
+            effectHorizBlur.uniforms["h"].value = 2 /viewWidth;
+            effectVertiBlur.uniforms["v"].value = 2 / viewHeight;
             this._composer.addPass(effectHorizBlur);
             this._composer.addPass(effectVertiBlur);
         }
@@ -125,6 +136,14 @@ export default class Viewer {
         this._composer2.addPass(effectBlend);
     }
 
+    /**
+     * Get the size of the viewport.
+     */
+    getViewportSize() {
+        const rect = this.container.getBoundingClientRect();
+        return [rect.width, rect.height];
+    }
+    
     _addPlanes() {
         const size = 40;
         for (let p of [new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 1)]) {
@@ -216,10 +235,11 @@ export default class Viewer {
         target.visible = true;
     }
 
+    /**
+     * Handle window resize events.
+     */
     onWindowResize() {
-        const width = window.innerWidth + 0.0;
-        const height = window.innerHeight + 0.0;
-
+        const [width, height] = this.getViewportSize();
         this._camera.aspect = width / height;
         this._camera.updateProjectionMatrix();
         this._renderer.setSize(width, height);
@@ -242,17 +262,19 @@ export default class Viewer {
     }
 
     /**
-     * Handle mouse move event
+     * Handle mouse move events.
      */
     onMouseMove(event) {
-        const newMouse = new THREE.Vector2(
-            (event.clientX / window.innerWidth) * 2 - 1,
-            -(event.clientY / window.innerHeight) * 2 + 1);
+        const [width, height] = this.getViewportSize();
+
+        const previousMouse = this.mouse;
+        this.mouse = new THREE.Vector2(
+            (event.clientX / width) * 2 - 1,
+            -(event.clientY / height) * 2 + 1);
         
         if (this.isMouseDown) {
-            this.checkIntersections(newMouse, this.mouse);
+            this.checkIntersections(this.mouse, previousMouse);
         }
-        this.mouse = newMouse;
     }
 
     _createCylinder(index, topSize, bottomSize, y, height, sides, topColor, bottomColor, position, customColor) {
