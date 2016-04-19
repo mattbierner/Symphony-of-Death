@@ -684,7 +684,7 @@ webpackJsonp([1],{
 	            var height = _getViewportSize6[1];
 
 
-	            this._camera.aspect = width / heigh;
+	            this._camera.aspect = width / height;
 	            this._camera.updateProjectionMatrix();
 	            this._renderer.setSize(width, height);
 

@@ -283,7 +283,7 @@ export default class Viewer {
     onWindowResize() {
         const [width, height] = this.getViewportSize();
 
-        this._camera.aspect = width / heigh;
+        this._camera.aspect = width / height;
         this._camera.updateProjectionMatrix();
         this._renderer.setSize(width, height);
         
