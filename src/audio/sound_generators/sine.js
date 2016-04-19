@@ -66,7 +66,7 @@ export default weapon_base((weapon, audio, event, data) => {
                 gainNode.gain.setValueAtTime(gain, audio.ctx.currentTime + duration * 0.5);
                 gainNode.gain.linearRampToValueAtTime(0, audio.ctx.currentTime + duration * 1);
                 
-                xOscillator.start();
+                xOscillator.start(0);
             
                 xOscillator.stop(audio.ctx.currentTime + duration);
             },

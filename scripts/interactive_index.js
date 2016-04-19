@@ -4087,7 +4087,7 @@ webpackJsonp([0],{
 	                source.loop = true;
 	                source.connect(ambientGain);
 	                ambientGain.connect(reverbNode);
-	                source.start();
+	                source.start(0);
 
 	                ambientGain.gain.setValueAtTime(0, _audio_context2.default.currentTime);
 	                ambientGain.gain.linearRampToValueAtTime(ambientVolume, _audio_context2.default.currentTime + ambientFadeIn);
@@ -4486,7 +4486,7 @@ webpackJsonp([0],{
 	                gainNode.gain.setValueAtTime(gain, audio.ctx.currentTime + duration * 0.5);
 	                gainNode.gain.linearRampToValueAtTime(0, audio.ctx.currentTime + duration * 1);
 
-	                xOscillator.start();
+	                xOscillator.start(0);
 
 	                xOscillator.stop(audio.ctx.currentTime + duration);
 	            },

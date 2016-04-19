@@ -46,7 +46,7 @@ export default class SoundManager {
             source.loop = true;
             source.connect(ambientGain);
             ambientGain.connect(reverbNode);
-            source.start();
+            source.start(0);
             
             ambientGain.gain.setValueAtTime(0, audioCtx.currentTime);
             ambientGain.gain.linearRampToValueAtTime(ambientVolume, audioCtx.currentTime + ambientFadeIn);
