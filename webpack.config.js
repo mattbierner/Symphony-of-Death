@@ -1,10 +1,15 @@
 var path = require('path');
+var webpack = require("webpack");
+var package = require('./package.json');
 
 module.exports = {
-    entry: './src/index.jsx',
+    entry: {
+        vendor: [].concat(Object.keys(package.dependencies)),
+        interactive_index: './src/interactive_index.jsx'
+    },
     output: {
         path: path.join(__dirname, 'scripts'),
-        filename: 'bundle.js'
+        filename: '[name].js'
     },
     module: {
         loaders: [
@@ -25,5 +30,11 @@ module.exports = {
         fs: 'empty',
         net: 'empty',
         tls: 'empty'
-    }
+    },
+    plugins: [
+        new webpack.optimize.CommonsChunkPlugin({
+            name: "vendor",
+            minChunks: Infinity
+        })
+    ]
 };
