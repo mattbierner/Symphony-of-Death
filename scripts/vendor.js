@@ -102,9 +102,9 @@
 	__webpack_require__(179);
 	__webpack_require__(20);
 	__webpack_require__(177);
-	__webpack_require__(293);
+	__webpack_require__(295);
 	__webpack_require__(3);
-	module.exports = __webpack_require__(294);
+	module.exports = __webpack_require__(296);
 
 
 /***/ },
@@ -33750,12 +33750,17 @@
 /* 290 */,
 /* 291 */,
 /* 292 */,
-/* 293 */
+/* 293 */,
+/* 294 */,
+/* 295 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;"use strict";
 
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+	/*** IMPORTS FROM imports-loader ***/
+	var THREE = __webpack_require__(3);
 
 	/* shader-particle-engine 1.0.4
 	 * 
@@ -34247,7 +34252,7 @@
 	};
 
 /***/ },
-/* 294 */
+/* 296 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;'use strict';var _typeof=typeof Symbol==="function"&&typeof Symbol.iterator==="symbol"?function(obj){return typeof obj;}:function(obj){return obj&&typeof Symbol==="function"&&obj.constructor===Symbol?"symbol":typeof obj;};(function(root,factory){if(true){ // AMD. Register as an anonymous module unless amdModuleId is set

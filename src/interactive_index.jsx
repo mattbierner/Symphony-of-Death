@@ -31,7 +31,9 @@ class Application extends React.Component {
     componentDidMount() {
         DeathStream.loadForMatch(this.state.matchId)
             .then(({stream, events}) => {
-                this.setState({ stream: stream });
+                const shown = new Set();
+                stream.forEach(x => shown.add(x));
+                this.setState({ stream: stream, shownEvents: shown });
             })
             .catch(x => console.error(x))
         

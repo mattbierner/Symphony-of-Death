@@ -8,7 +8,7 @@ const example = require('./data/example.json');
 
 const createTreeFromEvents = events =>
     events.reduce(
-        (tree, event) => tree.insert(event.TimeSinceStart, event),
+        (tree, event) => tree.insert(event.TimeSinceStart.asMilliseconds(), event),
         createTree());
         
 const createMapFromEvents = events =>
@@ -72,7 +72,7 @@ class DeathStream {
     }
     
     forEach(f) {
-        this.times.forEach((_, x) => f(x));
+        this.times.forEach((_, x) => { f(x); return false; });
     }
 }
 

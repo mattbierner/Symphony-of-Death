@@ -31,9 +31,13 @@ export default class MatchView extends React.Component {
     
     componentWillReceiveProps(nextProps) {
         if (nextProps.stream !== this.props.stream) {
-            this.setState({ shownEvents: new Set(nextProps.shownEvents || []) });
-            nextProps.stream.forEach(event => this._3dview.addEvent(event, true));
+            const shownEvents = new Set(nextProps.shownEvents || []);
+            nextProps.stream.forEach(event => {
+                this._3dview.addEvent(event, !shownEvents.has(event))
+            });
             this._3dview.setBounds(nextProps.stream.bounds);
+            
+            this.setState({ shownEvents: shownEvents });
             return;
         }
         const next = new Set(nextProps.shownEvents);
@@ -44,8 +48,6 @@ export default class MatchView extends React.Component {
         removed.forEach(e => this._3dview.hideEvent(e));
         
         this.setState({ shownEvents: next });
-        
-        this._3dview.render();
     }
     
     onEventActivate(event, activation) {

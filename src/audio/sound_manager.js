@@ -2,13 +2,12 @@
 import audioCtx from './audio_context';
 import BufferLoader from './buffer_loader';
 
-var reverbNode = audioCtx.createReverbFromUrl("../sounds/reverb/TerrysFactoryWarehouse.m4a", function() {
-    reverbNode.connect(audioCtx.destination);
-    ambientGain.connect(reverbNode);
-});
+const ambientVolume = 0.2;
+const ambientFadeIn = 8;
 
-const ambientGain = audioCtx.createGain();
-ambientGain.gain.value = 0.4;
+const reverbNode = audioCtx.createReverbFromUrl("../sounds/reverb/TerrysFactoryWarehouse.m4a", function() {
+    reverbNode.connect(audioCtx.destination);
+});
 
 /**
  * Manages playing sounds
@@ -38,12 +37,20 @@ export default class SoundManager {
      * Play a looping ambient sound.
      */
     playAmbient(file) {
+        const ambientGain = audioCtx.createGain();
+        ambientGain.gain.value = 0;
+        
         const bufferLoader = new BufferLoader(audioCtx, [file], (buffers) => {
             const source = audioCtx.createBufferSource();
             source.buffer = buffers[0];
             source.loop = true;
             source.connect(ambientGain);
+            ambientGain.connect(reverbNode);
             source.start();
+            
+            ambientGain.gain.setValueAtTime(0, audioCtx.currentTime);
+            ambientGain.gain.linearRampToValueAtTime(ambientVolume, audioCtx.currentTime + ambientFadeIn);
+
             this._longPlaying.add(source);
         });
         bufferLoader.load();

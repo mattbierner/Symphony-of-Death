@@ -21,6 +21,9 @@ module.exports = {
             }, {
                 test: /\.json$/,
                 loader: 'json-loader'
+            }, {
+                test: /[\/\\]node_modules[\/\\]shader-particle-engine[\/\\]/,
+                loader: "imports?THREE=three"
             }
         ]
     },

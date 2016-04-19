@@ -68,7 +68,11 @@ webpackJsonp([0],{
 	                var stream = _ref.stream;
 	                var events = _ref.events;
 
-	                _this2.setState({ stream: stream });
+	                var shown = new Set();
+	                stream.forEach(function (x) {
+	                    return shown.add(x);
+	                });
+	                _this2.setState({ stream: stream, shownEvents: shown });
 	            }).catch(function (x) {
 	                return console.error(x);
 	            });
@@ -118,6 +122,8 @@ webpackJsonp([0],{
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -178,12 +184,20 @@ webpackJsonp([0],{
 	            var _this2 = this;
 
 	            if (nextProps.stream !== this.props.stream) {
-	                this.setState({ shownEvents: new Set(nextProps.shownEvents || []) });
-	                nextProps.stream.forEach(function (event) {
-	                    return _this2._3dview.addEvent(event, true);
-	                });
-	                this._3dview.setBounds(nextProps.stream.bounds);
-	                return;
+	                var _ret = function () {
+	                    var shownEvents = new Set(nextProps.shownEvents || []);
+	                    nextProps.stream.forEach(function (event) {
+	                        _this2._3dview.addEvent(event, !shownEvents.has(event));
+	                    });
+	                    _this2._3dview.setBounds(nextProps.stream.bounds);
+
+	                    _this2.setState({ shownEvents: shownEvents });
+	                    return {
+	                        v: void 0
+	                    };
+	                }();
+
+	                if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
 	            }
 	            var next = new Set(nextProps.shownEvents);
 	            var added = Array.from(next).filter(function (x) {
@@ -201,8 +215,6 @@ webpackJsonp([0],{
 	            });
 
 	            this.setState({ shownEvents: next });
-
-	            this._3dview.render();
 	        }
 	    }, {
 	        key: 'onEventActivate',
@@ -1413,6 +1425,9 @@ webpackJsonp([0],{
 	"use strict";
 
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+	/*** IMPORTS FROM imports-loader ***/
+	var THREE = __webpack_require__(3);
 
 	/* shader-particle-engine 1.0.4
 	 * 
@@ -4010,13 +4025,12 @@ webpackJsonp([0],{
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+	var ambientVolume = 0.2;
+	var ambientFadeIn = 8;
+
 	var reverbNode = _audio_context2.default.createReverbFromUrl("../sounds/reverb/TerrysFactoryWarehouse.m4a", function () {
 	    reverbNode.connect(_audio_context2.default.destination);
-	    ambientGain.connect(reverbNode);
 	});
-
-	var ambientGain = _audio_context2.default.createGain();
-	ambientGain.gain.value = 0.4;
 
 	/**
 	 * Manages playing sounds
@@ -4064,12 +4078,20 @@ webpackJsonp([0],{
 	        value: function playAmbient(file) {
 	            var _this2 = this;
 
+	            var ambientGain = _audio_context2.default.createGain();
+	            ambientGain.gain.value = 0;
+
 	            var bufferLoader = new _buffer_loader2.default(_audio_context2.default, [file], function (buffers) {
 	                var source = _audio_context2.default.createBufferSource();
 	                source.buffer = buffers[0];
 	                source.loop = true;
 	                source.connect(ambientGain);
+	                ambientGain.connect(reverbNode);
 	                source.start();
+
+	                ambientGain.gain.setValueAtTime(0, _audio_context2.default.currentTime);
+	                ambientGain.gain.linearRampToValueAtTime(ambientVolume, _audio_context2.default.currentTime + ambientFadeIn);
+
 	                _this2._longPlaying.add(source);
 	            });
 	            bufferLoader.load();
@@ -4527,7 +4549,7 @@ webpackJsonp([0],{
 
 	var createTreeFromEvents = function createTreeFromEvents(events) {
 	    return events.reduce(function (tree, event) {
-	        return tree.insert(event.TimeSinceStart, event);
+	        return tree.insert(event.TimeSinceStart.asMilliseconds(), event);
 	    }, createTree());
 	};
 
@@ -4600,7 +4622,7 @@ webpackJsonp([0],{
 	        key: "forEach",
 	        value: function forEach(f) {
 	            this.times.forEach(function (_, x) {
-	                return f(x);
+	                f(x);return false;
 	            });
 	        }
 	    }]);
