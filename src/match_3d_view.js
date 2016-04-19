@@ -88,6 +88,7 @@ export default class Viewer {
             alpha: true
         });
         this._renderer.setClearColor(0xffffff, 0);
+        this._renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
     }
 
     /**
@@ -281,11 +282,16 @@ export default class Viewer {
      */
     onWindowResize() {
         const [width, height] = this.getViewportSize();
-        this._camera.aspect = width / height;
+
+        this._camera.aspect = width / heigh;
         this._camera.updateProjectionMatrix();
         this._renderer.setSize(width, height);
-        this._composer.setSize(width, height);
-        this._composer2.setSize(width, height);
+        
+        const scaling = window.devicePixelRatio ? window.devicePixelRatio : 1;
+        const outputWidth = width * scaling;
+        const outputHeight = height * scaling;
+        this._composer.setSize(outputWidth, outputHeight);
+        this._composer2.setSize(outputWidth, outputHeight);
     }
 
     /**

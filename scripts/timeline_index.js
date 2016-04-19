@@ -443,6 +443,7 @@ webpackJsonp([1],{
 	                alpha: true
 	            });
 	            this._renderer.setClearColor(0xffffff, 0);
+	            this._renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
 	        }
 
 	        /**
@@ -682,11 +683,16 @@ webpackJsonp([1],{
 	            var width = _getViewportSize6[0];
 	            var height = _getViewportSize6[1];
 
-	            this._camera.aspect = width / height;
+
+	            this._camera.aspect = width / heigh;
 	            this._camera.updateProjectionMatrix();
 	            this._renderer.setSize(width, height);
-	            this._composer.setSize(width, height);
-	            this._composer2.setSize(width, height);
+
+	            var scaling = window.devicePixelRatio ? window.devicePixelRatio : 1;
+	            var outputWidth = width * scaling;
+	            var outputHeight = height * scaling;
+	            this._composer.setSize(outputWidth, outputHeight);
+	            this._composer2.setSize(outputWidth, outputHeight);
 	        }
 
 	        /**
