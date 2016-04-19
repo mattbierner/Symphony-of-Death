@@ -126,7 +126,7 @@
 	                return console.error(x);
 	            });
 
-	            this._soundManager.playAmbient('../sounds/spaceambient.wav');
+	            this._soundManager.playAmbient('../sounds/spaceambient.mp3');
 	        }
 	    }, {
 	        key: 'onEventFocus',
@@ -37348,7 +37348,11 @@
 
 	var reverbNode = _audio_context2.default.createReverbFromUrl("../sounds/reverb/TerrysFactoryWarehouse.m4a", function () {
 	    reverbNode.connect(_audio_context2.default.destination);
+	    ambientGain.connect(reverbNode);
 	});
+
+	var ambientGain = _audio_context2.default.createGain();
+	ambientGain.gain.value = 0.4;
 
 	/**
 	 * Manages playing sounds
@@ -37400,7 +37404,7 @@
 	                var source = _audio_context2.default.createBufferSource();
 	                source.buffer = buffers[0];
 	                source.loop = true;
-	                source.connect(reverbNode);
+	                source.connect(ambientGain);
 	                source.start();
 	                _this2._longPlaying.add(source);
 	            });
@@ -37732,7 +37736,7 @@
 	var min = 100;
 	var max = 1000;
 
-	var maxGain = 0.1;
+	var maxGain = 0.2;
 
 	var duration = 2;
 
@@ -37741,9 +37745,9 @@
 	 */
 	var computeFrequency = function computeFrequency(event, data) {
 	    if (data.stream) {
-	        return max - (max - min) * (length - data.stream.minLength) / (data.stream.maxLength - data.stream.minLength);
+	        return max - (max - min) * (event.KillVectorLength - data.stream.minLength) / (data.stream.maxLength - data.stream.minLength);
 	    } else {
-	        var progress = 400 + (5.0 - length) * 150;
+	        var progress = 400 + (5.0 - event.KillVectorLength) * 150;
 	        return Math.min(max, Math.max(min, progress));
 	    }
 	};
@@ -37751,8 +37755,15 @@
 	/**
 	 * Calculate the volume for an event.
 	 */
-	var comptueGain = function comptueGain(event, data, frequency) {
-	    return isNaN(data.velocity) ? maxGain : Math.min(maxGain, data.velocity);
+	var computeGain = function computeGain(event, data, frequency) {
+	    var computedGain = 1;
+
+	    // Play high pitched sounds softer
+	    computedGain *= Math.max(0.2, 1.0 - (frequency - min) / (max - min));
+
+	    if (!isNaN(data.velocity)) computedGain *= data.velocity / 0.5;
+
+	    return Math.min(maxGain, maxGain * computedGain);
 	};
 
 	/**
@@ -37765,7 +37776,7 @@
 	    if (weapon.type === 'Grenade' || event.IsMelee) length = 0;
 
 	    var frequency = computeFrequency(event, data);
-	    var gain = comptueGain(event, data, frequency);
+	    var gain = computeGain(event, data, frequency);
 
 	    var xOscillator = audio.ctx.createOscillator();
 	    xOscillator.type = 'sine';

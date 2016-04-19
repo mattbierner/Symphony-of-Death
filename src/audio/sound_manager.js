@@ -4,7 +4,11 @@ import BufferLoader from './buffer_loader';
 
 var reverbNode = audioCtx.createReverbFromUrl("../sounds/reverb/TerrysFactoryWarehouse.m4a", function() {
     reverbNode.connect(audioCtx.destination);
+    ambientGain.connect(reverbNode);
 });
+
+const ambientGain = audioCtx.createGain();
+ambientGain.gain.value = 0.4;
 
 /**
  * Manages playing sounds
@@ -38,7 +42,7 @@ export default class SoundManager {
             const source = audioCtx.createBufferSource();
             source.buffer = buffers[0];
             source.loop = true;
-            source.connect(reverbNode);
+            source.connect(ambientGain);
             source.start();
             this._longPlaying.add(source);
         });

@@ -4,7 +4,7 @@ import weapon_base from './combinators/weapon'
 const min = 100;
 const max = 1000;
 
-const maxGain = 0.1;
+const maxGain = 0.2;
 
 const duration = 2;
 
@@ -13,9 +13,9 @@ const duration = 2;
  */
 const computeFrequency = (event, data) => {
     if (data.stream) {
-        return max - (max - min) * (length -  data.stream.minLength) / (data.stream.maxLength - data.stream.minLength); 
+        return max - (max - min) * (event.KillVectorLength -  data.stream.minLength) / (data.stream.maxLength - data.stream.minLength); 
     } else {
-        let progress = 400 + (5.0 - length) * 150;
+        let progress = 400 + (5.0 - event.KillVectorLength) * 150;
         return Math.min(max, Math.max(min, progress));
     }
 };
@@ -23,8 +23,16 @@ const computeFrequency = (event, data) => {
 /**
  * Calculate the volume for an event.
  */
-const comptueGain = (event, data, frequency) => {
-    return isNaN(data.velocity) ? maxGain : Math.min(maxGain, data.velocity); 
+const computeGain = (event, data, frequency) => {
+    let computedGain = 1;
+    
+    // Play high pitched sounds softer
+    computedGain *= Math.max(0.2, 1.0 - (frequency - min) / (max - min));
+
+    if (!isNaN(data.velocity)) 
+        computedGain *= data.velocity / 0.5;
+    
+    return Math.min(maxGain, maxGain * computedGain)
 }
 
 /**
@@ -38,7 +46,7 @@ export default weapon_base((weapon, audio, event, data) => {
         length = 0;
     
     const frequency = computeFrequency(event, data);
-    const gain = comptueGain(event, data, frequency); 
+    const gain = computeGain(event, data, frequency); 
     
     const xOscillator = audio.ctx.createOscillator();
     xOscillator.type = 'sine';
