@@ -26,7 +26,7 @@ class DeathStream {
     constructor(eventsData) {
         const weapons = getWeaponsTable();
         
-        const duration = eventsData.length ? eventsData[eventsData.length - 1].TimeSinceStart : 0;
+        const duration = eventsData.length ? eventsData[eventsData.length - 1].TimeSinceStart.asMilliseconds() : 0;
         
         let maxX = 0, maxY = 0, maxZ = 0;
         let minLength = Infinity, maxLength = 0;
@@ -51,7 +51,7 @@ class DeathStream {
             
             return Object.assign({}, eventData, {
                 Id: '' + i,
-                MatchProgress: (eventData.TimeSinceStart + 1.0) / duration,
+                MatchProgress: (eventData.TimeSinceStart.asMilliseconds() + 1.0) / duration,
                 KillVector: KillVector,
                 ShotLine: new THREE.Line3(KillerWorldLocation, VictimWorldLocation),
                 KillerWorldLocation: KillerWorldLocation,
@@ -84,7 +84,7 @@ export const createFromJson = (events) => {
     
     return new DeathStream(deaths.map(eventData =>
         Object.assign({}, eventData, {
-            TimeSinceStart: moment.duration(eventData.TimeSinceStart).asMilliseconds()
+            TimeSinceStart: moment.duration(eventData.TimeSinceStart)
         })));
 };
 

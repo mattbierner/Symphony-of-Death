@@ -56,21 +56,23 @@
 
 	var _match_view2 = _interopRequireDefault(_match_view);
 
-	var _weapons = __webpack_require__(4);
+	var _event_list = __webpack_require__(281);
 
-	var _sound_manager = __webpack_require__(281);
+	var _event_list2 = _interopRequireDefault(_event_list);
+
+	var _sound_manager = __webpack_require__(282);
 
 	var _sound_manager2 = _interopRequireDefault(_sound_manager);
 
-	var _sine = __webpack_require__(285);
+	var _sine = __webpack_require__(286);
 
 	var _sine2 = _interopRequireDefault(_sine);
 
-	var _weird_male_screams = __webpack_require__(287);
+	var _weird_male_screams = __webpack_require__(288);
 
 	var _weird_male_screams2 = _interopRequireDefault(_weird_male_screams);
 
-	var _theremin = __webpack_require__(290);
+	var _theremin = __webpack_require__(291);
 
 	var _theremin2 = _interopRequireDefault(_theremin);
 
@@ -85,7 +87,7 @@
 	var React = __webpack_require__(6);
 	var ReactDOM = __webpack_require__(163);
 
-	var DeathStream = __webpack_require__(291);
+	var DeathStream = __webpack_require__(292);
 
 	var matchId = "5b27a620-cebf-40a3-b09c-a37f15fd135f";
 
@@ -135,6 +137,7 @@
 	        key: 'onEventActivate',
 	        value: function onEventActivate(event, data) {
 	            this._soundManager.play(event, Object.assign({}, data, { stream: this.state.stream }));
+	            this._eventCallback(event);
 	        }
 	    }, {
 	        key: 'onTimelineEvent',
@@ -159,9 +162,14 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
+	            var _this3 = this;
+
 	            return React.createElement(
 	                'div',
 	                { className: 'container' },
+	                React.createElement(_event_list2.default, { registerOnEvent: function registerOnEvent(f) {
+	                        _this3._eventCallback = f;
+	                    } }),
 	                React.createElement(_match_view2.default, {
 	                    stream: this.state.stream,
 	                    shownEvents: this.state.shownEvents,
@@ -888,7 +896,8 @@
 
 	        this._data = weaponsData.reduce(function (map, data) {
 	            map.set(+data.id, Object.assign({}, data, {
-	                name: normalizeWeaponName(data.name)
+	                name: normalizeWeaponName(data.name),
+	                displayName: data.name
 	            }));
 	            return map;
 	        }, new Map());
@@ -37103,13 +37112,233 @@
 	    value: true
 	});
 
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _audio_context = __webpack_require__(282);
+	var _moment = __webpack_require__(164);
+
+	var _moment2 = _interopRequireDefault(_moment);
+
+	var _weapons = __webpack_require__(4);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var React = __webpack_require__(6);
+	var ReactDOM = __webpack_require__(163);
+
+	/**
+	 * 
+	 */
+
+	var Weapon = function (_React$Component) {
+	    _inherits(Weapon, _React$Component);
+
+	    function Weapon() {
+	        _classCallCheck(this, Weapon);
+
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(Weapon).apply(this, arguments));
+	    }
+
+	    _createClass(Weapon, [{
+	        key: 'render',
+	        value: function render() {
+	            var event = this.props.event;
+	            var weapon = (0, _weapons.getWeaponsTable)().get(event.KillerWeaponStockId);
+	            var displayName = '';
+	            if (event.IsMelee) {
+	                displayName = weapon ? weapon.displayName : '';
+	            } else if (weapon && weapon.Type === 'Gernade') {
+	                displayName = weapon ? weapon.displayName : '';
+	            } else {
+	                var distance = event.KillVector.length().toFixed(2);
+	                displayName = weapon ? weapon.displayName + ' (' + distance + ')' : '';
+	            }
+	            return React.createElement(
+	                'span',
+	                { className: 'weaponName' },
+	                displayName
+	            );
+	        }
+	    }]);
+
+	    return Weapon;
+	}(React.Component);
+
+	/**
+	 * Event in the event list
+	 */
+
+
+	var Event = function (_React$Component2) {
+	    _inherits(Event, _React$Component2);
+
+	    function Event(props) {
+	        _classCallCheck(this, Event);
+
+	        var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(Event).call(this, props));
+
+	        _this2.state = {
+	            timeString: (0, _moment2.default)(props.event.TimeSinceStart._data).format('mm:ss.SS')
+	        };
+	        return _this2;
+	    }
+
+	    _createClass(Event, [{
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            var _this3 = this;
+
+	            var element = ReactDOM.findDOMNode(this);
+	            element.addEventListener('animationend', function () {
+	                return _this3.props.onFadeOut(_this3.props.index, _this3.props.event);
+	            }, false);
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            var event = this.props.event;
+	            return React.createElement(
+	                'li',
+	                { className: 'event' },
+	                React.createElement(
+	                    'span',
+	                    { className: 'time' },
+	                    this.state.timeString
+	                ),
+	                ' -',
+	                React.createElement(
+	                    'span',
+	                    { className: 'player killer' },
+	                    event.Killer && event.Killer.Gamertag
+	                ),
+	                ' | ',
+	                React.createElement(Weapon, { event: event }),
+	                '  | ',
+	                React.createElement(
+	                    'span',
+	                    { className: 'player victim' },
+	                    event.Victim && event.Victim.Gamertag
+	                )
+	            );
+	        }
+	    }]);
+
+	    return Event;
+	}(React.Component);
+
+	/**
+	 * Displays a list of events.
+	 */
+
+
+	var EventList = function (_React$Component3) {
+	    _inherits(EventList, _React$Component3);
+
+	    function EventList(props) {
+	        _classCallCheck(this, EventList);
+
+	        var _this4 = _possibleConstructorReturn(this, Object.getPrototypeOf(EventList).call(this, props));
+
+	        _this4.state = { events: new Map() };
+	        _this4._i = 0;
+	        return _this4;
+	    }
+
+	    _createClass(EventList, [{
+	        key: 'onEvent',
+	        value: function onEvent(event) {
+	            var i = this._i++;
+	            this.state.events.set(i, { data: event, i: i });
+	            this.forceUpdate();
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            var _this5 = this;
+
+	            this.props.registerOnEvent(function (e) {
+	                _this5.onEvent(e);
+	            });
+	        }
+	    }, {
+	        key: 'onFadeOut',
+	        value: function onFadeOut(key, event) {
+	            this.state.events.delete(key);
+	            this.forceUpdate();
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            var onFadeOut = this.onFadeOut.bind(this);
+
+	            var events = [];
+	            var _iteratorNormalCompletion = true;
+	            var _didIteratorError = false;
+	            var _iteratorError = undefined;
+
+	            try {
+	                for (var _iterator = this.state.events[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                    var _step$value = _slicedToArray(_step.value, 2);
+
+	                    var _ = _step$value[0];
+	                    var _step$value$ = _step$value[1];
+	                    var data = _step$value$.data;
+	                    var i = _step$value$.i;
+
+	                    events.push(React.createElement(Event, { key: i, event: data, index: i, onFadeOut: onFadeOut }));
+	                }
+	            } catch (err) {
+	                _didIteratorError = true;
+	                _iteratorError = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion && _iterator.return) {
+	                        _iterator.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError) {
+	                        throw _iteratorError;
+	                    }
+	                }
+	            }
+
+	            return React.createElement(
+	                'ul',
+	                { className: 'event-list' },
+	                events
+	            );
+	        }
+	    }]);
+
+	    return EventList;
+	}(React.Component);
+
+	exports.default = EventList;
+
+/***/ },
+/* 282 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _audio_context = __webpack_require__(283);
 
 	var _audio_context2 = _interopRequireDefault(_audio_context);
 
-	var _buffer_loader = __webpack_require__(284);
+	var _buffer_loader = __webpack_require__(285);
 
 	var _buffer_loader2 = _interopRequireDefault(_buffer_loader);
 
@@ -37239,7 +37468,7 @@
 	exports.default = SoundManager;
 
 /***/ },
-/* 282 */
+/* 283 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -37248,7 +37477,7 @@
 	  value: true
 	});
 
-	var _reverb = __webpack_require__(283);
+	var _reverb = __webpack_require__(284);
 
 	var _reverb2 = _interopRequireDefault(_reverb);
 
@@ -37259,7 +37488,7 @@
 	exports.default = ctx;
 
 /***/ },
-/* 283 */
+/* 284 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -37431,7 +37660,7 @@
 	};
 
 /***/ },
-/* 284 */
+/* 285 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -37485,7 +37714,7 @@
 	};
 
 /***/ },
-/* 285 */
+/* 286 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -37494,7 +37723,7 @@
 	    value: true
 	});
 
-	var _weapon = __webpack_require__(286);
+	var _weapon = __webpack_require__(287);
 
 	var _weapon2 = _interopRequireDefault(_weapon);
 
@@ -37569,7 +37798,7 @@
 	});
 
 /***/ },
-/* 286 */
+/* 287 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -37592,7 +37821,7 @@
 	};
 
 /***/ },
-/* 287 */
+/* 288 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -37601,11 +37830,11 @@
 	    value: true
 	});
 
-	var _file = __webpack_require__(288);
+	var _file = __webpack_require__(289);
 
 	var _file2 = _interopRequireDefault(_file);
 
-	var _weapon = __webpack_require__(286);
+	var _weapon = __webpack_require__(287);
 
 	var _weapon2 = _interopRequireDefault(_weapon);
 
@@ -37689,7 +37918,7 @@
 	}));
 
 /***/ },
-/* 288 */
+/* 289 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -37697,7 +37926,7 @@
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	var Wad = __webpack_require__(289);
+	var Wad = __webpack_require__(290);
 
 	/**
 	 * Helper that adds weapon info to generator.
@@ -37713,7 +37942,7 @@
 	};
 
 /***/ },
-/* 289 */
+/* 290 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*** IMPORTS FROM imports-loader ***/
@@ -37920,7 +38149,7 @@
 	}.call(window));
 
 /***/ },
-/* 290 */
+/* 291 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -37935,7 +38164,7 @@
 
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-	var Wad = __webpack_require__(289);
+	var Wad = __webpack_require__(290);
 
 
 	var min = 500;
@@ -37985,7 +38214,7 @@
 	};
 
 /***/ },
-/* 291 */
+/* 292 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -38002,11 +38231,11 @@
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var THREE = __webpack_require__(266);
-	var createTree = __webpack_require__(292);
+	var createTree = __webpack_require__(293);
 	var moment = __webpack_require__(164);
 
 
-	var example = __webpack_require__(293);
+	var example = __webpack_require__(294);
 
 	var createTreeFromEvents = function createTreeFromEvents(events) {
 	    return events.reduce(function (tree, event) {
@@ -38031,7 +38260,7 @@
 
 	        var weapons = (0, _weapons.getWeaponsTable)();
 
-	        var duration = eventsData.length ? eventsData[eventsData.length - 1].TimeSinceStart : 0;
+	        var duration = eventsData.length ? eventsData[eventsData.length - 1].TimeSinceStart.asMilliseconds() : 0;
 
 	        var maxX = 0,
 	            maxY = 0,
@@ -38059,7 +38288,7 @@
 
 	            return Object.assign({}, eventData, {
 	                Id: '' + i,
-	                MatchProgress: (eventData.TimeSinceStart + 1.0) / duration,
+	                MatchProgress: (eventData.TimeSinceStart.asMilliseconds() + 1.0) / duration,
 	                KillVector: KillVector,
 	                ShotLine: new THREE.Line3(KillerWorldLocation, VictimWorldLocation),
 	                KillerWorldLocation: KillerWorldLocation,
@@ -38103,7 +38332,7 @@
 
 	    return new DeathStream(deaths.map(function (eventData) {
 	        return Object.assign({}, eventData, {
-	            TimeSinceStart: moment.duration(eventData.TimeSinceStart).asMilliseconds()
+	            TimeSinceStart: moment.duration(eventData.TimeSinceStart)
 	        });
 	    }));
 	};
@@ -38119,7 +38348,7 @@
 	};
 
 /***/ },
-/* 292 */
+/* 293 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -39129,7 +39358,7 @@
 	}
 
 /***/ },
-/* 293 */
+/* 294 */
 /***/ function(module, exports) {
 
 	module.exports = {

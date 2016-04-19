@@ -1,0 +1,35 @@
+.event-list {
+    position: absolute;
+    right: 0;
+    top: 0;
+    text-align: right;
+    list-style: none;
+    font-size: 11px;
+    color: #666;
+    z-index: -99;
+    margin: 4px 8px;
+    
+    display: flex;
+    flex-direction: column-reverse;
+    
+    .event {
+        flex: 0 0 auto;
+
+        -webkit-animation-timing-function: ease-in;
+        animation-timing-function: ease-in;
+        
+        -webkit-animation-duration: 2s;
+        animation-duration: 2s;
+        
+        -webkit-animation-fill-mode: both;
+        animation-fill-mode: both;
+        
+        -webkit-animation-name: fadeOut;
+        animation-name: fadeOut;
+    }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; } 
+} 

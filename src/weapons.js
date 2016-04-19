@@ -15,7 +15,8 @@ class WeaponsTable {
         this._data = weaponsData.reduce(
             (map, data) => {
                 map.set(+data.id, Object.assign({}, data, {
-                    name: normalizeWeaponName(data.name)
+                    name: normalizeWeaponName(data.name),
+                    displayName: data.name
                 }));
                 return map;
             },

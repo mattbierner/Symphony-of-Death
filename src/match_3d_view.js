@@ -486,6 +486,5 @@ export default class Viewer {
     render(delta) {
         this._composer.render();
         this._composer2.render();
-        
     }
 }

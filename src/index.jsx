@@ -6,15 +6,14 @@ const ReactDOM = require('react-dom');
 const DeathStream = require('./DeathStream');
 
 import Controls from './controls';
-import MatchView from './match_view.jsx'
-
-
-import {getWeaponsTable} from './weapons';
+import MatchView from './match_view';
+import EventList from './event_list';
 
 import SoundManager from './audio/sound_manager';
 import Sine from './audio/sound_generators/sine';
-import WeirdMaleScreams from './audio/sound_generators/weird_male_screams'
-import Theremin from './audio/sound_generators/theremin'
+import WeirdMaleScreams from './audio/sound_generators/weird_male_screams';
+import Theremin from './audio/sound_generators/theremin';
+
 
 const matchId = "5b27a620-cebf-40a3-b09c-a37f15fd135f"
 
@@ -50,6 +49,7 @@ class Application extends React.Component {
     
     onEventActivate(event, data) {
         this._soundManager.play(event, Object.assign({}, data, { stream: this.state.stream }));
+        this._eventCallback(event);
     }
     
     onTimelineEvent(event) {
@@ -72,6 +72,7 @@ class Application extends React.Component {
     render() {
         return (
             <div className={'container'}>
+                <EventList registerOnEvent={(f) => { this._eventCallback = f; } } />
                 <MatchView
                     stream={this.state.stream}
                     shownEvents={this.state.shownEvents}
