@@ -4,7 +4,7 @@ const ReactDOM = require('react-dom');
 
 import moment from 'moment';
 
-import {getWeaponsTable} from './weapons';
+import {getWeaponsTable} from '../weapons';
 
 /**
  * 

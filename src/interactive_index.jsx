@@ -1,19 +1,14 @@
 "use strict";
-
 const React = require('react');
 const ReactDOM = require('react-dom');
 
 const DeathStream = require('./DeathStream');
 
-import Controls from './controls';
-import MatchView from './match_view';
-import EventList from './event_list';
+import MatchView from './components/match_view';
+import EventList from './components/event_list';
 
 import SoundManager from './audio/sound_manager';
 import Sine from './audio/sound_generators/sine';
-import WeirdMaleScreams from './audio/sound_generators/weird_male_screams';
-import Theremin from './audio/sound_generators/theremin';
-
 
 const matchId = "5b27a620-cebf-40a3-b09c-a37f15fd135f"
 

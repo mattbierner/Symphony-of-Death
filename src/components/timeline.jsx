@@ -4,9 +4,9 @@ const React = require('react');
 const ReactDOM = require('react-dom');
 const moment = require('moment');
 
-import * as num from './num';
+import * as num from '../num';
 
-import {getWeaponsTable} from './weapons';
+import {getWeaponsTable} from '../weapons';
 
 const tryInvoke = (f, x) =>
     f ? f(x) : null;
