@@ -2,6 +2,10 @@
 import audioCtx from './audio_context';
 import BufferLoader from './buffer_loader';
 
+var reverbNode = audioCtx.createReverbFromUrl("../sounds/reverb/TerrysFactoryWarehouse.m4a", function() {
+    reverbNode.connect(audioCtx.destination);
+});
+
 /**
  * Manages playing sounds
  */
@@ -16,8 +20,12 @@ export default class SoundManager {
      * Play a sound for a given event.
      */
     play(event, data) {
+        const audio = {
+            ctx: audioCtx,
+            destination: reverbNode
+        }
         this._generators.forEach(generator => {
-            const {sound, duration} = generator(event, data);
+            const {sound, duration} = generator(audio, event, data);
             this._playSound(sound, duration);
         });
     }
@@ -30,7 +38,7 @@ export default class SoundManager {
             const source = audioCtx.createBufferSource();
             source.buffer = buffers[0];
             source.loop = true;
-            source.connect(audioCtx.destination);
+            source.connect(reverbNode);
             source.start();
             this._longPlaying.add(source);
         });

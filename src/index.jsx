@@ -49,7 +49,7 @@ class Application extends React.Component {
     }
     
     onEventActivate(event, data) {
-        this._soundManager.play(event, data);
+        this._soundManager.play(event, Object.assign({}, data, { stream: this.state.stream }));
     }
     
     onTimelineEvent(event) {

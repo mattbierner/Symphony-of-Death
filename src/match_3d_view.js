@@ -151,7 +151,7 @@ export default class Viewer {
                 value: THREE.ImageUtils.loadTexture('./images/smokeparticle.png')
             },
             fog: true,
-            scale: 100,
+            scale: 200,
             depthWrite: false
         });
         this._emitter = new SPE.Emitter({
