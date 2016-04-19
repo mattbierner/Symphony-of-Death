@@ -5,7 +5,7 @@ import BufferLoader from './buffer_loader';
 const ambientVolume = 0.2;
 const ambientFadeIn = 8;
 
-const reverbNode = audioCtx.createReverbFromUrl("../sounds/reverb/TerrysFactoryWarehouse.m4a", function() {
+const reverbNode = audioCtx.createReverbFromUrl("./sounds/reverb/TerrysFactoryWarehouse.m4a", function() {
     reverbNode.connect(audioCtx.destination);
 });
 

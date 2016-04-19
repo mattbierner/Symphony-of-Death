@@ -39,7 +39,7 @@ class Application extends React.Component {
             })
             .catch(x => console.error(x))
         
-        this._soundManager.playAmbient('../sounds/spaceambient.mp3');
+        this._soundManager.playAmbient('./sounds/spaceambient.mp3');
     }
     
     onEventFocus(event) {

@@ -85,7 +85,7 @@ webpackJsonp([1],{
 	                return console.error(x);
 	            });
 
-	            this._soundManager.playAmbient('../sounds/spaceambient.mp3');
+	            this._soundManager.playAmbient('./sounds/spaceambient.mp3');
 	        }
 	    }, {
 	        key: 'onEventFocus',
@@ -4067,7 +4067,7 @@ webpackJsonp([1],{
 	var ambientVolume = 0.2;
 	var ambientFadeIn = 8;
 
-	var reverbNode = _audio_context2.default.createReverbFromUrl("../sounds/reverb/TerrysFactoryWarehouse.m4a", function () {
+	var reverbNode = _audio_context2.default.createReverbFromUrl("./sounds/reverb/TerrysFactoryWarehouse.m4a", function () {
 	    reverbNode.connect(_audio_context2.default.destination);
 	});
 
