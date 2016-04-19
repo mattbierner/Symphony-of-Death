@@ -7,10 +7,15 @@ const DeathStream = require('./DeathStream');
 import MatchView from './components/match_view';
 import EventList from './components/event_list';
 
+import * as audioCtx from './audio/audio_context';
 import SoundManager from './audio/sound_manager';
 import Sine from './audio/sound_generators/sine';
 
 const matchId = "5b27a620-cebf-40a3-b09c-a37f15fd135f"
+
+const onIos = () =>
+    /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
 
 /**
  * 
@@ -37,7 +42,16 @@ class Application extends React.Component {
             })
             .catch(x => console.error(x))
         
+        if (!onIos())
+            audioCtx.init();
+        
         this._soundManager.playAmbient('./sounds/spaceambient.mp3');
+    }
+    
+    onTouchStart() {
+        // must be created inside of a touch event
+        if (onIos())
+            audioCtx.init();
     }
     
     onEventActivate(event, data) {
@@ -47,7 +61,7 @@ class Application extends React.Component {
     
     render() {
         return (
-            <div className={'container'}>
+            <div className={'container'} onTouchStart={this.onTouchStart.bind(this)}>
                 <EventList registerOnEvent={(f) => { this._eventCallback = f; } } />
                 <MatchView
                     stream={this.state.stream}

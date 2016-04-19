@@ -15,6 +15,10 @@ webpackJsonp([0],{
 
 	var _event_list2 = _interopRequireDefault(_event_list);
 
+	var _audio_context = __webpack_require__(280);
+
+	var audioCtx = _interopRequireWildcard(_audio_context);
+
 	var _sound_manager = __webpack_require__(279);
 
 	var _sound_manager2 = _interopRequireDefault(_sound_manager);
@@ -22,6 +26,8 @@ webpackJsonp([0],{
 	var _sine = __webpack_require__(283);
 
 	var _sine2 = _interopRequireDefault(_sine);
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -37,6 +43,11 @@ webpackJsonp([0],{
 	var DeathStream = __webpack_require__(285);
 
 	var matchId = "5b27a620-cebf-40a3-b09c-a37f15fd135f";
+
+	var onIos = function onIos() {
+	    return (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
+	    );
+	};
 
 	/**
 	 * 
@@ -77,7 +88,15 @@ webpackJsonp([0],{
 	                return console.error(x);
 	            });
 
+	            if (!onIos()) audioCtx.init();
+
 	            this._soundManager.playAmbient('./sounds/spaceambient.mp3');
+	        }
+	    }, {
+	        key: 'onTouchStart',
+	        value: function onTouchStart() {
+	            // must be created inside of a touch event
+	            if (onIos()) audioCtx.init();
 	        }
 	    }, {
 	        key: 'onEventActivate',
@@ -92,7 +111,7 @@ webpackJsonp([0],{
 
 	            return React.createElement(
 	                'div',
-	                { className: 'container' },
+	                { className: 'container', onTouchStart: this.onTouchStart.bind(this) },
 	                React.createElement(_event_list2.default, { registerOnEvent: function registerOnEvent(f) {
 	                        _this3._eventCallback = f;
 	                    } }),
@@ -383,6 +402,9 @@ webpackJsonp([0],{
 	        document.addEventListener('mousedown', this.onMouseDown.bind(this), false);
 	        document.addEventListener('mouseup', this.onMouseUp.bind(this), false);
 	        document.addEventListener('mousemove', this.onMouseMove.bind(this), false);
+	        document.addEventListener('touchstart', this.onTouchStart.bind(this), false);
+	        document.addEventListener('touchstop', this.onTouchStop.bind(this), false);
+	        document.addEventListener('touchmove', this.onTouchMove.bind(this), false);
 
 	        this.onWindowResize();
 	        this.animate();
@@ -691,6 +713,50 @@ webpackJsonp([0],{
 
 	            if (this.isMouseDown) {
 	                this.handleIntersections(this.mouse, previousMouse);
+	            }
+	        }
+
+	        /**
+	         * Handle touch start events
+	         */
+
+	    }, {
+	        key: 'onTouchStart',
+	        value: function onTouchStart(event) {
+	            if (event.touches.length === 1) {
+	                this.isMouseDown = true;
+
+	                var _getViewportSize9 = this.getViewportSize();
+
+	                var _getViewportSize10 = _slicedToArray(_getViewportSize9, 2);
+
+	                var width = _getViewportSize10[0];
+	                var height = _getViewportSize10[1];
+
+
+	                this.mouse = new _three2.default.Vector2(event.touches[0].pageX / width * 2 - 1, -(event.touches[0].pageY / height) * 2 + 1);
+	            }
+	        }
+
+	        /**
+	         * Handle touch end events
+	         */
+
+	    }, {
+	        key: 'onTouchStop',
+	        value: function onTouchStop(event) {
+	            this.isMouseDown = false;
+	        }
+
+	        /**
+	         * Handle touch move events
+	         */
+
+	    }, {
+	        key: 'onTouchMove',
+	        value: function onTouchMove(event) {
+	            if (event.touches.length === 1) {
+	                this.onMouseMove({ clientX: event.touches[0].pageX, clientY: event.touches[0].pageY });
 	            }
 	        }
 	    }, {
@@ -2781,27 +2847,17 @@ webpackJsonp([0],{
 
 	        switch (event.touches.length) {
 
-	            case 1:
-	                // one-fingered touch: rotate
-
-	                if (scope.enableRotate === false) return;
-
-	                handleTouchStartRotate(event);
-
-	                state = STATE.TOUCH_ROTATE;
-
-	                break;
-
-	            case 2:
-	                // two-fingered touch: dolly
-
-	                if (scope.enableZoom === false) return;
-
-	                handleTouchStartDolly(event);
-
-	                state = STATE.TOUCH_DOLLY;
-
-	                break;
+	            /* case 1:	// one-fingered touch: rotate
+	                  if (scope.enableRotate === false) return;
+	                  handleTouchStartRotate(event);
+	                  state = STATE.TOUCH_ROTATE;
+	                  break;
+	              case 2:	// two-fingered touch: dolly
+	                  if (scope.enableZoom === false) return;
+	                  handleTouchStartDolly(event);
+	                  state = STATE.TOUCH_DOLLY;
+	                  break;
+	                 */
 
 	            case 3:
 	                // three-fingered touch: pan
@@ -4028,8 +4084,13 @@ webpackJsonp([0],{
 	var ambientVolume = 0.2;
 	var ambientFadeIn = 8;
 
-	var reverbNode = _audio_context2.default.createReverbFromUrl("./sounds/reverb/TerrysFactoryWarehouse.m4a", function () {
-	    reverbNode.connect(_audio_context2.default.destination);
+	var reverbNode = _audio_context2.default.then(function (ctx) {
+	    return new Promise(function (resolve) {
+	        var node = ctx.createReverbFromUrl("./sounds/reverb/TerrysFactoryWarehouse.m4a", function () {
+	            node.connect(ctx.destination);
+	            resolve(node);
+	        });
+	    });
 	});
 
 	/**
@@ -4055,17 +4116,43 @@ webpackJsonp([0],{
 	        value: function play(event, data) {
 	            var _this = this;
 
-	            var audio = {
-	                ctx: _audio_context2.default,
-	                destination: reverbNode
-	            };
-	            this._generators.forEach(function (generator) {
-	                var _generator = generator(audio, event, data);
+	            _audio_context2.default.then(function (audioCtx) {
+	                reverbNode.then(function (reverbNode) {
+	                    var audio = {
+	                        ctx: audioCtx,
+	                        destination: reverbNode
+	                    };
 
-	                var sound = _generator.sound;
-	                var duration = _generator.duration;
+	                    var _iteratorNormalCompletion = true;
+	                    var _didIteratorError = false;
+	                    var _iteratorError = undefined;
 
-	                _this._playSound(sound, duration);
+	                    try {
+	                        for (var _iterator = _this._generators[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                            var generator = _step.value;
+
+	                            var _generator = generator(audio, event, data);
+
+	                            var sound = _generator.sound;
+	                            var duration = _generator.duration;
+
+	                            _this._playSound(sound, duration);
+	                        }
+	                    } catch (err) {
+	                        _didIteratorError = true;
+	                        _iteratorError = err;
+	                    } finally {
+	                        try {
+	                            if (!_iteratorNormalCompletion && _iterator.return) {
+	                                _iterator.return();
+	                            }
+	                        } finally {
+	                            if (_didIteratorError) {
+	                                throw _iteratorError;
+	                            }
+	                        }
+	                    }
+	                });
 	            });
 	        }
 
@@ -4078,23 +4165,27 @@ webpackJsonp([0],{
 	        value: function playAmbient(file) {
 	            var _this2 = this;
 
-	            var ambientGain = _audio_context2.default.createGain();
-	            ambientGain.gain.value = 0;
+	            _audio_context2.default.then(function (audioCtx) {
+	                reverbNode.then(function (reverbNode) {
+	                    var ambientGain = audioCtx.createGain();
+	                    ambientGain.gain.value = 0;
 
-	            var bufferLoader = new _buffer_loader2.default(_audio_context2.default, [file], function (buffers) {
-	                var source = _audio_context2.default.createBufferSource();
-	                source.buffer = buffers[0];
-	                source.loop = true;
-	                source.connect(ambientGain);
-	                ambientGain.connect(reverbNode);
-	                source.start(0);
+	                    var bufferLoader = new _buffer_loader2.default(audioCtx, [file], function (buffers) {
+	                        var source = audioCtx.createBufferSource();
+	                        source.buffer = buffers[0];
+	                        source.loop = true;
+	                        source.connect(ambientGain);
+	                        ambientGain.connect(reverbNode);
+	                        source.start(0);
 
-	                ambientGain.gain.setValueAtTime(0, _audio_context2.default.currentTime);
-	                ambientGain.gain.linearRampToValueAtTime(ambientVolume, _audio_context2.default.currentTime + ambientFadeIn);
+	                        ambientGain.gain.setValueAtTime(0, audioCtx.currentTime);
+	                        ambientGain.gain.linearRampToValueAtTime(ambientVolume, audioCtx.currentTime + ambientFadeIn);
 
-	                _this2._longPlaying.add(source);
+	                        _this2._longPlaying.add(source);
+	                    });
+	                    bufferLoader.load();
+	                });
 	            });
-	            bufferLoader.load();
 	        }
 
 	        /**
@@ -4104,27 +4195,27 @@ webpackJsonp([0],{
 	    }, {
 	        key: 'stopAll',
 	        value: function stopAll() {
-	            var _iteratorNormalCompletion = true;
-	            var _didIteratorError = false;
-	            var _iteratorError = undefined;
+	            var _iteratorNormalCompletion2 = true;
+	            var _didIteratorError2 = false;
+	            var _iteratorError2 = undefined;
 
 	            try {
-	                for (var _iterator = this._playing[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	                    var x = _step.value;
+	                for (var _iterator2 = this._playing[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	                    var x = _step2.value;
 
 	                    x.stop();
 	                }
 	            } catch (err) {
-	                _didIteratorError = true;
-	                _iteratorError = err;
+	                _didIteratorError2 = true;
+	                _iteratorError2 = err;
 	            } finally {
 	                try {
-	                    if (!_iteratorNormalCompletion && _iterator.return) {
-	                        _iterator.return();
+	                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	                        _iterator2.return();
 	                    }
 	                } finally {
-	                    if (_didIteratorError) {
-	                        throw _iteratorError;
+	                    if (_didIteratorError2) {
+	                        throw _iteratorError2;
 	                    }
 	                }
 	            }
@@ -4165,8 +4256,9 @@ webpackJsonp([0],{
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+	    value: true
 	});
+	exports.init = undefined;
 
 	var _reverb = __webpack_require__(281);
 
@@ -4174,9 +4266,26 @@ webpackJsonp([0],{
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	var ctx = new (window.AudioContext || window.webkitAudioContext)();
-	_reverb2.default.extend(ctx);
-	exports.default = ctx;
+	var r = void 0;
+	var ctx = void 0;
+
+	exports.default = new Promise(function (resolve, reject) {
+	    r = resolve;
+	});
+	var init = exports.init = function init() {
+	    if (ctx) return ctx;
+
+	    ctx = new (window.AudioContext || window.webkitAudioContext)();
+	    _reverb2.default.extend(ctx);
+
+	    var oscillator = ctx.createOscillator();
+	    oscillator.frequency.value = 1;
+	    oscillator.connect(ctx.destination);
+	    oscillator.start(0);
+	    oscillator.stop(0);
+	    r(ctx);
+	    return ctx;
+	};
 
 /***/ },
 

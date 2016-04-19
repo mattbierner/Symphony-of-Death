@@ -71,6 +71,9 @@ export default class Viewer {
         document.addEventListener('mousedown', this.onMouseDown.bind(this), false);
         document.addEventListener('mouseup', this.onMouseUp.bind(this), false);
         document.addEventListener('mousemove', this.onMouseMove.bind(this), false);
+        document.addEventListener('touchstart', this.onTouchStart.bind(this), false);
+        document.addEventListener('touchstop', this.onTouchStop.bind(this), false);
+        document.addEventListener('touchmove', this.onTouchMove.bind(this), false);
 
         this.onWindowResize();
         this.animate();
@@ -316,6 +319,36 @@ export default class Viewer {
 
         if (this.isMouseDown) {
             this.handleIntersections(this.mouse, previousMouse);
+        }
+    }
+    
+    /**
+     * Handle touch start events
+     */
+    onTouchStart(event) {
+        if (event.touches.length === 1) {
+            this.isMouseDown = true;
+            const [width, height] = this.getViewportSize();
+
+            this.mouse = new THREE.Vector2(
+                ( event.touches[0].pageX / width) * 2 - 1,
+                -( event.touches[0].pageY / height) * 2 + 1);
+        }
+    }
+    
+    /**
+     * Handle touch end events
+     */
+    onTouchStop(event) {
+        this.isMouseDown = false;
+    }
+    
+    /**
+     * Handle touch move events
+     */
+    onTouchMove(event) {
+        if (event.touches.length === 1) {
+            this.onMouseMove({clientX: event.touches[0].pageX, clientY: event.touches[0].pageY})
         }
     }
 

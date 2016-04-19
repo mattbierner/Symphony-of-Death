@@ -5,9 +5,13 @@ import BufferLoader from './buffer_loader';
 const ambientVolume = 0.2;
 const ambientFadeIn = 8;
 
-const reverbNode = audioCtx.createReverbFromUrl("./sounds/reverb/TerrysFactoryWarehouse.m4a", function() {
-    reverbNode.connect(audioCtx.destination);
-});
+const reverbNode = audioCtx.then(ctx =>
+    new Promise(resolve => {
+        const node = ctx.createReverbFromUrl("./sounds/reverb/TerrysFactoryWarehouse.m4a", function () {
+            node.connect(ctx.destination);
+            resolve(node);
+        });
+    }));
 
 /**
  * Manages playing sounds
@@ -18,44 +22,53 @@ export default class SoundManager {
         this._longPlaying = new Set();
         this._generators = generators || [];
     }
-    
+
     /**
      * Play a sound for a given event.
      */
     play(event, data) {
-        const audio = {
-            ctx: audioCtx,
-            destination: reverbNode
-        }
-        this._generators.forEach(generator => {
-            const {sound, duration} = generator(audio, event, data);
-            this._playSound(sound, duration);
+        audioCtx.then(audioCtx => {
+            reverbNode.then(reverbNode => {
+                const audio = {
+                    ctx: audioCtx,
+                    destination: reverbNode
+                }
+                
+                for (let generator of this._generators) {
+                    let {sound, duration} = generator(audio, event, data);
+                    this._playSound(sound, duration);
+                }
+            });
         });
     }
-    
+
     /**
      * Play a looping ambient sound.
      */
     playAmbient(file) {
-        const ambientGain = audioCtx.createGain();
-        ambientGain.gain.value = 0;
-        
-        const bufferLoader = new BufferLoader(audioCtx, [file], (buffers) => {
-            const source = audioCtx.createBufferSource();
-            source.buffer = buffers[0];
-            source.loop = true;
-            source.connect(ambientGain);
-            ambientGain.connect(reverbNode);
-            source.start(0);
-            
-            ambientGain.gain.setValueAtTime(0, audioCtx.currentTime);
-            ambientGain.gain.linearRampToValueAtTime(ambientVolume, audioCtx.currentTime + ambientFadeIn);
+        audioCtx.then(audioCtx => {
+            reverbNode.then(reverbNode => {
+                const ambientGain = audioCtx.createGain();
+                ambientGain.gain.value = 0;
 
-            this._longPlaying.add(source);
+                const bufferLoader = new BufferLoader(audioCtx, [file], (buffers) => {
+                    const source = audioCtx.createBufferSource();
+                    source.buffer = buffers[0];
+                    source.loop = true;
+                    source.connect(ambientGain);
+                    ambientGain.connect(reverbNode);
+                    source.start(0);
+
+                    ambientGain.gain.setValueAtTime(0, audioCtx.currentTime);
+                    ambientGain.gain.linearRampToValueAtTime(ambientVolume, audioCtx.currentTime + ambientFadeIn);
+
+                    this._longPlaying.add(source);
+                });
+                bufferLoader.load();
+            });
         });
-        bufferLoader.load();
     }
-    
+
     /**
      * Stop all playing audio.
      */
@@ -64,7 +77,7 @@ export default class SoundManager {
             x.stop();
         this._playing = new Set();
     }
-    
+
     /**
      * Play a sound
      */

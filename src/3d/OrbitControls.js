@@ -783,7 +783,7 @@ THREE.OrbitControls = function(object, domElement) {
 
         switch (event.touches.length) {
 
-            case 1:	// one-fingered touch: rotate
+           /* case 1:	// one-fingered touch: rotate
 
                 if (scope.enableRotate === false) return;
 
@@ -802,6 +802,7 @@ THREE.OrbitControls = function(object, domElement) {
                 state = STATE.TOUCH_DOLLY;
 
                 break;
+                */
 
             case 3: // three-fingered touch: pan
 
