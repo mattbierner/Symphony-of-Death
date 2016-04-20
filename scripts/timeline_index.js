@@ -453,12 +453,12 @@ webpackJsonp([1],{
 	    }, {
 	        key: 'initCamera',
 	        value: function initCamera() {
-	            var _getViewportSize = this.getViewportSize();
+	            var _getViewportSize2 = this._getViewportSize();
 
-	            var _getViewportSize2 = _slicedToArray(_getViewportSize, 2);
+	            var _getViewportSize3 = _slicedToArray(_getViewportSize2, 2);
 
-	            var viewWidth = _getViewportSize2[0];
-	            var viewHeight = _getViewportSize2[1];
+	            var viewWidth = _getViewportSize3[0];
+	            var viewHeight = _getViewportSize3[1];
 
 	            var aspect = viewWidth / viewHeight;
 	            this._camera = new _three2.default.PerspectiveCamera(75, aspect, 0.1, 800);
@@ -484,20 +484,20 @@ webpackJsonp([1],{
 	            this._composer.addPass(new _three2.default.RenderPass(this._scene, this._camera));
 
 	            if (enableGlow) {
-	                var effectHorizBlur = new _three2.default.ShaderPass(_three2.default.HorizontalBlurShader);
-	                var effectVertiBlur = new _three2.default.ShaderPass(_three2.default.VerticalBlurShader);
+	                this._effectHorizBlur = new _three2.default.ShaderPass(_three2.default.HorizontalBlurShader);
+	                this._effectVertiBlur = new _three2.default.ShaderPass(_three2.default.VerticalBlurShader);
 
-	                var _getViewportSize3 = this.getViewportSize();
+	                var _getViewportSize4 = this._getViewportSize();
 
-	                var _getViewportSize4 = _slicedToArray(_getViewportSize3, 2);
+	                var _getViewportSize5 = _slicedToArray(_getViewportSize4, 2);
 
-	                var viewWidth = _getViewportSize4[0];
-	                var viewHeight = _getViewportSize4[1];
+	                var viewWidth = _getViewportSize5[0];
+	                var viewHeight = _getViewportSize5[1];
 
-	                effectHorizBlur.uniforms["h"].value = 2 / viewWidth;
-	                effectVertiBlur.uniforms["v"].value = 2 / viewHeight;
-	                this._composer.addPass(effectHorizBlur);
-	                this._composer.addPass(effectVertiBlur);
+	                this._effectHorizBlur.uniforms["h"].value = 2 / viewWidth;
+	                this._effectVertiBlur.uniforms["v"].value = 2 / viewHeight;
+	                this._composer.addPass(this._effectHorizBlur);
+	                this._composer.addPass(this._effectVertiBlur);
 	            }
 
 	            //final render pass
@@ -567,8 +567,8 @@ webpackJsonp([1],{
 	         */
 
 	    }, {
-	        key: 'getViewportSize',
-	        value: function getViewportSize() {
+	        key: '_getViewportSize',
+	        value: function _getViewportSize() {
 	            var rect = this.container.getBoundingClientRect();
 	            return [rect.width, rect.height];
 	        }
@@ -601,11 +601,11 @@ webpackJsonp([1],{
 	        value: function goToTopView() {
 	            this._camera.position.set(0, 0, Math.max(this.bounds.x, this.bounds.y) * 2);
 	        }
-	    }, {
-	        key: '_getObjectForEvent',
-	        value: function _getObjectForEvent(event) {
-	            return this._scene.getObjectByName(event.Id);
-	        }
+
+	        /**
+	         * Show the object for event.
+	         */
+
 	    }, {
 	        key: 'showEvent',
 	        value: function showEvent(event) {
@@ -614,6 +614,11 @@ webpackJsonp([1],{
 	                obj.visible = true;
 	            }
 	        }
+
+	        /**
+	         * Hide the object for `event`.
+	         */
+
 	    }, {
 	        key: 'hideEvent',
 	        value: function hideEvent(event) {
@@ -621,6 +626,11 @@ webpackJsonp([1],{
 	            if (obj) {
 	                obj.visible = false;
 	            }
+	        }
+	    }, {
+	        key: '_getObjectForEvent',
+	        value: function _getObjectForEvent(event) {
+	            return this._scene.getObjectByName(event.Id);
 	        }
 	    }, {
 	        key: '_drawLine',
@@ -661,13 +671,6 @@ webpackJsonp([1],{
 	                });
 	            }
 	        }
-	    }, {
-	        key: 'showEvent',
-	        value: function showEvent(event) {
-	            var target = this._scene.getObjectByName(event.Id);
-	            if (!target) return;
-	            target.visible = true;
-	        }
 
 	        /**
 	         * Handle window resize events.
@@ -676,12 +679,12 @@ webpackJsonp([1],{
 	    }, {
 	        key: 'onWindowResize',
 	        value: function onWindowResize() {
-	            var _getViewportSize5 = this.getViewportSize();
+	            var _getViewportSize6 = this._getViewportSize();
 
-	            var _getViewportSize6 = _slicedToArray(_getViewportSize5, 2);
+	            var _getViewportSize7 = _slicedToArray(_getViewportSize6, 2);
 
-	            var width = _getViewportSize6[0];
-	            var height = _getViewportSize6[1];
+	            var width = _getViewportSize7[0];
+	            var height = _getViewportSize7[1];
 
 
 	            this._camera.aspect = width / height;
@@ -689,10 +692,23 @@ webpackJsonp([1],{
 	            this._renderer.setSize(width, height);
 
 	            var scaling = window.devicePixelRatio ? window.devicePixelRatio : 1;
-	            var outputWidth = width * scaling;
-	            var outputHeight = height * scaling;
-	            this._composer.setSize(outputWidth, outputHeight);
-	            this._composer2.setSize(outputWidth, outputHeight);
+	            var bufferWidth = width * scaling;
+	            var bufferHeight = height * scaling;
+	            this._composer.setSize(bufferWidth, bufferHeight);
+	            this._composer2.setSize(bufferWidth, bufferHeight);
+	        }
+	    }, {
+	        key: '_setLastPosition',
+	        value: function _setLastPosition(x, y) {
+	            var _getViewportSize8 = this._getViewportSize();
+
+	            var _getViewportSize9 = _slicedToArray(_getViewportSize8, 2);
+
+	            var width = _getViewportSize9[0];
+	            var height = _getViewportSize9[1];
+
+
+	            this.mouse = new _three2.default.Vector2(x / width * 2 - 1, -(y / height) * 2 + 1);
 	        }
 
 	        /**
@@ -704,6 +720,22 @@ webpackJsonp([1],{
 	        value: function onMouseDown(event) {
 	            if (event.button === _three2.default.MOUSE.LEFT) {
 	                this.isMouseDown = true;
+	                this._setLastPosition(event.clientX, event.clientY);
+	            }
+	        }
+
+	        /**
+	         * Handle touch start events
+	         */
+
+	    }, {
+	        key: 'onTouchStart',
+	        value: function onTouchStart(event) {
+	            if (event.touches.length === 1) {
+	                this.isMouseDown = true;
+	                this._setLastPosition(event.touches[0].pageX, event.touches[0].pageY);
+	            } else {
+	                this.isMouseDown = false;
 	            }
 	        }
 
@@ -720,51 +752,6 @@ webpackJsonp([1],{
 	        }
 
 	        /**
-	         * Handle mouse move events.
-	         */
-
-	    }, {
-	        key: 'onMouseMove',
-	        value: function onMouseMove(event) {
-	            var _getViewportSize7 = this.getViewportSize();
-
-	            var _getViewportSize8 = _slicedToArray(_getViewportSize7, 2);
-
-	            var width = _getViewportSize8[0];
-	            var height = _getViewportSize8[1];
-
-
-	            var previousMouse = this.mouse;
-	            this.mouse = new _three2.default.Vector2(event.clientX / width * 2 - 1, -(event.clientY / height) * 2 + 1);
-
-	            if (this.isMouseDown) {
-	                this.handleIntersections(this.mouse, previousMouse);
-	            }
-	        }
-
-	        /**
-	         * Handle touch start events
-	         */
-
-	    }, {
-	        key: 'onTouchStart',
-	        value: function onTouchStart(event) {
-	            if (event.touches.length === 1) {
-	                this.isMouseDown = true;
-
-	                var _getViewportSize9 = this.getViewportSize();
-
-	                var _getViewportSize10 = _slicedToArray(_getViewportSize9, 2);
-
-	                var width = _getViewportSize10[0];
-	                var height = _getViewportSize10[1];
-
-
-	                this.mouse = new _three2.default.Vector2(event.touches[0].pageX / width * 2 - 1, -(event.touches[0].pageY / height) * 2 + 1);
-	            }
-	        }
-
-	        /**
 	         * Handle touch end events
 	         */
 
@@ -775,6 +762,16 @@ webpackJsonp([1],{
 	        }
 
 	        /**
+	         * Handle mouse move events.
+	         */
+
+	    }, {
+	        key: 'onMouseMove',
+	        value: function onMouseMove(event) {
+	            this._onMove(event.clientX, event.clientY);
+	        }
+
+	        /**
 	         * Handle touch move events
 	         */
 
@@ -782,7 +779,17 @@ webpackJsonp([1],{
 	        key: 'onTouchMove',
 	        value: function onTouchMove(event) {
 	            if (event.touches.length === 1) {
-	                this.onMouseMove({ clientX: event.touches[0].pageX, clientY: event.touches[0].pageY });
+	                this._onMove(event.touches[0].pageX, event.touches[0].pageY);
+	            }
+	        }
+	    }, {
+	        key: '_onMove',
+	        value: function _onMove(x, y) {
+	            var previousMouse = this.mouse;
+	            this._setLastPosition(x, y);
+
+	            if (this.isMouseDown) {
+	                this.handleIntersections(this.mouse, previousMouse);
 	            }
 	        }
 	    }, {

@@ -95,7 +95,7 @@ export default class Viewer {
      * Setup the initial camera.
      */
     initCamera() {
-        const [viewWidth, viewHeight] = this.getViewportSize();
+        const [viewWidth, viewHeight] = this._getViewportSize();
         const aspect = viewWidth / viewHeight;
         this._camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 800);
         this._camera.position.z = 40;
@@ -116,14 +116,14 @@ export default class Viewer {
         this._composer.addPass(new THREE.RenderPass(this._scene, this._camera));
 
         if (enableGlow) {
-            const effectHorizBlur = new THREE.ShaderPass(THREE.HorizontalBlurShader);
-            const effectVertiBlur = new THREE.ShaderPass(THREE.VerticalBlurShader);
+            this._effectHorizBlur = new THREE.ShaderPass(THREE.HorizontalBlurShader);
+            this._effectVertiBlur = new THREE.ShaderPass(THREE.VerticalBlurShader);
 
-            const [viewWidth, viewHeight] = this.getViewportSize();
-            effectHorizBlur.uniforms["h"].value = 2 / viewWidth;
-            effectVertiBlur.uniforms["v"].value = 2 / viewHeight;
-            this._composer.addPass(effectHorizBlur);
-            this._composer.addPass(effectVertiBlur);
+            const [viewWidth, viewHeight] = this._getViewportSize();
+            this._effectHorizBlur.uniforms["h"].value = 2 / viewWidth;
+            this._effectVertiBlur.uniforms["v"].value = 2 / viewHeight;
+            this._composer.addPass(this._effectHorizBlur);
+            this._composer.addPass(this._effectVertiBlur);
         }
 
         //final render pass
@@ -187,7 +187,7 @@ export default class Viewer {
     /**
      * Get the size of the viewport.
      */
-    getViewportSize() {
+    _getViewportSize() {
         const rect = this.container.getBoundingClientRect();
         return [rect.width, rect.height];
     }
@@ -214,23 +214,29 @@ export default class Viewer {
     goToTopView() {
         this._camera.position.set(0, 0, Math.max(this.bounds.x, this.bounds.y) * 2);
     }
-
-    _getObjectForEvent(event) {
-        return this._scene.getObjectByName(event.Id);
-    }
-
+    
+    /**
+     * Show the object for event.
+     */
     showEvent(event) {
         const obj = this._getObjectForEvent(event);
         if (obj) {
             obj.visible = true;
         }
     }
-
+    
+    /**
+     * Hide the object for `event`.
+     */
     hideEvent(event) {
         const obj = this._getObjectForEvent(event);
         if (obj) {
             obj.visible = false;
         }
+    }
+
+    _getObjectForEvent(event) {
+        return this._scene.getObjectByName(event.Id);
     }
 
     _drawLine(vec, color) {
@@ -270,36 +276,48 @@ export default class Viewer {
         }
     }
 
-    showEvent(event) {
-        const target = this._scene.getObjectByName(event.Id);
-        if (!target)
-            return;
-        target.visible = true;
-    }
-
     /**
      * Handle window resize events.
      */
     onWindowResize() {
-        const [width, height] = this.getViewportSize();
+        const [width, height] = this._getViewportSize();
 
         this._camera.aspect = width / height;
         this._camera.updateProjectionMatrix();
         this._renderer.setSize(width, height);
         
         const scaling = window.devicePixelRatio ? window.devicePixelRatio : 1;
-        const outputWidth = width * scaling;
-        const outputHeight = height * scaling;
-        this._composer.setSize(outputWidth, outputHeight);
-        this._composer2.setSize(outputWidth, outputHeight);
+        const bufferWidth = width * scaling;
+        const bufferHeight = height * scaling;
+        this._composer.setSize(bufferWidth, bufferHeight);
+        this._composer2.setSize(bufferWidth, bufferHeight);
     }
 
+    _setLastPosition(x, y) {
+        const [width, height] = this._getViewportSize();
+
+        this.mouse = new THREE.Vector2((x / width) * 2 - 1, -(y / height) * 2 + 1);
+    }
+    
     /**
      * Handle mouse down events.
      */
     onMouseDown(event) {
         if (event.button === THREE.MOUSE.LEFT) {
             this.isMouseDown = true;
+            this._setLastPosition(event.clientX, event.clientY);
+        }
+    }
+    
+    /**
+     * Handle touch start events
+     */
+    onTouchStart(event) {
+        if (event.touches.length === 1) {
+            this.isMouseDown = true;
+            this._setLastPosition(event.touches[0].pageX, event.touches[0].pageY);
+        } else {
+            this.isMouseDown = false;
         }
     }
 
@@ -311,36 +329,6 @@ export default class Viewer {
             this.isMouseDown = false;
         }
     }
-
-    /**
-     * Handle mouse move events.
-     */
-    onMouseMove(event) {
-        const [width, height] = this.getViewportSize();
-
-        const previousMouse = this.mouse;
-        this.mouse = new THREE.Vector2(
-            (event.clientX / width) * 2 - 1,
-            -(event.clientY / height) * 2 + 1);
-
-        if (this.isMouseDown) {
-            this.handleIntersections(this.mouse, previousMouse);
-        }
-    }
-    
-    /**
-     * Handle touch start events
-     */
-    onTouchStart(event) {
-        if (event.touches.length === 1) {
-            this.isMouseDown = true;
-            const [width, height] = this.getViewportSize();
-
-            this.mouse = new THREE.Vector2(
-                ( event.touches[0].pageX / width) * 2 - 1,
-                -( event.touches[0].pageY / height) * 2 + 1);
-        }
-    }
     
     /**
      * Handle touch end events
@@ -348,13 +336,29 @@ export default class Viewer {
     onTouchStop(event) {
         this.isMouseDown = false;
     }
+
+    /**
+     * Handle mouse move events.
+     */
+    onMouseMove(event) {
+        this._onMove(event.clientX, event.clientY);
+    }
     
     /**
      * Handle touch move events
      */
     onTouchMove(event) {
         if (event.touches.length === 1) {
-            this.onMouseMove({clientX: event.touches[0].pageX, clientY: event.touches[0].pageY})
+            this._onMove(event.touches[0].pageX, event.touches[0].pageY);
+        }
+    }
+    
+    _onMove(x, y) {
+        const previousMouse = this.mouse;
+        this._setLastPosition(x, y);
+
+        if (this.isMouseDown) {
+            this.handleIntersections(this.mouse, previousMouse);
         }
     }
 
