@@ -758,6 +758,8 @@ webpackJsonp([0],{
 	    }, {
 	        key: 'onTouchMove',
 	        value: function onTouchMove(event) {
+	            event.preventDefault();
+	            event.stopPropagation();
 	            if (event.touches.length === 1) {
 	                this._onMove(event.touches[0].pageX, event.touches[0].pageY);
 	            }
@@ -2155,6 +2157,22 @@ webpackJsonp([0],{
 	    value: true
 	});
 
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }(); /**
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          * @author qiao / https://github.com/qiao
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          * @author mrdoob / http://mrdoob.com
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          * @author alteredq / http://alteredqualia.com/
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          * @author WestLangley / http://github.com/WestLangley
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          * @author erich666 / http://erichaines.com
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          */
+
+	// This set of controls performs orbiting, dollying (zooming), and panning.
+	// Unlike TrackballControls, it maintains the "up" direction object.up (+Y by default).
+	//
+	//    Orbit - left mouse / touch: one finger move
+	//    Zoom - middle mouse, or mousewheel / touch: two finger spread or squish
+	//    Pan - right mouse, or arrow keys / touch: three finter swipe
+
+
 	var _three = __webpack_require__(3);
 
 	var _three2 = _interopRequireDefault(_three);
@@ -2213,6 +2231,12 @@ webpackJsonp([0],{
 	    // If auto-rotate is enabled, you must call controls.update() in your animation loop
 	    this.autoRotate = false;
 	    this.autoRotateSpeed = 2.0; // 30 seconds per round when fps is 60
+
+	    // Make touch rotation less sensitive
+	    this.touchRotateScale = 0.15;
+
+	    // Make touch zoom less sensitive
+	    this.touchDollyScale = 0.15;
 
 	    // Set to false to disable use of the keys
 	    this.enableKeys = true;
@@ -2661,11 +2685,28 @@ webpackJsonp([0],{
 	        }
 	    }
 
+	    var avgTouches = function avgTouches(event) {
+	        var avgX = 0;
+	        var avgY = 0;
+
+	        [].forEach.call(event.touches, function (touch) {
+	            avgX += touch.pageX;
+	            avgY += touch.pageY;
+	        });
+	        avgX /= event.touches.length;
+	        avgY /= event.touches.length;
+	        return [avgX, avgY];
+	    };
+
 	    function handleTouchStartRotate(event) {
+	        var _avgTouches = avgTouches(event);
 
-	        //console.log( 'handleTouchStartRotate' );
+	        var _avgTouches2 = _slicedToArray(_avgTouches, 2);
 
-	        rotateStart.set(event.touches[0].pageX, event.touches[0].pageY);
+	        var avgX = _avgTouches2[0];
+	        var avgY = _avgTouches2[1];
+
+	        rotateStart.set(avgX, avgY);
 	    }
 
 	    function handleTouchStartDolly(event) {
@@ -2687,12 +2728,18 @@ webpackJsonp([0],{
 	        panStart.set(event.touches[0].pageX, event.touches[0].pageY);
 	    }
 
-	    function handleTouchMoveRotate(event) {
+	    function handleTouchMoveRotate(scaling, event) {
+	        var _avgTouches3 = avgTouches(event);
 
-	        //console.log( 'handleTouchMoveRotate' );
+	        var _avgTouches4 = _slicedToArray(_avgTouches3, 2);
 
-	        rotateEnd.set(event.touches[0].pageX, event.touches[0].pageY);
+	        var avgX = _avgTouches4[0];
+	        var avgY = _avgTouches4[1];
+
+
+	        rotateEnd.set(avgX, avgY);
 	        rotateDelta.subVectors(rotateEnd, rotateStart);
+	        rotateDelta.multiplyScalar(scaling);
 
 	        var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
 
@@ -2707,7 +2754,7 @@ webpackJsonp([0],{
 	        scope.update();
 	    }
 
-	    function handleTouchMoveDolly(event) {
+	    function handleTouchMoveDolly(scaling, event) {
 
 	        //console.log( 'handleTouchMoveDolly' );
 
@@ -2719,6 +2766,7 @@ webpackJsonp([0],{
 	        dollyEnd.set(0, distance);
 
 	        dollyDelta.subVectors(dollyEnd, dollyStart);
+	        dollyDelta.multiplyScalar(scaling);
 
 	        if (dollyDelta.y > 0) {
 
@@ -2859,18 +2907,15 @@ webpackJsonp([0],{
 	        if (scope.enabled === false) return;
 
 	        switch (event.touches.length) {
+	            case 2:
+	                // two-fingered touch: dolly + rotate
+	                if (scope.enableZoom) handleTouchStartDolly(event);
 
-	            /* case 1:	// one-fingered touch: rotate
-	                  if (scope.enableRotate === false) return;
-	                  handleTouchStartRotate(event);
-	                  state = STATE.TOUCH_ROTATE;
-	                  break;
-	              case 2:	// two-fingered touch: dolly
-	                  if (scope.enableZoom === false) return;
-	                  handleTouchStartDolly(event);
-	                  state = STATE.TOUCH_DOLLY;
-	                  break;
-	                 */
+	                if (scope.enableRotate) handleTouchStartRotate(event);
+
+	                state = STATE.TOUCH_DOLLY;
+
+	                break;
 
 	            case 3:
 	                // three-fingered touch: pan
@@ -2896,36 +2941,23 @@ webpackJsonp([0],{
 	    }
 
 	    function onTouchMove(event) {
-
 	        if (scope.enabled === false) return;
 
-	        event.preventDefault();
-	        event.stopPropagation();
-
 	        switch (event.touches.length) {
-
-	            case 1:
-	                // one-fingered touch: rotate
-
-	                if (scope.enableRotate === false) return;
-	                if (state !== STATE.TOUCH_ROTATE) return; // is this needed?...
-
-	                handleTouchMoveRotate(event);
-
-	                break;
-
 	            case 2:
-	                // two-fingered touch: dolly
+	                // two-fingered touch: dolly + rotate
+	                event.preventDefault();
+	                event.stopPropagation();
+	                if (scope.enableZoom) handleTouchMoveDolly(scope.touchDollyScale, event);
 
-	                if (scope.enableZoom === false) return;
-	                if (state !== STATE.TOUCH_DOLLY) return; // is this needed?...
-
-	                handleTouchMoveDolly(event);
+	                if (scope.enableRotate) handleTouchMoveRotate(scope.touchRotateScale, event);
 
 	                break;
 
 	            case 3:
 	                // three-fingered touch: pan
+	                event.preventDefault();
+	                event.stopPropagation();
 
 	                if (scope.enablePan === false) return;
 	                if (state !== STATE.TOUCH_PAN) return; // is this needed?...
@@ -2974,21 +3006,7 @@ webpackJsonp([0],{
 	    // force an update at start
 
 	    this.update();
-	}; /**
-	    * @author qiao / https://github.com/qiao
-	    * @author mrdoob / http://mrdoob.com
-	    * @author alteredq / http://alteredqualia.com/
-	    * @author WestLangley / http://github.com/WestLangley
-	    * @author erich666 / http://erichaines.com
-	    */
-
-	// This set of controls performs orbiting, dollying (zooming), and panning.
-	// Unlike TrackballControls, it maintains the "up" direction object.up (+Y by default).
-	//
-	//    Orbit - left mouse / touch: one finger move
-	//    Zoom - middle mouse, or mousewheel / touch: two finger spread or squish
-	//    Pan - right mouse, or arrow keys / touch: three finter swipe
-
+	};
 
 	_three2.default.OrbitControls.prototype = Object.create(_three2.default.EventDispatcher.prototype);
 	_three2.default.OrbitControls.prototype.constructor = _three2.default.OrbitControls;
@@ -4600,6 +4618,7 @@ webpackJsonp([0],{
 	    xOscillator.connect(gainNode);
 	    gainNode.connect(audio.destination);
 
+	    var done = false;
 	    return {
 	        sound: {
 	            play: function play() {
@@ -4608,12 +4627,15 @@ webpackJsonp([0],{
 	                gainNode.gain.setValueAtTime(gain, audio.ctx.currentTime + duration * 0.5);
 	                gainNode.gain.linearRampToValueAtTime(0, audio.ctx.currentTime + duration * 1);
 
+	                xOscillator.onended = function () {
+	                    done = true;
+	                };
 	                xOscillator.start(0);
 
 	                xOscillator.stop(audio.ctx.currentTime + duration);
 	            },
 	            stop: function stop() {
-	                xOscillator.stop();
+	                if (!done) xOscillator.stop();
 	            }
 	        },
 	        duration: duration * 1000

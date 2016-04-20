@@ -348,6 +348,8 @@ export default class Viewer {
      * Handle touch move events
      */
     onTouchMove(event) {
+        event.preventDefault();
+        event.stopPropagation();
         if (event.touches.length === 1) {
             this._onMove(event.touches[0].pageX, event.touches[0].pageY);
         }

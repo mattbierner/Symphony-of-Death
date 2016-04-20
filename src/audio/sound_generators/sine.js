@@ -58,6 +58,7 @@ export default weapon_base((weapon, audio, event, data) => {
     xOscillator.connect(gainNode);
     gainNode.connect(audio.destination);
 
+    let done = false;
     return {
         sound: {
             play() {
@@ -66,12 +67,14 @@ export default weapon_base((weapon, audio, event, data) => {
                 gainNode.gain.setValueAtTime(gain, audio.ctx.currentTime + duration * 0.5);
                 gainNode.gain.linearRampToValueAtTime(0, audio.ctx.currentTime + duration * 1);
                 
+                xOscillator.onended = () => { done = true; }
                 xOscillator.start(0);
             
                 xOscillator.stop(audio.ctx.currentTime + duration);
             },
             stop() {
-                xOscillator.stop();
+                if (!done) 
+                    xOscillator.stop();
             }
         },
         duration: duration * 1000

@@ -67,6 +67,12 @@ THREE.OrbitControls = function(object, domElement) {
     this.autoRotate = false;
     this.autoRotateSpeed = 2.0; // 30 seconds per round when fps is 60
 
+    // Make touch rotation less sensitive
+    this.touchRotateScale = 0.15;
+
+    // Make touch zoom less sensitive
+    this.touchDollyScale = 0.15;
+
     // Set to false to disable use of the keys
     this.enableKeys = true;
 
@@ -559,15 +565,24 @@ THREE.OrbitControls = function(object, domElement) {
                 break;
 
         }
-
     }
+    
+    const avgTouches = (event) => {
+        let avgX = 0;
+        let avgY = 0;
+        
+        ([]).forEach.call(event.touches, touch => {
+            avgX += touch.pageX;
+            avgY += touch.pageY;
+        });
+        avgX  /= event.touches.length;
+        avgY  /= event.touches.length;
+        return [avgX, avgY];
+    };
 
     function handleTouchStartRotate(event) {
-
-        //console.log( 'handleTouchStartRotate' );
-
-        rotateStart.set(event.touches[0].pageX, event.touches[0].pageY);
-
+        const [avgX, avgY] = avgTouches(event);
+        rotateStart.set(avgX, avgY);
     }
 
     function handleTouchStartDolly(event) {
@@ -591,13 +606,13 @@ THREE.OrbitControls = function(object, domElement) {
 
     }
 
-    function handleTouchMoveRotate(event) {
+    function handleTouchMoveRotate(scaling, event) {
+        const [avgX, avgY] = avgTouches(event);
 
-        //console.log( 'handleTouchMoveRotate' );
-
-        rotateEnd.set(event.touches[0].pageX, event.touches[0].pageY);
+        rotateEnd.set(avgX, avgY);
         rotateDelta.subVectors(rotateEnd, rotateStart);
-
+        rotateDelta.multiplyScalar(scaling);
+        
         var element = scope.domElement === document ? scope.domElement.body : scope.domElement;
 
         // rotating across whole screen goes 360 degrees around
@@ -612,7 +627,7 @@ THREE.OrbitControls = function(object, domElement) {
 
     }
 
-    function handleTouchMoveDolly(event) {
+    function handleTouchMoveDolly(scaling, event) {
 
         //console.log( 'handleTouchMoveDolly' );
 
@@ -624,6 +639,7 @@ THREE.OrbitControls = function(object, domElement) {
         dollyEnd.set(0, distance);
 
         dollyDelta.subVectors(dollyEnd, dollyStart);
+        dollyDelta.multiplyScalar(scaling);
 
         if (dollyDelta.y > 0) {
 
@@ -782,27 +798,17 @@ THREE.OrbitControls = function(object, domElement) {
         if (scope.enabled === false) return;
 
         switch (event.touches.length) {
-
-           /* case 1:	// one-fingered touch: rotate
-
-                if (scope.enableRotate === false) return;
-
-                handleTouchStartRotate(event);
-
-                state = STATE.TOUCH_ROTATE;
-
-                break;
-
-            case 2:	// two-fingered touch: dolly
-
-                if (scope.enableZoom === false) return;
-
-                handleTouchStartDolly(event);
+            case 2:	// two-fingered touch: dolly + rotate
+                if (scope.enableZoom) 
+                    handleTouchStartDolly(event);
+                
+                 if (scope.enableRotate) 
+                    handleTouchStartRotate(event);
 
                 state = STATE.TOUCH_DOLLY;
 
                 break;
-                */
+                
 
             case 3: // three-fingered touch: pan
 
@@ -829,34 +835,24 @@ THREE.OrbitControls = function(object, domElement) {
     }
 
     function onTouchMove(event) {
-
         if (scope.enabled === false) return;
 
-        event.preventDefault();
-        event.stopPropagation();
-
         switch (event.touches.length) {
-
-            case 1: // one-fingered touch: rotate
-
-                if (scope.enableRotate === false) return;
-                if (state !== STATE.TOUCH_ROTATE) return; // is this needed?...
-
-                handleTouchMoveRotate(event);
-
-                break;
-
-            case 2: // two-fingered touch: dolly
-
-                if (scope.enableZoom === false) return;
-                if (state !== STATE.TOUCH_DOLLY) return; // is this needed?...
-
-                handleTouchMoveDolly(event);
+            case 2: // two-fingered touch: dolly + rotate
+                event.preventDefault();
+                event.stopPropagation();
+                if (scope.enableZoom) 
+                    handleTouchMoveDolly(scope.touchDollyScale, event);
+                    
+                if (scope.enableRotate)
+                    handleTouchMoveRotate(scope.touchRotateScale, event);
 
                 break;
 
             case 3: // three-fingered touch: pan
-
+                event.preventDefault();
+                event.stopPropagation();
+                
                 if (scope.enablePan === false) return;
                 if (state !== STATE.TOUCH_PAN) return; // is this needed?...
 
