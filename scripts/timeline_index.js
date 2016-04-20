@@ -370,8 +370,8 @@ webpackJsonp([1],{
 
 	var enableGlow = false;
 
-	var killerColor = new _three2.default.Color(0xff00ff);
-	var victimColor = new _three2.default.Color(0x00ffff);
+	var killerColor = new _three2.default.Color(0x777777);
+	var victimColor = new _three2.default.Color(0x777777);
 
 	var topSize = 0.1;
 	var bottomSize = 0.1;
@@ -4124,9 +4124,9 @@ webpackJsonp([1],{
 
 	var _audio_context2 = _interopRequireDefault(_audio_context);
 
-	var _buffer_loader = __webpack_require__(282);
+	var _audioLoader = __webpack_require__(297);
 
-	var _buffer_loader2 = _interopRequireDefault(_buffer_loader);
+	var _audioLoader2 = _interopRequireDefault(_audioLoader);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4157,53 +4157,60 @@ webpackJsonp([1],{
 	        this._generators = generators || [];
 	    }
 
-	    /**
-	     * Play a sound for a given event.
-	     */
-
-
 	    _createClass(SoundManager, [{
+	        key: '_getRootCtx',
+	        value: function _getRootCtx(f) {
+	            _audio_context2.default.then(function (audioCtx) {
+	                return reverbNode.then(function (reverbNode) {
+	                    return f(audioCtx, reverbNode);
+	                });
+	            });
+	        }
+
+	        /**
+	         * Play a sound for a given event.
+	         */
+
+	    }, {
 	        key: 'play',
 	        value: function play(event, data) {
 	            var _this = this;
 
-	            _audio_context2.default.then(function (audioCtx) {
-	                reverbNode.then(function (reverbNode) {
-	                    var audio = {
-	                        ctx: audioCtx,
-	                        destination: reverbNode
-	                    };
+	            this._getRootCtx(function (audioCtx, reverbNode) {
+	                var audio = {
+	                    ctx: audioCtx,
+	                    destination: reverbNode
+	                };
 
-	                    var _iteratorNormalCompletion = true;
-	                    var _didIteratorError = false;
-	                    var _iteratorError = undefined;
+	                var _iteratorNormalCompletion = true;
+	                var _didIteratorError = false;
+	                var _iteratorError = undefined;
 
+	                try {
+	                    for (var _iterator = _this._generators[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                        var generator = _step.value;
+
+	                        var _generator = generator(audio, event, data);
+
+	                        var sound = _generator.sound;
+	                        var duration = _generator.duration;
+
+	                        _this._playSound(sound, duration);
+	                    }
+	                } catch (err) {
+	                    _didIteratorError = true;
+	                    _iteratorError = err;
+	                } finally {
 	                    try {
-	                        for (var _iterator = _this._generators[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	                            var generator = _step.value;
-
-	                            var _generator = generator(audio, event, data);
-
-	                            var sound = _generator.sound;
-	                            var duration = _generator.duration;
-
-	                            _this._playSound(sound, duration);
+	                        if (!_iteratorNormalCompletion && _iterator.return) {
+	                            _iterator.return();
 	                        }
-	                    } catch (err) {
-	                        _didIteratorError = true;
-	                        _iteratorError = err;
 	                    } finally {
-	                        try {
-	                            if (!_iteratorNormalCompletion && _iterator.return) {
-	                                _iterator.return();
-	                            }
-	                        } finally {
-	                            if (_didIteratorError) {
-	                                throw _iteratorError;
-	                            }
+	                        if (_didIteratorError) {
+	                            throw _iteratorError;
 	                        }
 	                    }
-	                });
+	                }
 	            });
 	        }
 
@@ -4216,25 +4223,22 @@ webpackJsonp([1],{
 	        value: function playAmbient(file) {
 	            var _this2 = this;
 
-	            _audio_context2.default.then(function (audioCtx) {
-	                reverbNode.then(function (reverbNode) {
-	                    var ambientGain = audioCtx.createGain();
-	                    ambientGain.gain.value = 0;
+	            this._getRootCtx(function (audioCtx, reverbNode) {
+	                var ambientGain = audioCtx.createGain();
+	                ambientGain.gain.value = 0;
 
-	                    var bufferLoader = new _buffer_loader2.default(audioCtx, [file], function (buffers) {
-	                        var source = audioCtx.createBufferSource();
-	                        source.buffer = buffers[0];
-	                        source.loop = true;
-	                        source.connect(ambientGain);
-	                        ambientGain.connect(reverbNode);
-	                        source.start(0);
+	                (0, _audioLoader2.default)(audioCtx)(file).then(function (buffer) {
+	                    var source = audioCtx.createBufferSource();
+	                    source.buffer = buffer;
+	                    source.loop = true;
+	                    source.connect(ambientGain);
+	                    ambientGain.connect(reverbNode);
+	                    source.start(0);
 
-	                        ambientGain.gain.setValueAtTime(0, audioCtx.currentTime);
-	                        ambientGain.gain.linearRampToValueAtTime(ambientVolume, audioCtx.currentTime + ambientFadeIn);
+	                    ambientGain.gain.setValueAtTime(0, audioCtx.currentTime);
+	                    ambientGain.gain.linearRampToValueAtTime(ambientVolume, audioCtx.currentTime + ambientFadeIn);
 
-	                        _this2._longPlaying.add(source);
-	                    });
-	                    bufferLoader.load();
+	                    _this2._longPlaying.add(source);
 	                });
 	            });
 	        }
@@ -4509,61 +4513,6 @@ webpackJsonp([1],{
 	      return sourceNode;
 	    };
 	  }
-	};
-
-/***/ },
-
-/***/ 282:
-/***/ function(module, exports) {
-
-	"use strict";
-	//http://www.html5rocks.com/en/tutorials/webaudio/intro/#toc-abstract
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.default = BufferLoader;
-	function BufferLoader(context, urlList, callback) {
-	    this.context = context;
-	    this.urlList = urlList;
-	    this.onload = callback;
-	    this.bufferList = new Array();
-	    this.loadCount = 0;
-	}
-
-	BufferLoader.prototype.loadBuffer = function (url, index) {
-	    // Load buffer asynchronously
-	    var request = new XMLHttpRequest();
-	    request.open("GET", url, true);
-	    request.responseType = "arraybuffer";
-
-	    var loader = this;
-
-	    request.onload = function () {
-	        // Asynchronously decode the audio file data in request.response
-	        loader.context.decodeAudioData(request.response, function (buffer) {
-	            if (!buffer) {
-	                alert('error decoding file data: ' + url);
-	                return;
-	            }
-	            loader.bufferList[index] = buffer;
-	            if (++loader.loadCount == loader.urlList.length) loader.onload(loader.bufferList);
-	        }, function (error) {
-	            console.error('decodeAudioData error', error);
-	        });
-	    };
-
-	    request.onerror = function () {
-	        alert('BufferLoader: XHR error');
-	    };
-
-	    request.send();
-	};
-
-	BufferLoader.prototype.load = function () {
-	    for (var i = 0; i < this.urlList.length; ++i) {
-	        this.loadBuffer(this.urlList[i], i);
-	    }
 	};
 
 /***/ },
@@ -10299,6 +10248,183 @@ webpackJsonp([1],{
 	        duration: duration * 1000
 	    };
 	};
+
+/***/ },
+
+/***/ 297:
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(module) {/* global XMLHttpRequest */
+	'use strict';
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+	var b64decode = __webpack_require__(298);
+	var PREFIXED = /^(@[\w-]+)\/(.*)$/;
+	var AUDIO = /\.(mp3|wav|ogg)/;
+
+	function merge(dest, src) {
+	  Object.keys(src).forEach(function (k) {
+	    dest[k] = src[k];
+	  });
+	  return dest;
+	}
+
+	/**
+	 * Create a sample loader
+	 *
+	 * @param {AudioContext} ac - the audio context
+	 * @param {HashMap} options - (Optional) options. The options can include:
+	 * @return {Function} a load function
+	 */
+	function loader(ac, options) {
+	  var opts = options || {};
+	  var fetch = opts.fetch || httpRequest;
+	  var prefixes = merge({}, PREFIXES);
+	  if (opts.sources) merge(prefixes, opts.sources);
+
+	  return function load(value) {
+	    if (value instanceof Promise) return value.then(function (v) {
+	      return load(v);
+	    });
+
+	    if (value instanceof ArrayBuffer) return loadArrayBuffer(ac, value);else if (Array.isArray(value)) return loadArrayData(value, load);else if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object') return loadObjectData(value, load);else if (typeof value === 'string') {
+	      if (/^data:audio/.test(value)) return decodeBase64(value, load);else if (/\.json$/.test(value)) return loadJsonFile(value, load, fetch);else if (PREFIXED.test(value)) return loadPrefix(prefixes, value, load, fetch);else if (AUDIO.test(value)) return loadAudioFile(value, load, fetch);else return Promise.resolve(value);
+	    } else return Promise.resolve(value);
+	  };
+	}
+
+	function loadArrayBuffer(ac, data) {
+	  if (!(data instanceof ArrayBuffer)) return null;
+	  return new Promise(function (done, reject) {
+	    ac.decodeAudioData(data, function (buffer) {
+	      done(buffer);
+	    }, function () {
+	      reject("Can't decode audio data (" + data.slice(0, 30) + '...)');
+	    });
+	  });
+	}
+
+	function loadArrayData(array, load) {
+	  return Promise.all(array.map(load));
+	}
+
+	function loadObjectData(source, load) {
+	  var dest = {};
+	  var promises = Object.keys(source).map(function (key) {
+	    return load(source[key]).then(function (result) {
+	      dest[key] = result;
+	    });
+	  });
+	  return Promise.all(promises).then(function () {
+	    return dest;
+	  });
+	}
+
+	function decodeBase64(data, load) {
+	  var payload = data.split(',')[1];
+	  return load(b64decode(payload).buffer);
+	}
+
+	function loadAudioFile(url, load, fetch) {
+	  return load(fetch(url, 'arraybuffer'));
+	}
+
+	function loadJsonFile(url, load, fetch) {
+	  return load(fetch(url, 'json'));
+	}
+
+	function loadPrefix(prefixes, value, load, fetch) {
+	  var m = PREFIXED.exec(value);
+	  var prefix = m[1];
+	  var path = m[2];
+	  var fn = prefixes[prefix];
+	  if (!fn) return Promise.reject('Unknown prefix: ' + prefix);else if (typeof fn === 'function') return fn(path, load, fetch);else return load(fn + '/' + path);
+	}
+
+	var PREFIXES = {
+	  '@midijs': function midijs(url, load, fetch) {
+	    return fetch(url, 'text').then(function (data) {
+	      var begin = data.indexOf('MIDI.Soundfont.');
+	      if (begin < 0) throw Error('Invalid MIDI.js Soundfont format');
+	      begin = data.indexOf('=', begin) + 2;
+	      var end = data.lastIndexOf(',');
+	      return JSON.parse(data.slice(begin, end) + '}');
+	    }).then(load);
+	  },
+	  '@soundfont': function soundfont(name, load) {
+	    var url = 'https://cdn.rawgit.com/gleitz/midi-js-Soundfonts/master/FluidR3_GM/' + name + '-ogg.js';
+	    return load('@midijs/' + url);
+	  },
+	  '@drum-machines': function drumMachines(name, load) {
+	    var path = name + '/' + name + '.json';
+	    var url = 'https://cdn.rawgit.com/danigb/smplr/master/packages/drum-machines/' + path;
+	    return load(url);
+	  }
+	};
+
+	/**
+	 * Wrap a GET request into a promise
+	 *
+	 * @private
+	 */
+	function httpRequest(url, type) {
+	  return new Promise(function (done, reject) {
+	    var req = new XMLHttpRequest();
+	    if (type) req.responseType = type;
+	    req.open('GET', url);
+
+	    req.onload = function () {
+	      if (req.status === 200) {
+	        done(req.response);
+	      } else {
+	        reject(Error(req.statusText));
+	      }
+	    };
+	    req.onerror = function () {
+	      reject(Error('Network Error'));
+	    };
+	    req.send();
+	  });
+	}
+
+	if (( false ? 'undefined' : _typeof(module)) === 'object' && module.exports) module.exports = loader;
+	if (typeof window !== 'undefined') window.loader = loader;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(180)(module)))
+
+/***/ },
+
+/***/ 298:
+/***/ function(module, exports) {
+
+	'use strict';
+
+	function b64ToUint6(nChr) {
+	  return nChr > 64 && nChr < 91 ? nChr - 65 : nChr > 96 && nChr < 123 ? nChr - 71 : nChr > 47 && nChr < 58 ? nChr + 4 : nChr === 43 ? 62 : nChr === 47 ? 63 : 0;
+	}
+
+	// Decode Base64 to Uint8Array
+	// ---------------------------
+	function base64DecodeToArray(sBase64, nBlocksSize) {
+	  var sB64Enc = sBase64.replace(/[^A-Za-z0-9\+\/]/g, "");
+	  var nInLen = sB64Enc.length;
+	  var nOutLen = nBlocksSize ? Math.ceil((nInLen * 3 + 1 >> 2) / nBlocksSize) * nBlocksSize : nInLen * 3 + 1 >> 2;
+	  var taBytes = new Uint8Array(nOutLen);
+
+	  for (var nMod3, nMod4, nUint24 = 0, nOutIdx = 0, nInIdx = 0; nInIdx < nInLen; nInIdx++) {
+	    nMod4 = nInIdx & 3;
+	    nUint24 |= b64ToUint6(sB64Enc.charCodeAt(nInIdx)) << 18 - 6 * nMod4;
+	    if (nMod4 === 3 || nInLen - nInIdx === 1) {
+	      for (nMod3 = 0; nMod3 < 3 && nOutIdx < nOutLen; nMod3++, nOutIdx++) {
+	        taBytes[nOutIdx] = nUint24 >>> (16 >>> nMod3 & 24) & 255;
+	      }
+	      nUint24 = 0;
+	    }
+	  }
+	  return taBytes;
+	}
+
+	module.exports = base64DecodeToArray;
 
 /***/ }
 

@@ -22,8 +22,8 @@ import {getWeaponsTable} from './weapons';
 
 const enableGlow = false;
 
-const killerColor = new THREE.Color(0xff00ff);
-const victimColor = new THREE.Color(0x00ffff);
+const killerColor = new THREE.Color(0x777777);
+const victimColor = new THREE.Color(0x777777);
 
 const topSize = 0.1;
 const bottomSize = 0.1;
@@ -264,7 +264,7 @@ export default class Viewer {
                 dRay.applyQuaternion(target.quaternion)
                 dRay.y = 0;
                 dRay.normalize().multiplyScalar(mag);
-
+                
                 uniforms.wave_direction.value = dRay;
                 uniforms.wave_direction.needsUpdate = true;
             }

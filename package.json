@@ -28,6 +28,7 @@
     "webpack": "^1.12.14"
   },
   "dependencies": {
+    "audio-loader": "^0.1.2",
     "functional-red-black-tree": "^1.0.1",
     "moment": "^2.12.0",
     "react": "^0.14.8",
