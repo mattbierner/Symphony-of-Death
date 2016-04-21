@@ -14,8 +14,8 @@ $base-line-height: 1.5;
 
 $spacing-unit:     30px;
 
-$background-color: #111;
-$text-color: #eee;
+$background-color: #222;
+$text-color: #e7e7e7;
 $border-color: #aaa;
 $panel-color:      rgba(30, 30, 30, 0.85);
 $brand-color: #0ff;
@@ -48,6 +48,7 @@ $on-laptop:        800px;
         "base",
         "buttons",
         "event-list",
+        "index",
         "layout",
         "match-view",
         "playback-controls",

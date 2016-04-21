@@ -1,0 +1,59 @@
+@import url(https://fonts.googleapis.com/css?family=Michroma);
+
+#index {
+
+  
+}
+
+.page-header {
+    font-family: 'Michroma', sans-serif;
+    margin: 0 auto;
+    display: table;
+    height: 80vh;
+    max-height: 800px;
+
+    .logo {
+        position: relative;
+        height: 350px;
+        width: 280px;
+
+        &::after {
+            content: "";
+            display: block;
+            background: url(../images/skull-mask.svg);
+            background-size: 100% 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 5px solid $background-color;
+        }
+    }
+    
+    .title div {
+        border-left: 2px solid $text-color;
+    }
+    
+    h1 {
+        padding: 20px 0 20px 20px;
+        font-size: 24px;
+        z-index: 99;
+        opacity: 0;
+        
+        animation: fadein 0.5s;
+        animation-delay: 0.6s;
+        animation-fill-mode: forwards;
+    }
+    
+   & > * {
+        display: table-cell;
+        vertical-align: middle;
+        overflow: hidden;
+    }
+}
+
+@keyframes fadein {
+    from { opacity: 0; transform: translateX(-100%); }
+    to   { opacity: 1;  transform: translateX(0); }
+}

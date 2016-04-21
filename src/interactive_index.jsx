@@ -61,7 +61,7 @@ class Application extends React.Component {
     
     render() {
         return (
-            <div className={'container'} onTouchStart={this.onTouchStart.bind(this)}>
+            <div className='full-container' onTouchStart={this.onTouchStart.bind(this)}>
                 <EventList registerOnEvent={(f) => { this._eventCallback = f; } } />
                 <MatchView
                     stream={this.state.stream}

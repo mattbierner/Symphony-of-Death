@@ -111,7 +111,7 @@ webpackJsonp([0],{
 
 	            return React.createElement(
 	                'div',
-	                { className: 'container', onTouchStart: this.onTouchStart.bind(this) },
+	                { className: 'full-container', onTouchStart: this.onTouchStart.bind(this) },
 	                React.createElement(_event_list2.default, { registerOnEvent: function registerOnEvent(f) {
 	                        _this3._eventCallback = f;
 	                    } }),
