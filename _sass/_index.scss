@@ -4,13 +4,20 @@
     text-align: center;
     padding-bottom: 4em;
     font-weight: 300;
-
+    min-width: 320px;
+    
     & > {
         max-width: 600px;
     }
     
     article {
         max-width: 800px;
+        margin-bottom: 6em;
+        
+        header {
+            text-align: center;
+            margin-bottom: 2em;
+        }
     }
 }
 
@@ -18,10 +25,11 @@
     font-family: 'Michroma', sans-serif;
     margin: 0 auto;
     display: table;
-    height: 80vh;
-    max-height: 700px;
-
-    .logo, h1 {
+    height: 70vh;
+    max-height: 600px;
+    padding-bottom: 1.5em;
+    
+    .logo, .title h1 {
         width: 280px;
     }
     
@@ -34,6 +42,12 @@
         position: relative;
         height: 350px;
         z-index: -3;
+        border: 2px solid #222;
+        
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
         
         &::after {
             content: "";
@@ -41,11 +55,10 @@
             background: url(../images/skull-mask.svg);
             background-size: 100% 100%;
             position: absolute;
-            top: -5px;
-            left: -5px;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            border: 5px solid $background-color;
         }
     }
     
@@ -63,7 +76,7 @@
             text-align: left;
             z-index: 99;
             
-            animation: fadeinlogo 1s;
+            animation: fadeinlogo 0.8s;
             animation-delay: 0.4s;
             animation-fill-mode: forwards;
             animation-timing-function: ease-out;
@@ -74,7 +87,8 @@
 .links {
     @extend %clearfix;
     padding: 10px 0;
-    
+    margin-bottom: 4em;
+
     a {
         color: inherit;
         display: inline-block;
@@ -106,13 +120,12 @@
     img {
         float: left;
         max-width: 400px;
+        width: 100%;
     }
-    
-    .blurb {
-        padding: 50px 0;
-    }
-    
+
     h1 {
+        padding-top: 50px;
+
         font-weight: 100;
         font-size: 40px;
         margin-bottom: 0.2em;
@@ -122,26 +135,53 @@
 .page-footer {
     clear: both;
     font-size: 85%;
+    margin: 2em;
 }
 
 
 @keyframes fadeinlogo {
     0% { opacity: 0; transform: translateX(-100%); }
-        50% { opacity: 0; }
+    70% { opacity: 0; }
 
     100%   { opacity: 1;  transform: translateX(0); }
 }
 
-@media only screen and (max-width: 800px) {
+@media only screen and (max-width: 600px) {
     .page-header {
-        height: 70vh;
+        height: 60vh;
+    }
+}
+
+@media only screen and (max-height: 800px) {
+    .links {
+        margin-bottom: 1.5em;
     }
 }
 
 @media only screen and (max-width: 500px) {
     .page-header {
-        h1 {
-            display: none;
+         & > * {
+            display: inline-block;
+            max-width: 100%;
+        }
+    
+        .title div {
+            border-left: none;
+        }
+        
+        .title h1 {
+            white-space: nowrap;
+            text-align: center;
+            animation: none;
+            opacity: 1;
+            padding: 0;
+            font-size: 20px;
+            line-height: 22px;
+        }
+        
+        .logo {
+            width: 200px;
+            height: 250px;
         }
     }
 }

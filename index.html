@@ -17,7 +17,7 @@ rootId: index
 </header>
 
 <article class="container">
-    <header style="text-align: center;">
+    <header>
         <p>
             <i>Symphony of Death</i> is a collection of experiments<br>
             translating <i>Halo 5</i> match events into<br>
@@ -30,7 +30,7 @@ rootId: index
     </nav>
     <a href="interactive" class="experiment">
         <img src="images/index/interactive.png" />
-        <div class="blurb">
+        <div class="about">
             <h1>Interactive</h1>
             <p>Maps out each kill of a match as a vibrating string in 3D space. The resulting instrument is like a harp.</p>
         </div>
@@ -40,7 +40,7 @@ rootId: index
 <div class="container">
     <footer class="footer page-footer">
         <p>
-            <a href="https://github.com/mattbierner/Symphony-of-Death">Suggestions and contributions are always welcome.</a>
+            <a href="https://github.com/mattbierner/Symphony-of-Death">Suggestions and contributions<br>are always welcome</a>
         </p>
         <p>Disclaimer: I work at Microsoft but this is entirely a personal project.</p>
         <p id="copyright">&copy; 2016 <a href="http://mattbierner.com">Matt Bierner</a></pspan>
@@ -62,14 +62,18 @@ rootId: index
     var canvas = document.getElementById('skull-background');
     var ctx = canvas.getContext('2d');
     
-    var centerX = canvas.getBoundingClientRect().width / 2;
-    var centerY = canvas.getBoundingClientRect().height / 2;
+    var scale = window.devicePixelRatio || 1;
+    canvas.width *= scale;
+    canvas.height *= scale;
+    
+    var centerX = canvas.width / 2;
+    var centerY = canvas.height / 2;
     var circleSize = Math.max(centerX, centerY) - 10;
 
     ctx.globalCompositeOperation = "hard-light";
 
     var colors = ['rgba(255, 0, 255, 0.5)', 'rgba(100, 255, 0, 0.5)','rgba(0, 237, 255, 0.5)'];
-    ctx.lineWidth = 50;
+    ctx.lineWidth = 50 * scale;
     
     var i = 0;
     var rate = initialRate;

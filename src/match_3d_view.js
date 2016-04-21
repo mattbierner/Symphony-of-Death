@@ -164,7 +164,7 @@ export default class Viewer {
                 value: 15,
             },
             opacity: {
-                value: [ 0, 0.20, 0 ]
+                value: [ 0, 0.15, 0 ]
             },
             position: {
                 value: new THREE.Vector3(0, 0, 0),
@@ -178,7 +178,7 @@ export default class Viewer {
             wiggle: {
                 spread: 10
             },
-            particleCount: 5000
+            particleCount: 3000
         });
         this._particleGroup.addEmitter(this._emitter);
         this._scene.add(this._particleGroup.mesh);

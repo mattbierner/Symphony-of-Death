@@ -3,7 +3,12 @@ html, body, .full-container {
     max-width: 100%;
 }
 
+html, #full {
+    height: 100%;
+}
+
 .full-container {
+    height: 100%;
     width: 100%;
     min-width: 100%;
 }
