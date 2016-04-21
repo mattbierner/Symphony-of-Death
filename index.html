@@ -5,7 +5,7 @@ rootId: index
 
 <header class="container page-header">
     <div>
-        <div class="logo" src="./images/logo-index.png">
+        <div class="logo">
             <canvas width="280" height="350" id="skull-background"></canvas>
         </div>
     </div>
@@ -16,21 +16,48 @@ rootId: index
     </div>
 </header>
 
+<article class="container">
+    <header style="text-align: center;">
+        <p>
+            <i>Symphony of Death</i> is a collection of experiments<br>
+            translating <i>Halo 5</i> match events into<br>
+            interactive pages using WebGL and Web Audio.
+        </p>
+    </header>
+    <nav class="links">
+        <a href="https://github.com/mattbierner/Symphony-of-Death">Source</a>
+        <a href="https://developer.haloapi.com">Halo 5 Api</a>
+    </nav>
+    <a href="interactive" class="experiment">
+        <img src="images/index/interactive.png" />
+        <div class="blurb">
+            <h1>Interactive</h1>
+            <p>Maps out each kill of a match as a vibrating string in 3D space. The resulting instrument is like a harp.</p>
+        </div>
+    </a>
+</article>
+
 <div class="container">
-    <section class=" ">
-        <h1>Interactive</h1>
-    </section>
+    <footer class="footer page-footer">
+        <p>
+            <a href="https://github.com/mattbierner/Symphony-of-Death">Suggestions and contributions are always welcome.</a>
+        </p>
+        <p>Disclaimer: I work at Microsoft but this is entirely a personal project.</p>
+        <p id="copyright">&copy; 2016 <a href="http://mattbierner.com">Matt Bierner</a></pspan>
+    </footer>
 </div>
 
-
 <script>
+    /**
+     * Fancy skull logic, using up all the cycles :)
+     */
     // Rate to add frames
     var minRate = 2;
     var initialRate = 50;
     var rateScale = 0.95;
     
     // time to start animation after page load
-    var delay = 1000;
+    var delay = 1200;
     
     var canvas = document.getElementById('skull-background');
     var ctx = canvas.getContext('2d');
@@ -52,14 +79,13 @@ rootId: index
             rate = Math.max(Math.floor(rateScale * rate), minRate);
             
             ctx.beginPath();
-
             ctx.strokeStyle = colors[Math.floor(Math.random() * colors.length)];
+            
             var angle = Math.random() * Math.PI * 2;
-        
             ctx.moveTo(centerX + circleSize * Math.cos(angle), centerY + circleSize * Math.sin(angle));
+            
             // pick another angle at least 45 degree away.
             var angle2 = angle + Math.PI + Math.PI * (Math.random() - 0.5);
-            
             ctx.lineTo(centerX + circleSize * Math.cos(angle2), centerY + circleSize * Math.sin(angle2));
             ctx.stroke();
         }
@@ -67,3 +93,4 @@ rootId: index
     };
     setTimeout(animate, delay);
 </script>
+

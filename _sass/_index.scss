@@ -1,8 +1,17 @@
 @import url(https://fonts.googleapis.com/css?family=Michroma);
 
 #index {
+    text-align: center;
+    padding-bottom: 4em;
+    font-weight: 300;
 
-  
+    & > {
+        max-width: 600px;
+    }
+    
+    article {
+        max-width: 800px;
+    }
 }
 
 .page-header {
@@ -10,50 +19,129 @@
     margin: 0 auto;
     display: table;
     height: 80vh;
-    max-height: 800px;
+    max-height: 700px;
+
+    .logo, h1 {
+        width: 280px;
+    }
+    
+    & > * {
+        display: table-cell;
+        vertical-align: middle;
+    }
 
     .logo {
         position: relative;
         height: 350px;
-        width: 280px;
-
+        z-index: -3;
+        
         &::after {
             content: "";
             display: block;
             background: url(../images/skull-mask.svg);
             background-size: 100% 100%;
             position: absolute;
-            top: 0;
-            left: 0;
+            top: -5px;
+            left: -5px;
             width: 100%;
             height: 100%;
             border: 5px solid $background-color;
         }
     }
     
-    .title div {
-        border-left: 2px solid $text-color;
-    }
-    
-    h1 {
-        padding: 20px 0 20px 20px;
-        font-size: 24px;
-        z-index: 99;
-        opacity: 0;
-        
-        animation: fadein 0.5s;
-        animation-delay: 0.6s;
-        animation-fill-mode: forwards;
-    }
-    
-   & > * {
-        display: table-cell;
-        vertical-align: middle;
+    .title {
         overflow: hidden;
+    
+        div {
+            border-left: 2px solid $text-color;
+        }
+        
+        h1 {
+            padding: 20px 0 20px 20px;
+            font-size: 24px;
+            opacity: 0;
+            text-align: left;
+            z-index: 99;
+            
+            animation: fadeinlogo 1s;
+            animation-delay: 0.4s;
+            animation-fill-mode: forwards;
+            animation-timing-function: ease-out;
+        }
     }
 }
 
-@keyframes fadein {
-    from { opacity: 0; transform: translateX(-100%); }
-    to   { opacity: 1;  transform: translateX(0); }
+.links {
+    @extend %clearfix;
+    padding: 10px 0;
+    
+    a {
+        color: inherit;
+        display: inline-block;
+        border-left: 1px solid $text-color;
+        font-style: italic;
+        padding: 2px 20px;
+
+        &:first-child {
+            border-left: none;
+        }
+    }
+}
+
+.experiment {
+    @extend %clearfix;
+    display: block;
+    color: inherit;
+    padding: 8px;
+    
+    &:visited {
+        color: inherit;
+    }
+    
+    &:hover {
+        text-decoration: none;
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    img {
+        float: left;
+        max-width: 400px;
+    }
+    
+    .blurb {
+        padding: 50px 0;
+    }
+    
+    h1 {
+        font-weight: 100;
+        font-size: 40px;
+        margin-bottom: 0.2em;
+    }
+}
+
+.page-footer {
+    clear: both;
+    font-size: 85%;
+}
+
+
+@keyframes fadeinlogo {
+    0% { opacity: 0; transform: translateX(-100%); }
+        50% { opacity: 0; }
+
+    100%   { opacity: 1;  transform: translateX(0); }
+}
+
+@media only screen and (max-width: 800px) {
+    .page-header {
+        height: 70vh;
+    }
+}
+
+@media only screen and (max-width: 500px) {
+    .page-header {
+        h1 {
+            display: none;
+        }
+    }
 }

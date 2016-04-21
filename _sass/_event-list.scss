@@ -33,3 +33,9 @@
     from { opacity: 1; }
     to { opacity: 0; } 
 } 
+
+@media only screen and (max-width: 1000px) {
+    .event-list {
+        display: none;
+    }
+}

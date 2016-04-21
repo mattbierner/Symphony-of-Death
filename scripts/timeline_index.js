@@ -518,7 +518,7 @@ webpackJsonp([1],{
 	    }, {
 	        key: 'initParticles',
 	        value: function initParticles() {
-	            this.createDustEmitter(100);
+	            this.createDustEmitter(20);
 	        }
 	    }, {
 	        key: 'createDustEmitter',
@@ -542,7 +542,7 @@ webpackJsonp([1],{
 	                    value: 15
 	                },
 	                opacity: {
-	                    value: [0, 0.05, 0]
+	                    value: [0, 0.20, 0]
 	                },
 	                position: {
 	                    value: new _three2.default.Vector3(0, 0, 0),
@@ -4327,6 +4327,11 @@ webpackJsonp([1],{
 	exports.default = new Promise(function (resolve, reject) {
 	    r = resolve;
 	});
+
+	/**
+	 * For IOS, audio context can only be created insize od a touch event.
+	 */
+
 	var init = exports.init = function init() {
 	    if (ctx) return ctx;
 
@@ -4604,7 +4609,10 @@ webpackJsonp([1],{
 	                xOscillator.stop(audio.ctx.currentTime + duration);
 	            },
 	            stop: function stop() {
-	                if (!done) xOscillator.stop();
+	                if (done) return;
+	                try {
+	                    xOscillator.stop();
+	                } catch (e) {}
 	            }
 	        },
 	        duration: duration * 1000

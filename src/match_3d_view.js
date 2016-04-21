@@ -141,7 +141,7 @@ export default class Viewer {
      * Setup the particle system
      */
     initParticles() {
-        this.createDustEmitter(100);
+        this.createDustEmitter(20);
     }
     
     createDustEmitter(bounds) {
@@ -164,7 +164,7 @@ export default class Viewer {
                 value: 15,
             },
             opacity: {
-                value: [ 0, 0.05, 0 ]
+                value: [ 0, 0.20, 0 ]
             },
             position: {
                 value: new THREE.Vector3(0, 0, 0),

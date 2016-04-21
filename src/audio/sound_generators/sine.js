@@ -73,8 +73,11 @@ export default weapon_base((weapon, audio, event, data) => {
                 xOscillator.stop(audio.ctx.currentTime + duration);
             },
             stop() {
-                if (!done) 
+                if (done)
+                    return;
+                try {
                     xOscillator.stop();
+                } catch (e) { }
             }
         },
         duration: duration * 1000

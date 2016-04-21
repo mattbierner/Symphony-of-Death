@@ -7,6 +7,9 @@ export default new Promise((resolve, reject) => {
     r = resolve;
 });
 
+/**
+ * For IOS, audio context can only be created insize od a touch event.
+ */
 export const init = () => {
     if (ctx)
         return ctx;
