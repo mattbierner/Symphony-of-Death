@@ -18,7 +18,7 @@ import * as tube from './3d/tube';
 
 import OrbitControls from './3d/OrbitControls'
 
-import {getWeaponsTable} from './weapons';
+import {getWeaponsTable} from './data/weapons';
 
 const enableGlow = false;
 
@@ -427,6 +427,7 @@ export default class Viewer {
             const material = new THREE.MeshBasicMaterial({ color: event.IsMelee ? 0xffff00 : 0xff0000 });
             const sphere = new THREE.Mesh(geometry, material);
             sphere.position.add(victim);
+            sphere.userData = { event: event };
             objs.push(sphere);
         } else if (weapon) {
             const path = this._shotLine(event, killer, victim);
@@ -452,6 +453,20 @@ export default class Viewer {
             obj.visible = !hidden;
             this._scene.add(obj);
         }
+    }
+    
+    /**
+     * 
+     */
+    clearEvents() {
+        var toRemove = [];
+        this._scene.traverse(obj => {
+            if (!obj.userData || !obj.userData.event)
+                return;
+            toRemove.push(obj);
+        });
+        toRemove.forEach(obj => this._scene.remove(obj));
+        this._active = new Set();
     }
 
     /**

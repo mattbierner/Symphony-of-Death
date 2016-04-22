@@ -46,8 +46,6 @@ webpackJsonp([1],{
 	var React = __webpack_require__(20);
 	var ReactDOM = __webpack_require__(177);
 
-	var DeathStream = __webpack_require__(291);
-
 	var matchId = "5b27a620-cebf-40a3-b09c-a37f15fd135f";
 
 	/**
@@ -226,6 +224,8 @@ webpackJsonp([1],{
 	            if (nextProps.stream !== this.props.stream) {
 	                var _ret = function () {
 	                    var shownEvents = new Set(nextProps.shownEvents || []);
+	                    _this2._3dview.clearEvents();
+
 	                    nextProps.stream.forEach(function (event) {
 	                        _this2._3dview.addEvent(event, !shownEvents.has(event));
 	                    });
@@ -361,7 +361,7 @@ webpackJsonp([1],{
 
 	var _OrbitControls2 = _interopRequireDefault(_OrbitControls);
 
-	var _weapons = __webpack_require__(17);
+	var _weapons = __webpack_require__(312);
 
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -865,6 +865,7 @@ webpackJsonp([1],{
 	                var material = new _three2.default.MeshBasicMaterial({ color: event.IsMelee ? 0xffff00 : 0xff0000 });
 	                var sphere = new _three2.default.Mesh(geometry, material);
 	                sphere.position.add(victim);
+	                sphere.userData = { event: event };
 	                objs.push(sphere);
 	            } else if (weapon) {
 	                var path = this._shotLine(event, killer, victim);
@@ -911,6 +912,26 @@ webpackJsonp([1],{
 	                    }
 	                }
 	            }
+	        }
+
+	        /**
+	         * 
+	         */
+
+	    }, {
+	        key: 'clearEvents',
+	        value: function clearEvents() {
+	            var _this = this;
+
+	            var toRemove = [];
+	            this._scene.traverse(function (obj) {
+	                if (!obj.userData || !obj.userData.event) return;
+	                toRemove.push(obj);
+	            });
+	            toRemove.forEach(function (obj) {
+	                return _this._scene.remove(obj);
+	            });
+	            this._active = new Set();
 	        }
 
 	        /**
@@ -1032,10 +1053,10 @@ webpackJsonp([1],{
 	    }, {
 	        key: 'animate',
 	        value: function animate() {
-	            var _this = this;
+	            var _this2 = this;
 
 	            requestAnimationFrame(function () {
-	                return _this.animate();
+	                return _this2.animate();
 	            });
 
 	            var delta = this._clock.getDelta();
@@ -3154,66 +3175,6 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 17:
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var instance = void 0;
-
-	var normalizeWeaponName = function normalizeWeaponName(name) {
-	    return name.replace(/\s/g, '-').toLowerCase();
-	};
-
-	/**
-	 * Map of weapon ids to weapon metadata.
-	 */
-
-	var WeaponsTable = function () {
-	    function WeaponsTable() {
-	        _classCallCheck(this, WeaponsTable);
-
-	        var weaponsData = __webpack_require__(18);
-
-	        this._data = weaponsData.reduce(function (map, data) {
-	            map.set(+data.id, Object.assign({}, data, {
-	                name: normalizeWeaponName(data.name),
-	                displayName: data.name
-	            }));
-	            return map;
-	        }, new Map());
-	    }
-
-	    _createClass(WeaponsTable, [{
-	        key: 'get',
-	        value: function get(id) {
-	            return this._data.get(+id);
-	        }
-	    }]);
-
-	    return WeaponsTable;
-	}();
-
-	/**
-	 * Get an instance of the weapons table that maps weapon id to weapon data.
-	 */
-
-
-	var getWeaponsTable = exports.getWeaponsTable = function getWeaponsTable() {
-	    instance = instance || new WeaponsTable();
-	    return instance;
-	};
-
-/***/ },
-
 /***/ 18:
 /***/ function(module, exports) {
 
@@ -3912,7 +3873,7 @@ webpackJsonp([1],{
 
 	var _moment2 = _interopRequireDefault(_moment);
 
-	var _weapons = __webpack_require__(17);
+	var _weapons = __webpack_require__(312);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4637,7 +4598,7 @@ webpackJsonp([1],{
 	    value: true
 	});
 
-	var _weapons = __webpack_require__(17);
+	var _weapons = __webpack_require__(312);
 
 	/**
 	 * Helper that adds weapon info to generator.
@@ -4648,129 +4609,6 @@ webpackJsonp([1],{
 	        var weapon = (0, _weapons.getWeaponsTable)().get(event.KillerWeaponStockId);
 	        return mapper(weapon, audioCtx, event, data);
 	    };
-	};
-
-/***/ },
-
-/***/ 291:
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.createFromJson = undefined;
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _weapons = __webpack_require__(17);
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var THREE = __webpack_require__(3);
-	var createTree = __webpack_require__(292);
-	var moment = __webpack_require__(179);
-
-
-	var createTreeFromEvents = function createTreeFromEvents(events) {
-	    return events.reduce(function (tree, event) {
-	        return tree.insert(event.TimeSinceStart.asMilliseconds(), event);
-	    }, createTree());
-	};
-
-	var createMapFromEvents = function createMapFromEvents(events) {
-	    return events.reduce(function (map, event) {
-	        map.set(event.Id, event);
-	        return map;
-	    }, new Map());
-	};
-
-	/**
-	 * Stream of death events.
-	 */
-
-	var DeathStream = function () {
-	    function DeathStream(eventsData) {
-	        _classCallCheck(this, DeathStream);
-
-	        var weapons = (0, _weapons.getWeaponsTable)();
-
-	        var duration = eventsData.length ? eventsData[eventsData.length - 1].TimeSinceStart.asMilliseconds() : 0;
-
-	        var maxX = 0,
-	            maxY = 0,
-	            maxZ = 0;
-	        var minLength = Infinity,
-	            maxLength = 0;
-
-	        var events = eventsData.map(function (eventData, i) {
-	            var isMelee = eventData.IsGroundPound || eventData.IsMelee || eventData.IsShoulderBash;
-
-	            var KillerWorldLocation = new THREE.Vector3().copy(eventData.KillerWorldLocation);
-	            var VictimWorldLocation = new THREE.Vector3().copy(eventData.VictimWorldLocation);
-
-	            var KillVector = new THREE.Vector3().subVectors(KillerWorldLocation, VictimWorldLocation);
-
-	            maxX = Math.max(maxX, Math.abs(KillerWorldLocation.x), Math.abs(VictimWorldLocation.x));
-	            maxY = Math.max(maxY, Math.abs(KillerWorldLocation.y), Math.abs(VictimWorldLocation.y));
-	            maxZ = Math.max(maxZ, Math.abs(KillerWorldLocation.z), Math.abs(VictimWorldLocation.z));
-
-	            var weapon = weapons.get(eventData.KillerWeaponStockId);
-	            if (!isMelee && weapon && weapon.Type !== 'Grenade') {
-	                minLength = Math.min(minLength, KillVector.length());
-	                maxLength = Math.max(maxLength, KillVector.length());
-	            }
-
-	            return Object.assign({}, eventData, {
-	                Id: '' + i,
-	                MatchProgress: (eventData.TimeSinceStart.asMilliseconds() + 1.0) / duration,
-	                KillVector: KillVector,
-	                ShotLine: new THREE.Line3(KillerWorldLocation, VictimWorldLocation),
-	                KillerWorldLocation: KillerWorldLocation,
-	                VictimWorldLocation: VictimWorldLocation,
-	                KillVectorLength: KillVector.length(),
-	                IsMelee: isMelee
-	            });
-	        });
-
-	        this.duration = duration;
-	        this.times = createTreeFromEvents(events);
-	        this._map = createMapFromEvents(events);
-
-	        this.bounds = { x: maxX, y: maxY, z: maxZ };
-
-	        this.minLength = minLength;
-	        this.maxLength = maxLength;
-	    }
-
-	    _createClass(DeathStream, [{
-	        key: "forEach",
-	        value: function forEach(f) {
-	            this.times.forEach(function (_, x) {
-	                f(x);return false;
-	            });
-	        }
-	    }]);
-
-	    return DeathStream;
-	}();
-
-	/**
-	 * Create a `DeathStream` from json.
-	 */
-
-
-	var createFromJson = exports.createFromJson = function createFromJson(events) {
-	    var deaths = events.filter(function (x) {
-	        return x && x.EventName === "Death";
-	    });
-
-	    return new DeathStream(deaths.map(function (eventData) {
-	        return Object.assign({}, eventData, {
-	            TimeSinceStart: moment.duration(eventData.TimeSinceStart)
-	        });
-	    }));
 	};
 
 /***/ },
@@ -5118,7 +4956,7 @@ webpackJsonp([1],{
 
 	var num = _interopRequireWildcard(_num);
 
-	var _weapons = __webpack_require__(17);
+	var _weapons = __webpack_require__(312);
 
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -5843,6 +5681,66 @@ webpackJsonp([1],{
 	        },
 	        duration: duration * 1000
 	    };
+	};
+
+/***/ },
+
+/***/ 312:
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var instance = void 0;
+
+	var normalizeWeaponName = function normalizeWeaponName(name) {
+	    return name.replace(/\s/g, '-').toLowerCase();
+	};
+
+	/**
+	 * Map of weapon ids to weapon metadata.
+	 */
+
+	var WeaponsTable = function () {
+	    function WeaponsTable() {
+	        _classCallCheck(this, WeaponsTable);
+
+	        var weaponsData = __webpack_require__(18);
+
+	        this._data = weaponsData.reduce(function (map, data) {
+	            map.set(+data.id, Object.assign({}, data, {
+	                name: normalizeWeaponName(data.name),
+	                displayName: data.name
+	            }));
+	            return map;
+	        }, new Map());
+	    }
+
+	    _createClass(WeaponsTable, [{
+	        key: 'get',
+	        value: function get(id) {
+	            return this._data.get(+id);
+	        }
+	    }]);
+
+	    return WeaponsTable;
+	}();
+
+	/**
+	 * Get an instance of the weapons table that maps weapon id to weapon data.
+	 */
+
+
+	var getWeaponsTable = exports.getWeaponsTable = function getWeaponsTable() {
+	    instance = instance || new WeaponsTable();
+	    return instance;
 	};
 
 /***/ }

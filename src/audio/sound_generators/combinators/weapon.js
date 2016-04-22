@@ -1,5 +1,5 @@
 "use strict";
-import {getWeaponsTable} from '../../../weapons';
+import {getWeaponsTable} from '../../../data/weapons';
 
 /**
  * Helper that adds weapon info to generator.

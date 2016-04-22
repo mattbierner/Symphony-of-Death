@@ -35,7 +35,7 @@ webpackJsonp([0],{
 
 	var _sine2 = _interopRequireDefault(_sine);
 
-	var _example_matches = __webpack_require__(289);
+	var _example_matches = __webpack_require__(311);
 
 	var _example_matches2 = _interopRequireDefault(_example_matches);
 
@@ -51,8 +51,6 @@ webpackJsonp([0],{
 
 	var React = __webpack_require__(20);
 	var ReactDOM = __webpack_require__(177);
-
-	var DeathStream = __webpack_require__(291);
 
 	var matchId = "5b27a620-cebf-40a3-b09c-a37f15fd135f";
 
@@ -103,6 +101,8 @@ webpackJsonp([0],{
 
 	        _this2.state = {
 	            match: null,
+	            selectedMatch: _example_matches2.default[0],
+	            selectedMatchId: _example_matches2.default[0].id,
 	            shownEvents: new Set(),
 	            stream: null
 	        };
@@ -112,20 +112,13 @@ webpackJsonp([0],{
 	    }
 
 	    _createClass(Application, [{
+	        key: 'componentWillMount',
+	        value: function componentWillMount() {
+	            this.setSelectedMatch(this.state.selectedMatch);
+	        }
+	    }, {
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
-	            var _this3 = this;
-
-	            _example_matches2.default[0].then(function (match) {
-	                var shown = new Set();
-	                match.stream.forEach(function (x) {
-	                    return shown.add(x);
-	                });
-	                _this3.setState({ stream: match.stream, shownEvents: shown });
-	            }).catch(function (x) {
-	                return console.error(x);
-	            });
-
 	            if (!onIos()) audioCtx.init();
 
 	            this._soundManager.playAmbient('./sounds/spaceambient.mp3');
@@ -143,6 +136,54 @@ webpackJsonp([0],{
 	            this._eventCallback(event);
 	        }
 	    }, {
+	        key: 'onSelectedMatchChange',
+	        value: function onSelectedMatchChange(matchId) {
+	            if (matchId === this.state.selectedMatchId) return;
+
+	            var _iteratorNormalCompletion = true;
+	            var _didIteratorError = false;
+	            var _iteratorError = undefined;
+
+	            try {
+	                for (var _iterator = _example_matches2.default[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                    var x = _step.value;
+
+	                    if (x.id == matchId) {
+	                        return this.setSelectedMatch(x);
+	                    }
+	                }
+	            } catch (err) {
+	                _didIteratorError = true;
+	                _iteratorError = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion && _iterator.return) {
+	                        _iterator.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError) {
+	                        throw _iteratorError;
+	                    }
+	                }
+	            }
+	        }
+	    }, {
+	        key: 'setSelectedMatch',
+	        value: function setSelectedMatch(match) {
+	            var _this3 = this;
+
+	            this.setState({ selectedMatch: match, selectedMatchId: match.id });
+	            match.match.then(function (match) {
+	                var shown = new Set();
+	                match.stream.forEach(function (x) {
+	                    return shown.add(x);
+	                });
+	                _this3.setState({ stream: match.stream, shownEvents: shown });
+	            }).catch(function (x) {
+	                return console.error(x);
+	            });
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
 	            var _this4 = this;
@@ -150,7 +191,7 @@ webpackJsonp([0],{
 	            return React.createElement(
 	                'div',
 	                { className: 'full-container', onTouchStart: this.onTouchStart.bind(this) },
-	                React.createElement(InteractiveOptions, null),
+	                React.createElement(InteractiveOptions, { onSelectedMatchChange: this.onSelectedMatchChange.bind(this) }),
 	                React.createElement(
 	                    'div',
 	                    { className: 'main-view' },
@@ -253,6 +294,8 @@ webpackJsonp([0],{
 	            if (nextProps.stream !== this.props.stream) {
 	                var _ret = function () {
 	                    var shownEvents = new Set(nextProps.shownEvents || []);
+	                    _this2._3dview.clearEvents();
+
 	                    nextProps.stream.forEach(function (event) {
 	                        _this2._3dview.addEvent(event, !shownEvents.has(event));
 	                    });
@@ -388,7 +431,7 @@ webpackJsonp([0],{
 
 	var _OrbitControls2 = _interopRequireDefault(_OrbitControls);
 
-	var _weapons = __webpack_require__(17);
+	var _weapons = __webpack_require__(312);
 
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -892,6 +935,7 @@ webpackJsonp([0],{
 	                var material = new _three2.default.MeshBasicMaterial({ color: event.IsMelee ? 0xffff00 : 0xff0000 });
 	                var sphere = new _three2.default.Mesh(geometry, material);
 	                sphere.position.add(victim);
+	                sphere.userData = { event: event };
 	                objs.push(sphere);
 	            } else if (weapon) {
 	                var path = this._shotLine(event, killer, victim);
@@ -938,6 +982,26 @@ webpackJsonp([0],{
 	                    }
 	                }
 	            }
+	        }
+
+	        /**
+	         * 
+	         */
+
+	    }, {
+	        key: 'clearEvents',
+	        value: function clearEvents() {
+	            var _this = this;
+
+	            var toRemove = [];
+	            this._scene.traverse(function (obj) {
+	                if (!obj.userData || !obj.userData.event) return;
+	                toRemove.push(obj);
+	            });
+	            toRemove.forEach(function (obj) {
+	                return _this._scene.remove(obj);
+	            });
+	            this._active = new Set();
 	        }
 
 	        /**
@@ -1059,10 +1123,10 @@ webpackJsonp([0],{
 	    }, {
 	        key: 'animate',
 	        value: function animate() {
-	            var _this = this;
+	            var _this2 = this;
 
 	            requestAnimationFrame(function () {
-	                return _this.animate();
+	                return _this2.animate();
 	            });
 
 	            var delta = this._clock.getDelta();
@@ -3181,66 +3245,6 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 17:
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var instance = void 0;
-
-	var normalizeWeaponName = function normalizeWeaponName(name) {
-	    return name.replace(/\s/g, '-').toLowerCase();
-	};
-
-	/**
-	 * Map of weapon ids to weapon metadata.
-	 */
-
-	var WeaponsTable = function () {
-	    function WeaponsTable() {
-	        _classCallCheck(this, WeaponsTable);
-
-	        var weaponsData = __webpack_require__(18);
-
-	        this._data = weaponsData.reduce(function (map, data) {
-	            map.set(+data.id, Object.assign({}, data, {
-	                name: normalizeWeaponName(data.name),
-	                displayName: data.name
-	            }));
-	            return map;
-	        }, new Map());
-	    }
-
-	    _createClass(WeaponsTable, [{
-	        key: 'get',
-	        value: function get(id) {
-	            return this._data.get(+id);
-	        }
-	    }]);
-
-	    return WeaponsTable;
-	}();
-
-	/**
-	 * Get an instance of the weapons table that maps weapon id to weapon data.
-	 */
-
-
-	var getWeaponsTable = exports.getWeaponsTable = function getWeaponsTable() {
-	    instance = instance || new WeaponsTable();
-	    return instance;
-	};
-
-/***/ },
-
 /***/ 18:
 /***/ function(module, exports) {
 
@@ -3939,7 +3943,7 @@ webpackJsonp([0],{
 
 	var _moment2 = _interopRequireDefault(_moment);
 
-	var _weapons = __webpack_require__(17);
+	var _weapons = __webpack_require__(312);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4221,6 +4225,10 @@ webpackJsonp([0],{
 
 	var _options_pane2 = _interopRequireDefault(_options_pane);
 
+	var _example_matches = __webpack_require__(311);
+
+	var _example_matches2 = _interopRequireDefault(_example_matches);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -4246,9 +4254,32 @@ webpackJsonp([0],{
 	    }
 
 	    _createClass(MatchOptions, [{
+	        key: 'onChange',
+	        value: function onChange(e) {
+	            var matchId = e.target.value;
+	            this.props.onSelectedMatchChange(matchId);
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
-	            return React.createElement(_options_pane2.default, { header: 'Match' });
+	            var options = _example_matches2.default.map(function (match) {
+	                return React.createElement(
+	                    'option',
+	                    { key: match.id, value: match.id },
+	                    match.name
+	                );
+	            });
+
+	            return React.createElement(
+	                _options_pane2.default,
+	                { header: 'Match' },
+	                React.createElement(
+	                    'select',
+	                    { value: this.props.selectedMatch,
+	                        onChange: this.onChange.bind(this) },
+	                    options
+	                )
+	            );
 	        }
 	    }]);
 
@@ -4838,7 +4869,7 @@ webpackJsonp([0],{
 	    value: true
 	});
 
-	var _weapons = __webpack_require__(17);
+	var _weapons = __webpack_require__(312);
 
 	/**
 	 * Helper that adds weapon info to generator.
@@ -4853,7 +4884,27 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 289:
+/***/ 301:
+/***/ function(module, exports) {
+
+	module.exports = {
+		"5b27a620-cebf-40a3-b09c-a37f15fd135f": {
+			"name": "test1",
+			"file": "./data/5b27a620-cebf-40a3-b09c-a37f15fd135f.json"
+		},
+		"02156eed-70d3-4e47-a506-3b3d5513c29b": {
+			"name": "Tyrant - Slayer",
+			"file": "./data/02156eed-70d3-4e47-a506-3b3d5513c29b.json"
+		},
+		"7828013e-0d76-4d88-a9da-7a5fccbf5d39": {
+			"name": "Warzone - Skirmish at Darkstar",
+			"file": "./data/7828013e-0d76-4d88-a9da-7a5fccbf5d39.json"
+		}
+	};
+
+/***/ },
+
+/***/ 311:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4862,7 +4913,7 @@ webpackJsonp([0],{
 	    value: true
 	});
 
-	var _match = __webpack_require__(290);
+	var _match = __webpack_require__(313);
 
 	var match = _interopRequireWildcard(_match);
 
@@ -4871,14 +4922,78 @@ webpackJsonp([0],{
 	var data = __webpack_require__(301);
 
 	var matches = Object.keys(data).reduce(function (map, id) {
-	    return map.concat(match.createFromFile(id, data[id].file));
+	    return map.concat({
+	        id: id,
+	        name: data[id].name,
+	        match: match.createFromFile(id, data[id].file)
+	    });
 	}, []);
 
 	exports.default = matches;
 
 /***/ },
 
-/***/ 290:
+/***/ 312:
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var instance = void 0;
+
+	var normalizeWeaponName = function normalizeWeaponName(name) {
+	    return name.replace(/\s/g, '-').toLowerCase();
+	};
+
+	/**
+	 * Map of weapon ids to weapon metadata.
+	 */
+
+	var WeaponsTable = function () {
+	    function WeaponsTable() {
+	        _classCallCheck(this, WeaponsTable);
+
+	        var weaponsData = __webpack_require__(18);
+
+	        this._data = weaponsData.reduce(function (map, data) {
+	            map.set(+data.id, Object.assign({}, data, {
+	                name: normalizeWeaponName(data.name),
+	                displayName: data.name
+	            }));
+	            return map;
+	        }, new Map());
+	    }
+
+	    _createClass(WeaponsTable, [{
+	        key: 'get',
+	        value: function get(id) {
+	            return this._data.get(+id);
+	        }
+	    }]);
+
+	    return WeaponsTable;
+	}();
+
+	/**
+	 * Get an instance of the weapons table that maps weapon id to weapon data.
+	 */
+
+
+	var getWeaponsTable = exports.getWeaponsTable = function getWeaponsTable() {
+	    instance = instance || new WeaponsTable();
+	    return instance;
+	};
+
+/***/ },
+
+/***/ 313:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4888,7 +5003,7 @@ webpackJsonp([0],{
 	});
 	exports.createFromFile = exports.createFromData = exports.Match = undefined;
 
-	var _DeathStream = __webpack_require__(291);
+	var _DeathStream = __webpack_require__(314);
 
 	var death_stream = _interopRequireWildcard(_DeathStream);
 
@@ -4939,7 +5054,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 291:
+/***/ 314:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4951,7 +5066,7 @@ webpackJsonp([0],{
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _weapons = __webpack_require__(17);
+	var _weapons = __webpack_require__(312);
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -5058,17 +5173,6 @@ webpackJsonp([0],{
 	            TimeSinceStart: moment.duration(eventData.TimeSinceStart)
 	        });
 	    }));
-	};
-
-/***/ },
-
-/***/ 301:
-/***/ function(module, exports) {
-
-	module.exports = {
-		"5b27a620-cebf-40a3-b09c-a37f15fd135f": {
-			"file": "./data/5b27a620-cebf-40a3-b09c-a37f15fd135f.json"
-		}
 	};
 
 /***/ }

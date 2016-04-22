@@ -2,8 +2,6 @@
 const React = require('react');
 const ReactDOM = require('react-dom');
 
-const DeathStream = require('./DeathStream');
-
 import Controls from './components/controls';
 import MatchView from './components/match_view';
 import EventList from './components/event_list';

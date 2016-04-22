@@ -6,7 +6,7 @@ const moment = require('moment');
 
 import * as num from '../num';
 
-import {getWeaponsTable} from '../weapons';
+import {getWeaponsTable} from '../data/weapons';
 
 const tryInvoke = (f, x) =>
     f ? f(x) : null;
