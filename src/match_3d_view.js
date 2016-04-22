@@ -22,13 +22,16 @@ import {getWeaponsTable} from './data/weapons';
 
 const enableGlow = false;
 
-const killerColor = new THREE.Color(0x777777);
-const victimColor = new THREE.Color(0x777777);
+const dustDensity = 1 / 10000;
+const dustMax = 10000;
 
 const topSize = 0.1;
 const bottomSize = 0.1;
 const sides = 8;
 const damping = 0.98;
+
+const killerColor = new THREE.Color(0x777777);
+const victimColor = new THREE.Color(0x777777);
 
 const shaderMaterial = new THREE.ShaderMaterial(wave_shader);
 
@@ -65,12 +68,12 @@ export default class Viewer {
         this.initCamera();
         this.initControls(container);
         this.initComposer();
-        this.initParticles();
 
         window.addEventListener('resize', this.onWindowResize.bind(this), false);
-
         this.onWindowResize();
-        this.animate();
+        
+        this.animate = () => this.animateImpl();
+        this.animateImpl();
     }
 
     /**
@@ -142,13 +145,9 @@ export default class Viewer {
     }
 
     /**
-     * Setup the particle system
+     * Create a particle system to render the dust.
      */
-    initParticles() {
-        this.createDustEmitter(20);
-    }
-    
-    createDustEmitter(bounds) {
+    _createDustEmitter(bounds) {
         if (this._particleGroup) {
             this._particleGroup.removeEmitter(this._emitter);
             this._scene.remove(this._particleGroup.mesh);
@@ -162,6 +161,10 @@ export default class Viewer {
             scale: 200,
             depthWrite: false
         });
+        
+        const volume = Math.pow(bounds * 2, 3);
+        const numberDusts = Math.min(dustMax, Math.floor(volume * dustDensity));
+        
         this._emitter = new SPE.Emitter({
             type: SPE.distributions.BOX,
             maxAge: {
@@ -182,7 +185,7 @@ export default class Viewer {
             wiggle: {
                 spread: 10
             },
-            particleCount: 3000
+            particleCount: numberDusts
         });
         this._particleGroup.addEmitter(this._emitter);
         this._scene.add(this._particleGroup.mesh);
@@ -201,9 +204,10 @@ export default class Viewer {
      */
     setBounds(bounds) {
         this.bounds = bounds;
-        
-        this._controls.maxDistance = Math.max(this.bounds.x, this.bounds.y, this.bounds.z) * 2 * 1.5;
-        this.createDustEmitter(this._controls.maxDistance * 2);
+        const maxSide = Math.max(this.bounds.x, this.bounds.y, this.bounds.z);
+        this._controls.maxDistance = maxSide * 2 * 1.5;
+        this._controls.maxPan = maxSide * 2;
+        this._createDustEmitter(this._controls.maxDistance);
         this.goToTopView();
     }
 
@@ -423,12 +427,14 @@ export default class Viewer {
 
         let objs = [];
         if ((weapon && weapon.type === 'Grenade') || event.IsMelee) {
-            const geometry = new THREE.SphereGeometry(0.2, 32, 23);
-            const material = new THREE.MeshBasicMaterial({ color: event.IsMelee ? 0xffff00 : 0xff0000 });
-            const sphere = new THREE.Mesh(geometry, material);
-            sphere.position.add(victim);
-            sphere.userData = { event: event };
-            objs.push(sphere);
+            if (false) {
+                const geometry = new THREE.SphereGeometry(0.2, 32, 23);
+                const material = new THREE.MeshBasicMaterial({ color: event.IsMelee ? 0xffff00 : 0xff0000 });
+                const sphere = new THREE.Mesh(geometry, material);
+                sphere.position.add(victim);
+                sphere.userData = { event: event };
+                objs.push(sphere);
+            }
         } else if (weapon) {
             const path = this._shotLine(event, killer, victim);
             /*{
@@ -538,13 +544,14 @@ export default class Viewer {
         this._controls.update();
     }
 
-    animate() {
-        requestAnimationFrame(() => this.animate());
-        
+    animateImpl() {
         const delta = this._clock.getDelta();
+        
         this.update(delta);
-        this._particleGroup.tick(delta);
+        if (this._particleGroup)
+            this._particleGroup.tick(delta);
         this.render(delta);
+        requestAnimationFrame(this.animate);
     }
 
     render(delta) {

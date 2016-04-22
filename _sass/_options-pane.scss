@@ -13,14 +13,16 @@ $options-pane-width: 300px;
 }
 
 .side-panel {
+    box-sizing: border-box;
     position: relative;
     float: right;
     width: $options-pane-width;
-    background: rgba(255, 0, 0, 1);
+    background: $panel-color;
+    border-left: 1px solid $border-color;
     height: 100%;
     z-index: 100;
+    text-align: center;
 }
-
 
 .panel-collapse-button {
     width: 40px;
@@ -34,4 +36,16 @@ $options-pane-width: 300px;
     bottom: 20px;
     margin-left: -46px;
     padding: 0;
+}
+
+// hide panel on screen if user has not manually expanded it
+@media only screen and (max-width: 1200px) {
+    .side-panel.implicit {
+        width: 0;
+        border: none;
+    }
+    
+    .main-view {
+        margin-right: 0;
+    }
 }

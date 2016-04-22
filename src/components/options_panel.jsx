@@ -16,7 +16,7 @@ export default class OptionsPane extends React.Component {
     
     render() {
         return (
-            <div className="side-panel">
+            <div className={'side-panel ' + (this.state.implicit ? 'implicit' : '')}>
                 <button className="panel-collapse-button material-icons">{this.state.active ? 'settings' : 'settings'}</button>
                 {this.props.children}
             </div>);

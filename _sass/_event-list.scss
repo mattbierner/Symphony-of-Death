@@ -13,28 +13,13 @@
     flex-direction: column-reverse;
     
     .event {
-        flex: 0 0 auto;
-
-        -webkit-animation-timing-function: ease-in;
+        animation: fadeOut 2s;
         animation-timing-function: ease-in;
-        
-        -webkit-animation-duration: 2s;
-        animation-duration: 2s;
-        
-        -webkit-animation-fill-mode: both;
         animation-fill-mode: both;
-        
-        -webkit-animation-name: fadeOut;
-        animation-name: fadeOut;
     }
 }
 
-@keyframes fadeOut {
-    from { opacity: 1; }
-    to { opacity: 0; } 
-} 
-
-@media only screen and (max-width: 1000px) {
+@media only screen and (max-width: 1200px) {
     .event-list {
         display: none;
     }

@@ -12,7 +12,7 @@ export default class Options extends React.Component {
     
     render() {
         return (
-            <div className="side-panel">
+            <div className="options-pane">
                 <h2 className="">{this.props.header}</h2>
                 {this.props.children}
             </div>);

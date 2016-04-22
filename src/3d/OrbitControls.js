@@ -61,7 +61,7 @@ THREE.OrbitControls = function(object, domElement) {
     // Set to false to disable panning
     this.enablePan = true;
     this.keyPanSpeed = 7.0;	// pixels moved per arrow key push
-
+    
     // Set to true to automatically rotate around the target
     // If auto-rotate is enabled, you must call controls.update() in your animation loop
     this.autoRotate = false;
@@ -81,12 +81,15 @@ THREE.OrbitControls = function(object, domElement) {
 
     // Mouse buttons
     this.mouseButtons = { ORBIT: THREE.MOUSE.RIGHT, ZOOM: null, PAN: THREE.MOUSE.MIDDLE };
-
+    
+    // maxPanning distance
+    this.maxPan = Infinity;
+    
     // for reset
     this.target0 = this.target.clone();
     this.position0 = this.object.position.clone();
     this.zoom0 = this.object.zoom;
-
+    
     //
     // public methods
     //
@@ -167,6 +170,9 @@ THREE.OrbitControls = function(object, domElement) {
 
             // move target to panned location
             scope.target.add(panOffset);
+            scope.target.x = clampBetween(scope.target.x, scope.maxPan);
+            scope.target.y = clampBetween(scope.target.y, scope.maxPan);
+            scope.target.z = clampBetween(scope.target.z, scope.maxPan);
 
             offset.setFromSpherical(spherical);
 
@@ -295,6 +301,10 @@ THREE.OrbitControls = function(object, domElement) {
         sphericalDelta.phi -= angle;
 
     }
+    
+    const clampBetween = (x, max) =>
+        Math.max(-max, Math.min(max, x));
+
 
     var panLeft = function() {
 
@@ -305,7 +315,7 @@ THREE.OrbitControls = function(object, domElement) {
             v.setFromMatrixColumn(objectMatrix, 0); // get X column of objectMatrix
             v.multiplyScalar(- distance);
 
-            panOffset.add(v);
+        panOffset.add(v);
 
         };
 
@@ -320,8 +330,7 @@ THREE.OrbitControls = function(object, domElement) {
             v.setFromMatrixColumn(objectMatrix, 1); // get Y column of objectMatrix
             v.multiplyScalar(distance);
 
-            panOffset.add(v);
-
+        panOffset.add(v);
         };
 
     } ();

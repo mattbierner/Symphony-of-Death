@@ -441,13 +441,16 @@ webpackJsonp([0],{
 
 	var enableGlow = false;
 
-	var killerColor = new _three2.default.Color(0x777777);
-	var victimColor = new _three2.default.Color(0x777777);
+	var dustDensity = 1 / 10000;
+	var dustMax = 10000;
 
 	var topSize = 0.1;
 	var bottomSize = 0.1;
 	var sides = 8;
 	var damping = 0.98;
+
+	var killerColor = new _three2.default.Color(0x777777);
+	var victimColor = new _three2.default.Color(0x777777);
 
 	var shaderMaterial = new _three2.default.ShaderMaterial(_wave2.default);
 
@@ -466,6 +469,8 @@ webpackJsonp([0],{
 
 	var Viewer = function () {
 	    function Viewer(canvas, container, delegate) {
+	        var _this = this;
+
 	        _classCallCheck(this, Viewer);
 
 	        this.delegate = delegate;
@@ -487,12 +492,14 @@ webpackJsonp([0],{
 	        this.initCamera();
 	        this.initControls(container);
 	        this.initComposer();
-	        this.initParticles();
 
 	        window.addEventListener('resize', this.onWindowResize.bind(this), false);
-
 	        this.onWindowResize();
-	        this.animate();
+
+	        this.animate = function () {
+	            return _this.animateImpl();
+	        };
+	        this.animateImpl();
 	    }
 
 	    /**
@@ -589,17 +596,12 @@ webpackJsonp([0],{
 	        }
 
 	        /**
-	         * Setup the particle system
+	         * Create a particle system to render the dust.
 	         */
 
 	    }, {
-	        key: 'initParticles',
-	        value: function initParticles() {
-	            this.createDustEmitter(20);
-	        }
-	    }, {
-	        key: 'createDustEmitter',
-	        value: function createDustEmitter(bounds) {
+	        key: '_createDustEmitter',
+	        value: function _createDustEmitter(bounds) {
 	            if (this._particleGroup) {
 	                this._particleGroup.removeEmitter(this._emitter);
 	                this._scene.remove(this._particleGroup.mesh);
@@ -613,6 +615,10 @@ webpackJsonp([0],{
 	                scale: 200,
 	                depthWrite: false
 	            });
+
+	            var volume = Math.pow(bounds * 2, 3);
+	            var numberDusts = Math.min(dustMax, Math.floor(volume * dustDensity));
+
 	            this._emitter = new _importsTHREEThreeShaderParticleEngine2.default.Emitter({
 	                type: _importsTHREEThreeShaderParticleEngine2.default.distributions.BOX,
 	                maxAge: {
@@ -633,7 +639,7 @@ webpackJsonp([0],{
 	                wiggle: {
 	                    spread: 10
 	                },
-	                particleCount: 3000
+	                particleCount: numberDusts
 	            });
 	            this._particleGroup.addEmitter(this._emitter);
 	            this._scene.add(this._particleGroup.mesh);
@@ -658,9 +664,10 @@ webpackJsonp([0],{
 	        key: 'setBounds',
 	        value: function setBounds(bounds) {
 	            this.bounds = bounds;
-
-	            this._controls.maxDistance = Math.max(this.bounds.x, this.bounds.y, this.bounds.z) * 2 * 1.5;
-	            this.createDustEmitter(this._controls.maxDistance * 2);
+	            var maxSide = Math.max(this.bounds.x, this.bounds.y, this.bounds.z);
+	            this._controls.maxDistance = maxSide * 2 * 1.5;
+	            this._controls.maxPan = maxSide * 2;
+	            this._createDustEmitter(this._controls.maxDistance);
 	            this.goToTopView();
 	        }
 	    }, {
@@ -931,12 +938,14 @@ webpackJsonp([0],{
 
 	            var objs = [];
 	            if (weapon && weapon.type === 'Grenade' || event.IsMelee) {
-	                var geometry = new _three2.default.SphereGeometry(0.2, 32, 23);
-	                var material = new _three2.default.MeshBasicMaterial({ color: event.IsMelee ? 0xffff00 : 0xff0000 });
-	                var sphere = new _three2.default.Mesh(geometry, material);
-	                sphere.position.add(victim);
-	                sphere.userData = { event: event };
-	                objs.push(sphere);
+	                if (false) {
+	                    var geometry = new _three2.default.SphereGeometry(0.2, 32, 23);
+	                    var material = new _three2.default.MeshBasicMaterial({ color: event.IsMelee ? 0xffff00 : 0xff0000 });
+	                    var sphere = new _three2.default.Mesh(geometry, material);
+	                    sphere.position.add(victim);
+	                    sphere.userData = { event: event };
+	                    objs.push(sphere);
+	                }
 	            } else if (weapon) {
 	                var path = this._shotLine(event, killer, victim);
 	                /*{
@@ -991,7 +1000,7 @@ webpackJsonp([0],{
 	    }, {
 	        key: 'clearEvents',
 	        value: function clearEvents() {
-	            var _this = this;
+	            var _this2 = this;
 
 	            var toRemove = [];
 	            this._scene.traverse(function (obj) {
@@ -999,7 +1008,7 @@ webpackJsonp([0],{
 	                toRemove.push(obj);
 	            });
 	            toRemove.forEach(function (obj) {
-	                return _this._scene.remove(obj);
+	                return _this2._scene.remove(obj);
 	            });
 	            this._active = new Set();
 	        }
@@ -1121,18 +1130,14 @@ webpackJsonp([0],{
 	            this._controls.update();
 	        }
 	    }, {
-	        key: 'animate',
-	        value: function animate() {
-	            var _this2 = this;
-
-	            requestAnimationFrame(function () {
-	                return _this2.animate();
-	            });
-
+	        key: 'animateImpl',
+	        value: function animateImpl() {
 	            var delta = this._clock.getDelta();
+
 	            this.update(delta);
-	            this._particleGroup.tick(delta);
+	            if (this._particleGroup) this._particleGroup.tick(delta);
 	            this.render(delta);
+	            requestAnimationFrame(this.animate);
 	        }
 	    }, {
 	        key: 'render',
@@ -2365,6 +2370,9 @@ webpackJsonp([0],{
 	    // Mouse buttons
 	    this.mouseButtons = { ORBIT: _three2.default.MOUSE.RIGHT, ZOOM: null, PAN: _three2.default.MOUSE.MIDDLE };
 
+	    // maxPanning distance
+	    this.maxPan = Infinity;
+
 	    // for reset
 	    this.target0 = this.target.clone();
 	    this.position0 = this.object.position.clone();
@@ -2445,6 +2453,9 @@ webpackJsonp([0],{
 
 	            // move target to panned location
 	            scope.target.add(panOffset);
+	            scope.target.x = clampBetween(scope.target.x, scope.maxPan);
+	            scope.target.y = clampBetween(scope.target.y, scope.maxPan);
+	            scope.target.z = clampBetween(scope.target.z, scope.maxPan);
 
 	            offset.setFromSpherical(spherical);
 
@@ -2561,6 +2572,10 @@ webpackJsonp([0],{
 
 	        sphericalDelta.phi -= angle;
 	    }
+
+	    var clampBetween = function clampBetween(x, max) {
+	        return Math.max(-max, Math.min(max, x));
+	    };
 
 	    var panLeft = function () {
 
@@ -4191,7 +4206,7 @@ webpackJsonp([0],{
 	        value: function render() {
 	            return React.createElement(
 	                'div',
-	                { className: 'side-panel' },
+	                { className: 'side-panel ' + (this.state.implicit ? 'implicit' : '') },
 	                React.createElement(
 	                    'button',
 	                    { className: 'panel-collapse-button material-icons' },
@@ -4329,7 +4344,7 @@ webpackJsonp([0],{
 	        value: function render() {
 	            return React.createElement(
 	                'div',
-	                { className: 'side-panel' },
+	                { className: 'options-pane' },
 	                React.createElement(
 	                    'h2',
 	                    { className: '' },
