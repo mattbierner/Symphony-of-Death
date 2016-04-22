@@ -15,15 +15,23 @@ webpackJsonp([0],{
 
 	var _event_list2 = _interopRequireDefault(_event_list);
 
+	var _options_panel = __webpack_require__(299);
+
+	var _options_panel2 = _interopRequireDefault(_options_panel);
+
+	var _option = __webpack_require__(300);
+
+	var _option2 = _interopRequireDefault(_option);
+
 	var _audio_context = __webpack_require__(280);
 
 	var audioCtx = _interopRequireWildcard(_audio_context);
 
-	var _sound_manager = __webpack_require__(279);
+	var _sound_manager = __webpack_require__(282);
 
 	var _sound_manager2 = _interopRequireDefault(_sound_manager);
 
-	var _sine = __webpack_require__(283);
+	var _sine = __webpack_require__(285);
 
 	var _sine2 = _interopRequireDefault(_sine);
 
@@ -40,7 +48,7 @@ webpackJsonp([0],{
 	var React = __webpack_require__(20);
 	var ReactDOM = __webpack_require__(177);
 
-	var DeathStream = __webpack_require__(285);
+	var DeathStream = __webpack_require__(287);
 
 	var matchId = "5b27a620-cebf-40a3-b09c-a37f15fd135f";
 
@@ -50,30 +58,58 @@ webpackJsonp([0],{
 	};
 
 	/**
+	 * Options panel for interative.
+	 */
+
+	var InteractiveOptions = function (_React$Component) {
+	    _inherits(InteractiveOptions, _React$Component);
+
+	    function InteractiveOptions() {
+	        _classCallCheck(this, InteractiveOptions);
+
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(InteractiveOptions).apply(this, arguments));
+	    }
+
+	    _createClass(InteractiveOptions, [{
+	        key: 'render',
+	        value: function render() {
+	            return React.createElement(
+	                _options_panel2.default,
+	                null,
+	                React.createElement(_option2.default, { header: 'match' })
+	            );
+	        }
+	    }]);
+
+	    return InteractiveOptions;
+	}(React.Component);
+
+	/**
 	 * 
 	 */
 
-	var Application = function (_React$Component) {
-	    _inherits(Application, _React$Component);
+
+	var Application = function (_React$Component2) {
+	    _inherits(Application, _React$Component2);
 
 	    function Application(props) {
 	        _classCallCheck(this, Application);
 
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Application).call(this, props));
+	        var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(Application).call(this, props));
 
-	        _this.state = {
+	        _this2.state = {
 	            matchId: props.matchId,
 	            shownEvents: new Set()
 	        };
 
-	        _this._soundManager = new _sound_manager2.default([_sine2.default]);
-	        return _this;
+	        _this2._soundManager = new _sound_manager2.default([_sine2.default]);
+	        return _this2;
 	    }
 
 	    _createClass(Application, [{
 	        key: 'componentDidMount',
 	        value: function componentDidMount() {
-	            var _this2 = this;
+	            var _this3 = this;
 
 	            DeathStream.loadForMatch(this.state.matchId).then(function (_ref) {
 	                var stream = _ref.stream;
@@ -83,7 +119,7 @@ webpackJsonp([0],{
 	                stream.forEach(function (x) {
 	                    return shown.add(x);
 	                });
-	                _this2.setState({ stream: stream, shownEvents: shown });
+	                _this3.setState({ stream: stream, shownEvents: shown });
 	            }).catch(function (x) {
 	                return console.error(x);
 	            });
@@ -107,19 +143,28 @@ webpackJsonp([0],{
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var _this3 = this;
+	            var _this4 = this;
 
 	            return React.createElement(
 	                'div',
 	                { className: 'full-container', onTouchStart: this.onTouchStart.bind(this) },
-	                React.createElement(_event_list2.default, { registerOnEvent: function registerOnEvent(f) {
-	                        _this3._eventCallback = f;
-	                    } }),
-	                React.createElement(_match_view2.default, {
-	                    stream: this.state.stream,
-	                    shownEvents: this.state.shownEvents,
-	                    onEventActivate: this.onEventActivate.bind(this) }),
-	                React.createElement('a', { href: '/', className: 'page-logo' })
+	                React.createElement(InteractiveOptions, null),
+	                React.createElement(
+	                    'div',
+	                    { className: 'main-view' },
+	                    React.createElement(
+	                        'div',
+	                        { className: 'full-container' },
+	                        React.createElement(_event_list2.default, { registerOnEvent: function registerOnEvent(f) {
+	                                _this4._eventCallback = f;
+	                            } }),
+	                        React.createElement(_match_view2.default, {
+	                            stream: this.state.stream,
+	                            shownEvents: this.state.shownEvents,
+	                            onEventActivate: this.onEventActivate.bind(this) }),
+	                        React.createElement('a', { href: '/', className: 'page-logo' })
+	                    )
+	                )
 	            );
 	        }
 	    }]);
@@ -394,17 +439,11 @@ webpackJsonp([0],{
 
 	        this.initRenderer(canvas);
 	        this.initCamera();
-	        this.initControls();
+	        this.initControls(canvas);
 	        this.initComposer();
 	        this.initParticles();
 
 	        window.addEventListener('resize', this.onWindowResize.bind(this), false);
-	        document.addEventListener('mousedown', this.onMouseDown.bind(this), false);
-	        document.addEventListener('mouseup', this.onMouseUp.bind(this), false);
-	        document.addEventListener('mousemove', this.onMouseMove.bind(this), false);
-	        document.addEventListener('touchstart', this.onTouchStart.bind(this), false);
-	        document.addEventListener('touchstop', this.onTouchStop.bind(this), false);
-	        document.addEventListener('touchmove', this.onTouchMove.bind(this), false);
 
 	        this.onWindowResize();
 	        this.animate();
@@ -444,13 +483,25 @@ webpackJsonp([0],{
 	            this._camera = new _three2.default.PerspectiveCamera(75, aspect, 0.1, 800);
 	            this._camera.position.z = 40;
 	        }
+
+	        /**
+	         * Setup the controls.
+	         */
+
 	    }, {
 	        key: 'initControls',
-	        value: function initControls() {
-	            this._controls = new _OrbitControls2.default(this._camera);
+	        value: function initControls(canvas) {
+	            this._controls = new _OrbitControls2.default(this._camera, canvas);
 	            this._controls.enableDamping = true;
 	            this._controls.dampingFactor = 0.25;
 	            this._controls.enableZoom = true;
+
+	            canvas.addEventListener('mousedown', this.onMouseDown.bind(this), false);
+	            canvas.addEventListener('mouseup', this.onMouseUp.bind(this), false);
+	            canvas.addEventListener('mousemove', this.onMouseMove.bind(this), false);
+	            canvas.addEventListener('touchstart', this.onTouchStart.bind(this), false);
+	            canvas.addEventListener('touchstop', this.onTouchStop.bind(this), false);
+	            canvas.addEventListener('touchmove', this.onTouchMove.bind(this), false);
 	        }
 
 	        /**
@@ -4089,202 +4140,6 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 279:
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _audio_context = __webpack_require__(280);
-
-	var _audio_context2 = _interopRequireDefault(_audio_context);
-
-	var _audioLoader = __webpack_require__(297);
-
-	var _audioLoader2 = _interopRequireDefault(_audioLoader);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var ambientVolume = 0.2;
-	var ambientFadeIn = 8;
-
-	var reverbNode = _audio_context2.default.then(function (ctx) {
-	    return new Promise(function (resolve) {
-	        var node = ctx.createReverbFromUrl("./sounds/reverb/TerrysFactoryWarehouse.m4a", function () {
-	            node.connect(ctx.destination);
-	            resolve(node);
-	        });
-	    });
-	});
-
-	/**
-	 * Manages playing sounds
-	 */
-
-	var SoundManager = function () {
-	    function SoundManager(generators) {
-	        _classCallCheck(this, SoundManager);
-
-	        this._playing = new Set();
-	        this._longPlaying = new Set();
-	        this._generators = generators || [];
-	    }
-
-	    _createClass(SoundManager, [{
-	        key: '_getRootCtx',
-	        value: function _getRootCtx(f) {
-	            _audio_context2.default.then(function (audioCtx) {
-	                return reverbNode.then(function (reverbNode) {
-	                    return f(audioCtx, reverbNode);
-	                });
-	            });
-	        }
-
-	        /**
-	         * Play a sound for a given event.
-	         */
-
-	    }, {
-	        key: 'play',
-	        value: function play(event, data) {
-	            var _this = this;
-
-	            this._getRootCtx(function (audioCtx, reverbNode) {
-	                var audio = {
-	                    ctx: audioCtx,
-	                    destination: reverbNode
-	                };
-
-	                var _iteratorNormalCompletion = true;
-	                var _didIteratorError = false;
-	                var _iteratorError = undefined;
-
-	                try {
-	                    for (var _iterator = _this._generators[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	                        var generator = _step.value;
-
-	                        var _generator = generator(audio, event, data);
-
-	                        var sound = _generator.sound;
-	                        var duration = _generator.duration;
-
-	                        _this._playSound(sound, duration);
-	                    }
-	                } catch (err) {
-	                    _didIteratorError = true;
-	                    _iteratorError = err;
-	                } finally {
-	                    try {
-	                        if (!_iteratorNormalCompletion && _iterator.return) {
-	                            _iterator.return();
-	                        }
-	                    } finally {
-	                        if (_didIteratorError) {
-	                            throw _iteratorError;
-	                        }
-	                    }
-	                }
-	            });
-	        }
-
-	        /**
-	         * Play a looping ambient sound.
-	         */
-
-	    }, {
-	        key: 'playAmbient',
-	        value: function playAmbient(file) {
-	            var _this2 = this;
-
-	            this._getRootCtx(function (audioCtx, reverbNode) {
-	                var ambientGain = audioCtx.createGain();
-	                ambientGain.gain.value = 0;
-
-	                (0, _audioLoader2.default)(audioCtx)(file).then(function (buffer) {
-	                    var source = audioCtx.createBufferSource();
-	                    source.buffer = buffer;
-	                    source.loop = true;
-	                    source.connect(ambientGain);
-	                    ambientGain.connect(reverbNode);
-	                    source.start(0);
-
-	                    ambientGain.gain.setValueAtTime(0, audioCtx.currentTime);
-	                    ambientGain.gain.linearRampToValueAtTime(ambientVolume, audioCtx.currentTime + ambientFadeIn);
-
-	                    _this2._longPlaying.add(source);
-	                });
-	            });
-	        }
-
-	        /**
-	         * Stop all playing audio.
-	         */
-
-	    }, {
-	        key: 'stopAll',
-	        value: function stopAll() {
-	            var _iteratorNormalCompletion2 = true;
-	            var _didIteratorError2 = false;
-	            var _iteratorError2 = undefined;
-
-	            try {
-	                for (var _iterator2 = this._playing[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	                    var x = _step2.value;
-
-	                    x.stop();
-	                }
-	            } catch (err) {
-	                _didIteratorError2 = true;
-	                _iteratorError2 = err;
-	            } finally {
-	                try {
-	                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	                        _iterator2.return();
-	                    }
-	                } finally {
-	                    if (_didIteratorError2) {
-	                        throw _iteratorError2;
-	                    }
-	                }
-	            }
-
-	            this._playing = new Set();
-	        }
-
-	        /**
-	         * Play a sound
-	         */
-
-	    }, {
-	        key: '_playSound',
-	        value: function _playSound(sound, duration) {
-	            var _this3 = this;
-
-	            this._playing.add(sound);
-	            sound.play();
-	            if (duration) {
-	                setTimeout(function () {
-	                    sound.stop();
-	                    _this3._playing.delete(sound);
-	                }, duration + 1000);
-	            }
-	        }
-	    }]);
-
-	    return SoundManager;
-	}();
-
-	exports.default = SoundManager;
-
-/***/ },
-
 /***/ 280:
 /***/ function(module, exports, __webpack_require__) {
 
@@ -4502,7 +4357,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 283:
+/***/ 282:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4511,7 +4366,203 @@ webpackJsonp([0],{
 	    value: true
 	});
 
-	var _weapon = __webpack_require__(284);
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _audio_context = __webpack_require__(280);
+
+	var _audio_context2 = _interopRequireDefault(_audio_context);
+
+	var _audioLoader = __webpack_require__(283);
+
+	var _audioLoader2 = _interopRequireDefault(_audioLoader);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var ambientVolume = 0.2;
+	var ambientFadeIn = 8;
+
+	var reverbNode = _audio_context2.default.then(function (ctx) {
+	    return new Promise(function (resolve) {
+	        var node = ctx.createReverbFromUrl("./sounds/reverb/TerrysFactoryWarehouse.m4a", function () {
+	            node.connect(ctx.destination);
+	            resolve(node);
+	        });
+	    });
+	});
+
+	/**
+	 * Manages playing sounds
+	 */
+
+	var SoundManager = function () {
+	    function SoundManager(generators) {
+	        _classCallCheck(this, SoundManager);
+
+	        this._playing = new Set();
+	        this._longPlaying = new Set();
+	        this._generators = generators || [];
+	    }
+
+	    _createClass(SoundManager, [{
+	        key: '_getRootCtx',
+	        value: function _getRootCtx(f) {
+	            _audio_context2.default.then(function (audioCtx) {
+	                return reverbNode.then(function (reverbNode) {
+	                    return f(audioCtx, reverbNode);
+	                });
+	            });
+	        }
+
+	        /**
+	         * Play a sound for a given event.
+	         */
+
+	    }, {
+	        key: 'play',
+	        value: function play(event, data) {
+	            var _this = this;
+
+	            this._getRootCtx(function (audioCtx, reverbNode) {
+	                var audio = {
+	                    ctx: audioCtx,
+	                    destination: reverbNode
+	                };
+
+	                var _iteratorNormalCompletion = true;
+	                var _didIteratorError = false;
+	                var _iteratorError = undefined;
+
+	                try {
+	                    for (var _iterator = _this._generators[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                        var generator = _step.value;
+
+	                        var _generator = generator(audio, event, data);
+
+	                        var sound = _generator.sound;
+	                        var duration = _generator.duration;
+
+	                        _this._playSound(sound, duration);
+	                    }
+	                } catch (err) {
+	                    _didIteratorError = true;
+	                    _iteratorError = err;
+	                } finally {
+	                    try {
+	                        if (!_iteratorNormalCompletion && _iterator.return) {
+	                            _iterator.return();
+	                        }
+	                    } finally {
+	                        if (_didIteratorError) {
+	                            throw _iteratorError;
+	                        }
+	                    }
+	                }
+	            });
+	        }
+
+	        /**
+	         * Play a looping ambient sound.
+	         */
+
+	    }, {
+	        key: 'playAmbient',
+	        value: function playAmbient(file) {
+	            var _this2 = this;
+
+	            this._getRootCtx(function (audioCtx, reverbNode) {
+	                var ambientGain = audioCtx.createGain();
+	                ambientGain.gain.value = 0;
+
+	                (0, _audioLoader2.default)(audioCtx)(file).then(function (buffer) {
+	                    var source = audioCtx.createBufferSource();
+	                    source.buffer = buffer;
+	                    source.loop = true;
+	                    source.connect(ambientGain);
+	                    ambientGain.connect(reverbNode);
+	                    source.start(0);
+
+	                    ambientGain.gain.setValueAtTime(0, audioCtx.currentTime);
+	                    ambientGain.gain.linearRampToValueAtTime(ambientVolume, audioCtx.currentTime + ambientFadeIn);
+
+	                    _this2._longPlaying.add(source);
+	                });
+	            });
+	        }
+
+	        /**
+	         * Stop all playing audio.
+	         */
+
+	    }, {
+	        key: 'stopAll',
+	        value: function stopAll() {
+	            var _iteratorNormalCompletion2 = true;
+	            var _didIteratorError2 = false;
+	            var _iteratorError2 = undefined;
+
+	            try {
+	                for (var _iterator2 = this._playing[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+	                    var x = _step2.value;
+
+	                    x.stop();
+	                }
+	            } catch (err) {
+	                _didIteratorError2 = true;
+	                _iteratorError2 = err;
+	            } finally {
+	                try {
+	                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
+	                        _iterator2.return();
+	                    }
+	                } finally {
+	                    if (_didIteratorError2) {
+	                        throw _iteratorError2;
+	                    }
+	                }
+	            }
+
+	            this._playing = new Set();
+	        }
+
+	        /**
+	         * Play a sound
+	         */
+
+	    }, {
+	        key: '_playSound',
+	        value: function _playSound(sound, duration) {
+	            var _this3 = this;
+
+	            this._playing.add(sound);
+	            sound.play();
+	            if (duration) {
+	                setTimeout(function () {
+	                    sound.stop();
+	                    _this3._playing.delete(sound);
+	                }, duration + 1000);
+	            }
+	        }
+	    }]);
+
+	    return SoundManager;
+	}();
+
+	exports.default = SoundManager;
+
+/***/ },
+
+/***/ 285:
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _weapon = __webpack_require__(286);
 
 	var _weapon2 = _interopRequireDefault(_weapon);
 
@@ -4601,7 +4652,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 284:
+/***/ 286:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4625,7 +4676,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 285:
+/***/ 287:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4642,11 +4693,11 @@ webpackJsonp([0],{
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var THREE = __webpack_require__(3);
-	var createTree = __webpack_require__(286);
+	var createTree = __webpack_require__(288);
 	var moment = __webpack_require__(179);
 
 
-	var example = __webpack_require__(287);
+	var example = __webpack_require__(289);
 
 	var createTreeFromEvents = function createTreeFromEvents(events) {
 	    return events.reduce(function (tree, event) {
@@ -4760,7 +4811,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 287:
+/***/ 289:
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -9167,180 +9218,123 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 297:
+/***/ 299:
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(module) {/* global XMLHttpRequest */
-	'use strict';
+	"use strict";
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
 
-	var b64decode = __webpack_require__(298);
-	var PREFIXED = /^(@[\w-]+)\/(.*)$/;
-	var AUDIO = /\.(mp3|wav|ogg)/;
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	function merge(dest, src) {
-	  Object.keys(src).forEach(function (k) {
-	    dest[k] = src[k];
-	  });
-	  return dest;
-	}
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-	/**
-	 * Create a sample loader
-	 *
-	 * @param {AudioContext} ac - the audio context
-	 * @param {HashMap} options - (Optional) options. The options can include:
-	 * @return {Function} a load function
-	 */
-	function loader(ac, options) {
-	  var opts = options || {};
-	  var fetch = opts.fetch || httpRequest;
-	  var prefixes = merge({}, PREFIXES);
-	  if (opts.sources) merge(prefixes, opts.sources);
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
-	  return function load(value) {
-	    if (value instanceof Promise) return value.then(function (v) {
-	      return load(v);
-	    });
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
-	    if (value instanceof ArrayBuffer) return loadArrayBuffer(ac, value);else if (Array.isArray(value)) return loadArrayData(value, load);else if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object') return loadObjectData(value, load);else if (typeof value === 'string') {
-	      if (/^data:audio/.test(value)) return decodeBase64(value, load);else if (/\.json$/.test(value)) return loadJsonFile(value, load, fetch);else if (PREFIXED.test(value)) return loadPrefix(prefixes, value, load, fetch);else if (AUDIO.test(value)) return loadAudioFile(value, load, fetch);else return Promise.resolve(value);
-	    } else return Promise.resolve(value);
-	  };
-	}
-
-	function loadArrayBuffer(ac, data) {
-	  if (!(data instanceof ArrayBuffer)) return null;
-	  return new Promise(function (done, reject) {
-	    ac.decodeAudioData(data, function (buffer) {
-	      done(buffer);
-	    }, function () {
-	      reject("Can't decode audio data (" + data.slice(0, 30) + '...)');
-	    });
-	  });
-	}
-
-	function loadArrayData(array, load) {
-	  return Promise.all(array.map(load));
-	}
-
-	function loadObjectData(source, load) {
-	  var dest = {};
-	  var promises = Object.keys(source).map(function (key) {
-	    return load(source[key]).then(function (result) {
-	      dest[key] = result;
-	    });
-	  });
-	  return Promise.all(promises).then(function () {
-	    return dest;
-	  });
-	}
-
-	function decodeBase64(data, load) {
-	  var payload = data.split(',')[1];
-	  return load(b64decode(payload).buffer);
-	}
-
-	function loadAudioFile(url, load, fetch) {
-	  return load(fetch(url, 'arraybuffer'));
-	}
-
-	function loadJsonFile(url, load, fetch) {
-	  return load(fetch(url, 'json'));
-	}
-
-	function loadPrefix(prefixes, value, load, fetch) {
-	  var m = PREFIXED.exec(value);
-	  var prefix = m[1];
-	  var path = m[2];
-	  var fn = prefixes[prefix];
-	  if (!fn) return Promise.reject('Unknown prefix: ' + prefix);else if (typeof fn === 'function') return fn(path, load, fetch);else return load(fn + '/' + path);
-	}
-
-	var PREFIXES = {
-	  '@midijs': function midijs(url, load, fetch) {
-	    return fetch(url, 'text').then(function (data) {
-	      var begin = data.indexOf('MIDI.Soundfont.');
-	      if (begin < 0) throw Error('Invalid MIDI.js Soundfont format');
-	      begin = data.indexOf('=', begin) + 2;
-	      var end = data.lastIndexOf(',');
-	      return JSON.parse(data.slice(begin, end) + '}');
-	    }).then(load);
-	  },
-	  '@soundfont': function soundfont(name, load) {
-	    var url = 'https://cdn.rawgit.com/gleitz/midi-js-Soundfonts/master/FluidR3_GM/' + name + '-ogg.js';
-	    return load('@midijs/' + url);
-	  },
-	  '@drum-machines': function drumMachines(name, load) {
-	    var path = name + '/' + name + '.json';
-	    var url = 'https://cdn.rawgit.com/danigb/smplr/master/packages/drum-machines/' + path;
-	    return load(url);
-	  }
-	};
+	var React = __webpack_require__(20);
+	var ReactDOM = __webpack_require__(177);
 
 	/**
-	 * Wrap a GET request into a promise
-	 *
-	 * @private
+	 * Side panel for a set of options
 	 */
-	function httpRequest(url, type) {
-	  return new Promise(function (done, reject) {
-	    var req = new XMLHttpRequest();
-	    if (type) req.responseType = type;
-	    req.open('GET', url);
 
-	    req.onload = function () {
-	      if (req.status === 200) {
-	        done(req.response);
-	      } else {
-	        reject(Error(req.statusText));
-	      }
-	    };
-	    req.onerror = function () {
-	      reject(Error('Network Error'));
-	    };
-	    req.send();
-	  });
-	}
+	var OptionsPane = function (_React$Component) {
+	    _inherits(OptionsPane, _React$Component);
 
-	if (( false ? 'undefined' : _typeof(module)) === 'object' && module.exports) module.exports = loader;
-	if (typeof window !== 'undefined') window.loader = loader;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(180)(module)))
+	    function OptionsPane(props) {
+	        _classCallCheck(this, OptionsPane);
+
+	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(OptionsPane).call(this, props));
+
+	        _this.state = {
+	            active: false,
+	            implicit: true
+	        };
+	        return _this;
+	    }
+
+	    _createClass(OptionsPane, [{
+	        key: 'render',
+	        value: function render() {
+	            return React.createElement(
+	                'div',
+	                { className: 'side-panel' },
+	                React.createElement(
+	                    'button',
+	                    { className: 'panel-collapse-button material-icons' },
+	                    this.state.active ? 'settings' : 'settings'
+	                ),
+	                this.props.children
+	            );
+	        }
+	    }]);
+
+	    return OptionsPane;
+	}(React.Component);
+
+	exports.default = OptionsPane;
+	;
 
 /***/ },
 
-/***/ 298:
-/***/ function(module, exports) {
+/***/ 300:
+/***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 
-	function b64ToUint6(nChr) {
-	  return nChr > 64 && nChr < 91 ? nChr - 65 : nChr > 96 && nChr < 123 ? nChr - 71 : nChr > 47 && nChr < 58 ? nChr + 4 : nChr === 43 ? 62 : nChr === 47 ? 63 : 0;
-	}
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
 
-	// Decode Base64 to Uint8Array
-	// ---------------------------
-	function base64DecodeToArray(sBase64, nBlocksSize) {
-	  var sB64Enc = sBase64.replace(/[^A-Za-z0-9\+\/]/g, "");
-	  var nInLen = sB64Enc.length;
-	  var nOutLen = nBlocksSize ? Math.ceil((nInLen * 3 + 1 >> 2) / nBlocksSize) * nBlocksSize : nInLen * 3 + 1 >> 2;
-	  var taBytes = new Uint8Array(nOutLen);
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	  for (var nMod3, nMod4, nUint24 = 0, nOutIdx = 0, nInIdx = 0; nInIdx < nInLen; nInIdx++) {
-	    nMod4 = nInIdx & 3;
-	    nUint24 |= b64ToUint6(sB64Enc.charCodeAt(nInIdx)) << 18 - 6 * nMod4;
-	    if (nMod4 === 3 || nInLen - nInIdx === 1) {
-	      for (nMod3 = 0; nMod3 < 3 && nOutIdx < nOutLen; nMod3++, nOutIdx++) {
-	        taBytes[nOutIdx] = nUint24 >>> (16 >>> nMod3 & 24) & 255;
-	      }
-	      nUint24 = 0;
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var React = __webpack_require__(20);
+	var ReactDOM = __webpack_require__(177);
+
+	/**
+	 * Set of options
+	 */
+
+	var Options = function (_React$Component) {
+	    _inherits(Options, _React$Component);
+
+	    function Options(props) {
+	        _classCallCheck(this, Options);
+
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(Options).call(this, props));
 	    }
-	  }
-	  return taBytes;
-	}
 
-	module.exports = base64DecodeToArray;
+	    _createClass(Options, [{
+	        key: 'render',
+	        value: function render() {
+	            return React.createElement(
+	                'div',
+	                { className: 'side-panel' },
+	                React.createElement(
+	                    'h2',
+	                    { className: '' },
+	                    this.props.header
+	                ),
+	                this.props.children
+	            );
+	        }
+	    }]);
+
+	    return Options;
+	}(React.Component);
+
+	exports.default = Options;
+	;
 
 /***/ }
 

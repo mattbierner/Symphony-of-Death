@@ -63,17 +63,11 @@ export default class Viewer {
 
         this.initRenderer(canvas);
         this.initCamera();
-        this.initControls();
+        this.initControls(canvas);
         this.initComposer();
         this.initParticles();
 
         window.addEventListener('resize', this.onWindowResize.bind(this), false);
-        document.addEventListener('mousedown', this.onMouseDown.bind(this), false);
-        document.addEventListener('mouseup', this.onMouseUp.bind(this), false);
-        document.addEventListener('mousemove', this.onMouseMove.bind(this), false);
-        document.addEventListener('touchstart', this.onTouchStart.bind(this), false);
-        document.addEventListener('touchstop', this.onTouchStop.bind(this), false);
-        document.addEventListener('touchmove', this.onTouchMove.bind(this), false);
 
         this.onWindowResize();
         this.animate();
@@ -101,11 +95,21 @@ export default class Viewer {
         this._camera.position.z = 40;
     }
 
-    initControls() {
-        this._controls = new OrbitControls(this._camera);
+    /**
+     * Setup the controls.
+     */
+    initControls(canvas) {
+        this._controls = new OrbitControls(this._camera, canvas);
         this._controls.enableDamping = true;
         this._controls.dampingFactor = 0.25;
         this._controls.enableZoom = true;
+        
+        canvas.addEventListener('mousedown', this.onMouseDown.bind(this), false);
+        canvas.addEventListener('mouseup', this.onMouseUp.bind(this), false);
+        canvas.addEventListener('mousemove', this.onMouseMove.bind(this), false);
+        canvas.addEventListener('touchstart', this.onTouchStart.bind(this), false);
+        canvas.addEventListener('touchstop', this.onTouchStop.bind(this), false);
+        canvas.addEventListener('touchmove', this.onTouchMove.bind(this), false);
     }
 
     /**

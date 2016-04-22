@@ -6,16 +6,31 @@ const DeathStream = require('./DeathStream');
 
 import MatchView from './components/match_view';
 import EventList from './components/event_list';
+import OptionsPanel from './components/options_panel';
+import Options from './components/option';
 
 import * as audioCtx from './audio/audio_context';
 import SoundManager from './audio/sound_manager';
 import Sine from './audio/sound_generators/sine';
+
 
 const matchId = "5b27a620-cebf-40a3-b09c-a37f15fd135f"
 
 const onIos = () =>
     /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
+/**
+ * Options panel for interative.
+ */
+class InteractiveOptions extends React.Component {
+    render() {
+        return (
+            <OptionsPanel>
+                <Options header="match" />
+            </OptionsPanel>
+        );
+    }
+}
 
 /**
  * 
@@ -62,12 +77,17 @@ class Application extends React.Component {
     render() {
         return (
             <div className='full-container' onTouchStart={this.onTouchStart.bind(this)}>
-                <EventList registerOnEvent={(f) => { this._eventCallback = f; } } />
-                <MatchView
-                    stream={this.state.stream}
-                    shownEvents={this.state.shownEvents}
-                    onEventActivate={this.onEventActivate.bind(this)} />
-                <a href="/" className="page-logo" />
+                <InteractiveOptions />
+                <div className="main-view">
+                    <div className='full-container'>
+                        <EventList registerOnEvent={(f) => { this._eventCallback = f; } } />
+                        <MatchView
+                            stream={this.state.stream}
+                            shownEvents={this.state.shownEvents}
+                            onEventActivate={this.onEventActivate.bind(this)} />
+                        <a href="/" className="page-logo" />
+                    </div>
+                </div>
             </div>);
     }
 }; 
