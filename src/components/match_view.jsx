@@ -12,7 +12,8 @@ export default class MatchView extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            shownEvents: new Set(props.shownEvents || [])
+            shownEvents: new Set(props.shownEvents || []),
+            ready: false
         };
     }
 
@@ -37,7 +38,7 @@ export default class MatchView extends React.Component {
             });
             this._3dview.setBounds(nextProps.stream.bounds);
             
-            this.setState({ shownEvents: shownEvents });
+            this.setState({ shownEvents: shownEvents, ready: true });
             return;
         }
         const next = new Set(nextProps.shownEvents);
@@ -47,7 +48,7 @@ export default class MatchView extends React.Component {
         added.forEach(e => this._3dview.showEvent(e));
         removed.forEach(e => this._3dview.hideEvent(e));
         
-        this.setState({ shownEvents: next });
+        this.setState({ shownEvents: next, ready: true });
     }
     
     onEventActivate(event, activation) {
@@ -57,7 +58,7 @@ export default class MatchView extends React.Component {
     render() {
         return (
             <div className="match-view">
-                <canvas className={"glCanvas"}></canvas>
+                <canvas className={'glCanvas ' + (this.state.ready ? 'ready' : '')}></canvas>
                 <ViewControls
                     onFrontViewSelected={() => this._3dview.goToFrontView()}
                     onSideViewSelected={() => this._3dview.goToSideView()}

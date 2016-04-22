@@ -1,3 +1,15 @@
 .match-view {
     height: 100%;
+    -webkit-user-select: none;
+    user-select: none;
+    
+    canvas {
+        opacity: 0;
+    }
+
+    canvas.ready {
+        animation: fadeIn 1s;
+        animation-fill-mode: forwards;
+        animation-timing-function: ease-in-out;
+    }
 }

@@ -198,7 +198,8 @@ webpackJsonp([1],{
 	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(MatchView).call(this, props));
 
 	        _this.state = {
-	            shownEvents: new Set(props.shownEvents || [])
+	            shownEvents: new Set(props.shownEvents || []),
+	            ready: false
 	        };
 	        return _this;
 	    }
@@ -230,7 +231,7 @@ webpackJsonp([1],{
 	                    });
 	                    _this2._3dview.setBounds(nextProps.stream.bounds);
 
-	                    _this2.setState({ shownEvents: shownEvents });
+	                    _this2.setState({ shownEvents: shownEvents, ready: true });
 	                    return {
 	                        v: void 0
 	                    };
@@ -253,7 +254,7 @@ webpackJsonp([1],{
 	                return _this2._3dview.hideEvent(e);
 	            });
 
-	            this.setState({ shownEvents: next });
+	            this.setState({ shownEvents: next, ready: true });
 	        }
 	    }, {
 	        key: 'onEventActivate',
@@ -268,7 +269,7 @@ webpackJsonp([1],{
 	            return React.createElement(
 	                'div',
 	                { className: 'match-view' },
-	                React.createElement('canvas', { className: "glCanvas" }),
+	                React.createElement('canvas', { className: 'glCanvas ' + (this.state.ready ? 'ready' : '') }),
 	                React.createElement(_view_controls2.default, {
 	                    onFrontViewSelected: function onFrontViewSelected() {
 	                        return _this3._3dview.goToFrontView();
