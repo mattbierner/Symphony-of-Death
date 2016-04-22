@@ -7,12 +7,13 @@ const DeathStream = require('./DeathStream');
 import MatchView from './components/match_view';
 import EventList from './components/event_list';
 import OptionsPanel from './components/options_panel';
-import Options from './components/option';
+import MatchOptions from './components/options/match_options';
 
 import * as audioCtx from './audio/audio_context';
 import SoundManager from './audio/sound_manager';
 import Sine from './audio/sound_generators/sine';
 
+import example_matches from './example_matches';
 
 const matchId = "5b27a620-cebf-40a3-b09c-a37f15fd135f"
 
@@ -26,7 +27,7 @@ class InteractiveOptions extends React.Component {
     render() {
         return (
             <OptionsPanel>
-                <Options header="match" />
+                <MatchOptions {...this.props} />
             </OptionsPanel>
         );
     }
@@ -39,8 +40,9 @@ class Application extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            matchId: props.matchId,
-            shownEvents: new Set()
+            match: null,
+            shownEvents: new Set(),
+            stream: null
         };
         
         this._soundManager = new SoundManager([
@@ -49,11 +51,10 @@ class Application extends React.Component {
     }
     
     componentDidMount() {
-        DeathStream.loadForMatch(this.state.matchId)
-            .then(({stream, events}) => {
+        example_matches[0].then(match => {
                 const shown = new Set();
-                stream.forEach(x => shown.add(x));
-                this.setState({ stream: stream, shownEvents: shown });
+                match.stream.forEach(x => shown.add(x));
+                this.setState({ stream: match.stream, shownEvents: shown });
             })
             .catch(x => console.error(x))
         

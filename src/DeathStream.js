@@ -4,8 +4,6 @@ const createTree = require("functional-red-black-tree")
 const moment = require('moment');
 import {getWeaponsTable} from './weapons';
 
-const example = require('./data/example.json');
-
 const createTreeFromEvents = events =>
     events.reduce(
         (tree, event) => tree.insert(event.TimeSinceStart.asMilliseconds(), event),
@@ -87,12 +85,3 @@ export const createFromJson = (events) => {
             TimeSinceStart: moment.duration(eventData.TimeSinceStart)
         })));
 };
-
-/**
- * Load a `DeathStream` for a match.
- */
-export const loadForMatch = (matchId) =>
-    Promise.resolve({
-        events: example.GameEvents,
-        stream: createFromJson(example.GameEvents)
-    });

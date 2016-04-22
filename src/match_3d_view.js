@@ -63,7 +63,7 @@ export default class Viewer {
 
         this.initRenderer(canvas);
         this.initCamera();
-        this.initControls(canvas);
+        this.initControls(container);
         this.initComposer();
         this.initParticles();
 
@@ -98,18 +98,18 @@ export default class Viewer {
     /**
      * Setup the controls.
      */
-    initControls(canvas) {
-        this._controls = new OrbitControls(this._camera, canvas);
+    initControls(container) {
+        this._controls = new OrbitControls(this._camera, container);
         this._controls.enableDamping = true;
         this._controls.dampingFactor = 0.25;
         this._controls.enableZoom = true;
         
-        canvas.addEventListener('mousedown', this.onMouseDown.bind(this), false);
-        canvas.addEventListener('mouseup', this.onMouseUp.bind(this), false);
-        canvas.addEventListener('mousemove', this.onMouseMove.bind(this), false);
-        canvas.addEventListener('touchstart', this.onTouchStart.bind(this), false);
-        canvas.addEventListener('touchstop', this.onTouchStop.bind(this), false);
-        canvas.addEventListener('touchmove', this.onTouchMove.bind(this), false);
+        container.addEventListener('mousedown', this.onMouseDown.bind(this), false);
+        container.addEventListener('mouseup', this.onMouseUp.bind(this), false);
+        container.addEventListener('mousemove', this.onMouseMove.bind(this), false);
+        container.addEventListener('touchstart', this.onTouchStart.bind(this), false);
+        container.addEventListener('touchstop', this.onTouchStop.bind(this), false);
+        container.addEventListener('touchmove', this.onTouchMove.bind(this), false);
     }
 
     /**
