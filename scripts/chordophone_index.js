@@ -35,7 +35,7 @@ webpackJsonp([0],{
 
 	var _chordophone_sine2 = _interopRequireDefault(_chordophone_sine);
 
-	var _chordophone_piano = __webpack_require__(302);
+	var _chordophone_piano = __webpack_require__(303);
 
 	var _chordophone_piano2 = _interopRequireDefault(_chordophone_piano);
 
@@ -677,16 +677,19 @@ webpackJsonp([0],{
 	    }, {
 	        key: 'goToFrontView',
 	        value: function goToFrontView() {
+	            this._controls.reset();
 	            this._camera.position.set(0, Math.max(this.bounds.x, this.bounds.z) * 2, 0);
 	        }
 	    }, {
 	        key: 'goToSideView',
 	        value: function goToSideView() {
+	            this._controls.reset();
 	            this._camera.position.set(Math.max(this.bounds.y, this.bounds.z) * 2, 0, 0);
 	        }
 	    }, {
 	        key: 'goToTopView',
 	        value: function goToTopView() {
+	            this._controls.reset();
 	            this._camera.position.set(0, 0, Math.max(this.bounds.x, this.bounds.y) * 2);
 	        }
 
@@ -5086,6 +5089,10 @@ webpackJsonp([0],{
 
 	var _weapon2 = _interopRequireDefault(_weapon);
 
+	var _ramp = __webpack_require__(302);
+
+	var _ramp2 = _interopRequireDefault(_ramp);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var min = 100;
@@ -5147,11 +5154,9 @@ webpackJsonp([0],{
 	    return {
 	        sound: {
 	            play: function play() {
-	                gainNode.gain.setValueAtTime(0, audio.ctx.currentTime);
-	                gainNode.gain.linearRampToValueAtTime(gain, audio.ctx.currentTime + duration * 0.2);
-	                gainNode.gain.setValueAtTime(gain, audio.ctx.currentTime + duration * 0.5);
-	                gainNode.gain.linearRampToValueAtTime(0, audio.ctx.currentTime + duration * 1);
+	                var time = audio.ctx.currentTime;
 
+	                (0, _ramp2.default)(gainNode.gain, gain, time, 0.2, 0.5, duration);
 	                xOscillator.onended = function () {
 	                    done = true;
 	                };
@@ -5197,6 +5202,28 @@ webpackJsonp([0],{
 /***/ },
 
 /***/ 302:
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	/**
+	 * Create a ramp from 0 to value at `start` then back to 0 from `end` to `duration`.
+	 */
+
+	exports.default = function (nodeValue, value, time, start, end, duration) {
+	    nodeValue.setValueAtTime(0, time);
+	    nodeValue.linearRampToValueAtTime(gain, time + duration * start);
+	    nodeValue.setValueAtTime(value, time + duration * end);
+	    nodeValue.linearRampToValueAtTime(0, time + duration * 1);
+	    return nodeValue;
+	};
+
+/***/ },
+
+/***/ 303:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5213,9 +5240,16 @@ webpackJsonp([0],{
 
 	var _audio_context2 = _interopRequireDefault(_audio_context);
 
+	var _notes = __webpack_require__(304);
+
+	var _notes2 = _interopRequireDefault(_notes);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	var Soundfont = __webpack_require__(303);
+	var Soundfont = __webpack_require__(305);
+
+	var instrumentNames = __webpack_require__(316);
+
 
 	var min = 100;
 	var max = 1000;
@@ -5223,8 +5257,6 @@ webpackJsonp([0],{
 	var maxGain = 0.2;
 
 	var duration = 2;
-
-	var notes = ['A0', 'Bb0', 'B0', 'C1', 'Db1', 'D1', 'Eb1', 'E1', 'F1', 'Gb1', 'G1', 'Ab1', 'A1', 'Bb1', 'B1', 'C2', 'Db2', 'D2', 'Eb2', 'E2', 'F2', 'Gb2', 'G2', 'Ab2', 'A2', 'Bb2', 'B2', 'C3', 'Db3', 'D3', 'Eb3', 'E3', 'F3', 'Gb3', 'G3', 'Ab3', 'A3', 'Bb3', 'B3', 'C4', 'Db4', 'D4', 'Eb4', 'E4', 'F4', 'Gb4', 'G4', 'Ab4', 'A4', 'Bb4', 'B4', 'C5', 'Db5', 'D5', 'Eb5', 'E5', 'F5', 'Gb5', 'G5', 'Ab5', 'A5', 'Bb5', 'B5', 'C6', 'Db6', 'D6', 'Eb6', 'E6', 'F6', 'Gb6', 'G6', 'Ab6', 'A6', 'Bb6', 'B6', 'C7', 'Db7', 'D7', 'Eb7', 'E7', 'F7', 'Gb7', 'G7', 'Ab7', 'A7', 'Bb7', 'B7', 'C8'];
 
 	var instrument = _audio_context2.default.then(function (ctx) {
 	    var font = new Soundfont(ctx);
@@ -5286,6 +5318,157 @@ webpackJsonp([0],{
 	        duration: duration * 1000
 	    };
 	});
+
+/***/ },
+
+/***/ 304:
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	/**
+	 * Nodes ordered by pitch, low to high.
+	 */
+	exports.default = ['A0', 'Bb0', 'B0', 'C1', 'Db1', 'D1', 'Eb1', 'E1', 'F1', 'Gb1', 'G1', 'Ab1', 'A1', 'Bb1', 'B1', 'C2', 'Db2', 'D2', 'Eb2', 'E2', 'F2', 'Gb2', 'G2', 'Ab2', 'A2', 'Bb2', 'B2', 'C3', 'Db3', 'D3', 'Eb3', 'E3', 'F3', 'Gb3', 'G3', 'Ab3', 'A3', 'Bb3', 'B3', 'C4', 'Db4', 'D4', 'Eb4', 'E4', 'F4', 'Gb4', 'G4', 'Ab4', 'A4', 'Bb4', 'B4', 'C5', 'Db5', 'D5', 'Eb5', 'E5', 'F5', 'Gb5', 'G5', 'Ab5', 'A5', 'Bb5', 'B5', 'C6', 'Db6', 'D6', 'Eb6', 'E6', 'F6', 'Gb6', 'G6', 'Ab6', 'A6', 'Bb6', 'B6', 'C7', 'Db7', 'D7', 'Eb7', 'E7', 'F7', 'Gb7', 'G7', 'Ab7', 'A7', 'Bb7', 'B7', 'C8'];
+
+/***/ },
+
+/***/ 316:
+/***/ function(module, exports) {
+
+	module.exports = [
+		"accordion",
+		"acoustic_bass",
+		"acoustic_grand_piano",
+		"acoustic_guitar_nylon",
+		"acoustic_guitar_steel",
+		"agogo",
+		"alto_sax",
+		"applause",
+		"bagpipe",
+		"banjo",
+		"baritone_sax",
+		"bassoon",
+		"bird_tweet",
+		"blown_bottle",
+		"brass_section",
+		"breath_noise",
+		"bright_acoustic_piano",
+		"celesta",
+		"cello",
+		"choir_aahs",
+		"church_organ",
+		"clarinet",
+		"clavinet",
+		"contrabass",
+		"distortion_guitar",
+		"drawbar_organ",
+		"dulcimer",
+		"electric_bass_finger",
+		"electric_bass_pick",
+		"electric_grand_piano",
+		"electric_guitar_clean",
+		"electric_guitar_jazz",
+		"electric_guitar_muted",
+		"electric_piano_1",
+		"electric_piano_2",
+		"english_horn",
+		"fiddle",
+		"flute",
+		"french_horn",
+		"fretless_bass",
+		"fx_1_rain",
+		"fx_2_soundtrack",
+		"fx_3_crystal",
+		"fx_4_atmosphere",
+		"fx_5_brightness",
+		"fx_6_goblins",
+		"fx_7_echoes",
+		"fx_8_scifi",
+		"glockenspiel",
+		"guitar_fret_noise",
+		"guitar_harmonics",
+		"gunshot",
+		"harmonica",
+		"harpsichord",
+		"helicopter",
+		"honkytonk_piano",
+		"kalimba",
+		"koto",
+		"lead_1_square",
+		"lead_2_sawtooth",
+		"lead_3_calliope",
+		"lead_4_chiff",
+		"lead_5_charang",
+		"lead_6_voice",
+		"lead_7_fifths",
+		"lead_8_bass__lead",
+		"marimba",
+		"melodic_tom",
+		"music_box",
+		"muted_trumpet",
+		"oboe",
+		"ocarina",
+		"orchestra_hit",
+		"orchestral_harp",
+		"overdriven_guitar",
+		"pad_1_new_age",
+		"pad_2_warm",
+		"pad_3_polysynth",
+		"pad_4_choir",
+		"pad_5_bowed",
+		"pad_6_metallic",
+		"pad_7_halo",
+		"pad_8_sweep",
+		"pan_flute",
+		"percussive_organ",
+		"piccolo",
+		"pizzicato_strings",
+		"recorder",
+		"reed_organ",
+		"reverse_cymbal",
+		"rock_organ",
+		"seashore",
+		"shakuhachi",
+		"shamisen",
+		"shanai",
+		"sitar",
+		"slap_bass_1",
+		"slap_bass_2",
+		"soprano_sax",
+		"steel_drums",
+		"string_ensemble_1",
+		"string_ensemble_2",
+		"synth_bass_1",
+		"synth_bass_2",
+		"synth_brass_1",
+		"synth_brass_2",
+		"synth_choir",
+		"synth_drum",
+		"synth_strings_1",
+		"synth_strings_2",
+		"taiko_drum",
+		"tango_accordion",
+		"telephone_ring",
+		"tenor_sax",
+		"timpani",
+		"tinkle_bell",
+		"tremolo_strings",
+		"trombone",
+		"trumpet",
+		"tuba",
+		"tubular_bells",
+		"vibraphone",
+		"viola",
+		"violin",
+		"voice_oohs",
+		"whistle",
+		"woodblock",
+		"xylophone"
+	];
 
 /***/ }
 

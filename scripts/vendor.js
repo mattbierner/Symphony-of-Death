@@ -103,10 +103,10 @@
 	__webpack_require__(179);
 	__webpack_require__(20);
 	__webpack_require__(177);
-	__webpack_require__(321);
-	__webpack_require__(303);
+	__webpack_require__(324);
+	__webpack_require__(305);
 	__webpack_require__(3);
-	__webpack_require__(322);
+	__webpack_require__(325);
 	module.exports = __webpack_require__(286);
 
 
@@ -34337,16 +34337,18 @@
 /* 300 */,
 /* 301 */,
 /* 302 */,
-/* 303 */
+/* 303 */,
+/* 304 */,
+/* 305 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(module) {'use strict';
 
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
-	var loadBank = __webpack_require__(304);
-	var oscillatorPlayer = __webpack_require__(311);
-	var buffersPlayer = __webpack_require__(313);
+	var loadBank = __webpack_require__(306);
+	var oscillatorPlayer = __webpack_require__(313);
+	var buffersPlayer = __webpack_require__(315);
 
 	/**
 	 * Create a Soundfont object
@@ -34401,13 +34403,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(180)(module)))
 
 /***/ },
-/* 304 */
+/* 306 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var midi = __webpack_require__(305);
-	var decodeBuffer = __webpack_require__(309);
+	var midi = __webpack_require__(307);
+	var decodeBuffer = __webpack_require__(311);
 
 	/**
 	 * Load a soundfont bank
@@ -34480,14 +34482,14 @@
 	}
 
 /***/ },
-/* 305 */
+/* 307 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(module) {'use strict';
 
 	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
-	var parse = __webpack_require__(306);
+	var parse = __webpack_require__(308);
 
 	/**
 	 * Get the midi number of a note
@@ -34523,13 +34525,13 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(180)(module)))
 
 /***/ },
-/* 306 */
+/* 308 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var memoize = __webpack_require__(307);
-	var R = __webpack_require__(308);
+	var memoize = __webpack_require__(309);
+	var R = __webpack_require__(310);
 	var BASES = { C: [0, 0], D: [2, -1], E: [4, -2], F: [-1, 1], G: [1, 0], A: [3, -1], B: [5, -2] };
 
 	/**
@@ -34572,7 +34574,7 @@
 	});
 
 /***/ },
-/* 307 */
+/* 309 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -34599,7 +34601,7 @@
 	};
 
 /***/ },
-/* 308 */
+/* 310 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -34627,12 +34629,12 @@
 	module.exports = /^([a-gA-G])(#{1,}|b{1,}|x{1,}|)(-?\d*)(\/\d+|)\s*(.*)\s*$/;
 
 /***/ },
-/* 309 */
+/* 311 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var base64DecodeToArray = __webpack_require__(310);
+	var base64DecodeToArray = __webpack_require__(312);
 
 	/**
 	 * Given a base64 encoded audio data, return a prmomise with an audio buffer
@@ -34654,7 +34656,7 @@
 	};
 
 /***/ },
-/* 310 */
+/* 312 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -34687,13 +34689,13 @@
 	module.exports = base64DecodeToArray;
 
 /***/ },
-/* 311 */
+/* 313 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var freq = __webpack_require__(312)(440);
-	var midi = __webpack_require__(305);
+	var freq = __webpack_require__(314)(440);
+	var midi = __webpack_require__(307);
 
 	/**
 	 * Returns a function that plays an oscillator
@@ -34735,7 +34737,7 @@
 	};
 
 /***/ },
-/* 312 */
+/* 314 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -34772,12 +34774,12 @@
 	};
 
 /***/ },
-/* 313 */
+/* 315 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var midi = __webpack_require__(305);
+	var midi = __webpack_require__(307);
 
 	/**
 	 * Create a soundfont buffers player
@@ -34813,14 +34815,15 @@
 	};
 
 /***/ },
-/* 314 */,
-/* 315 */,
 /* 316 */,
 /* 317 */,
 /* 318 */,
 /* 319 */,
 /* 320 */,
-/* 321 */
+/* 321 */,
+/* 322 */,
+/* 323 */,
+/* 324 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;"use strict";
@@ -35320,7 +35323,7 @@
 	};
 
 /***/ },
-/* 322 */
+/* 325 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;'use strict';var _typeof=typeof Symbol==="function"&&typeof Symbol.iterator==="symbol"?function(obj){return typeof obj;}:function(obj){return obj&&typeof Symbol==="function"&&obj.constructor===Symbol?"symbol":typeof obj;};(function(root,factory){if(true){ // AMD. Register as an anonymous module unless amdModuleId is set

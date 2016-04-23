@@ -212,14 +212,17 @@ export default class Viewer {
     }
 
     goToFrontView() {
+        this._controls.reset();
         this._camera.position.set(0, Math.max(this.bounds.x, this.bounds.z) * 2, 0);
     }
 
     goToSideView() {
+        this._controls.reset();
         this._camera.position.set(Math.max(this.bounds.y, this.bounds.z) * 2, 0, 0);
     }
 
     goToTopView() {
+        this._controls.reset();
         this._camera.position.set(0, 0, Math.max(this.bounds.x, this.bounds.y) * 2);
     }
     

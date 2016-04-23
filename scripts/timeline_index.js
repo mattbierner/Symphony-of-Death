@@ -7,7 +7,7 @@ webpackJsonp([1],{
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _controls = __webpack_require__(314);
+	var _controls = __webpack_require__(317);
 
 	var _controls2 = _interopRequireDefault(_controls);
 
@@ -23,11 +23,11 @@ webpackJsonp([1],{
 
 	var _sound_manager2 = _interopRequireDefault(_sound_manager);
 
-	var _weird_male_screams = __webpack_require__(317);
+	var _weird_male_screams = __webpack_require__(320);
 
 	var _weird_male_screams2 = _interopRequireDefault(_weird_male_screams);
 
-	var _theremin = __webpack_require__(320);
+	var _theremin = __webpack_require__(323);
 
 	var _theremin2 = _interopRequireDefault(_theremin);
 
@@ -599,16 +599,19 @@ webpackJsonp([1],{
 	    }, {
 	        key: 'goToFrontView',
 	        value: function goToFrontView() {
+	            this._controls.reset();
 	            this._camera.position.set(0, Math.max(this.bounds.x, this.bounds.z) * 2, 0);
 	        }
 	    }, {
 	        key: 'goToSideView',
 	        value: function goToSideView() {
+	            this._controls.reset();
 	            this._camera.position.set(Math.max(this.bounds.y, this.bounds.z) * 2, 0, 0);
 	        }
 	    }, {
 	        key: 'goToTopView',
 	        value: function goToTopView() {
+	            this._controls.reset();
 	            this._camera.position.set(0, 0, Math.max(this.bounds.x, this.bounds.y) * 2);
 	        }
 
@@ -4585,7 +4588,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 314:
+/***/ 317:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4598,7 +4601,7 @@ webpackJsonp([1],{
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _timeline = __webpack_require__(315);
+	var _timeline = __webpack_require__(318);
 
 	var _timeline2 = _interopRequireDefault(_timeline);
 
@@ -4911,7 +4914,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 315:
+/***/ 318:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4924,7 +4927,7 @@ webpackJsonp([1],{
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _num = __webpack_require__(316);
+	var _num = __webpack_require__(319);
 
 	var num = _interopRequireWildcard(_num);
 
@@ -5242,7 +5245,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 316:
+/***/ 319:
 /***/ function(module, exports) {
 
 	"use strict";
@@ -5260,7 +5263,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 317:
+/***/ 320:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5269,7 +5272,7 @@ webpackJsonp([1],{
 	    value: true
 	});
 
-	var _file = __webpack_require__(318);
+	var _file = __webpack_require__(321);
 
 	var _file2 = _interopRequireDefault(_file);
 
@@ -5358,7 +5361,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 318:
+/***/ 321:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5366,7 +5369,7 @@ webpackJsonp([1],{
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	var Wad = __webpack_require__(319);
+	var Wad = __webpack_require__(322);
 
 	/**
 	 * Helper that adds weapon info to generator.
@@ -5383,7 +5386,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 319:
+/***/ 322:
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*** IMPORTS FROM imports-loader ***/
@@ -5591,7 +5594,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 320:
+/***/ 323:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5600,13 +5603,13 @@ webpackJsonp([1],{
 	    value: true
 	});
 
-	var _num = __webpack_require__(316);
+	var _num = __webpack_require__(319);
 
 	var num = _interopRequireWildcard(_num);
 
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-	var Wad = __webpack_require__(319);
+	var Wad = __webpack_require__(322);
 
 
 	var min = 500;
