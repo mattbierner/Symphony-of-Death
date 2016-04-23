@@ -1,15 +1,12 @@
 "use strict";
-import weapon_base from './combinators/weapon'
-
 const Soundfont = require('soundfont-player');
-
-import audioCtx from '../audio_context';
 const  instrumentNames = require('soundfont-player/instruments.json');
 
+import audioCtx from '../audio_context';
 import nodes from '../notes';
+import weapon_base from './combinators/weapon'
 
 const maxGain = 0.2;
-
 const duration = 2;
 
 const instrument = audioCtx.then(ctx => {
@@ -18,7 +15,6 @@ const instrument = audioCtx.then(ctx => {
     return new Promise((resolve, reject) =>
         instrument.onready(resolve));
 });
-
 
 /**
  * Calculate the frequency for an event.
@@ -53,7 +49,6 @@ const computeGain = (event, data, frequency) => {
  * Changes pitch based on kill vector length.
  */
 export default weapon_base((weapon, audio, event, data) => {
-    
     let length = event.KillVectorLength;
     if (weapon.type === 'Grenade' || event.IsMelee)
         length = 0;
@@ -62,14 +57,14 @@ export default weapon_base((weapon, audio, event, data) => {
     const gain = computeGain(event, data, note); 
     
     let done = false;
-    return Promise.resolve({
+    return instrument.then(instrument => ({
         sound: {
             play() {
-                return instrument.then(x => x.play(note, 0));
+                return instrument.play(note, 0);
             },
             stop() {
             }
         },
         duration: duration * 1000
-    });
+    }));
 });

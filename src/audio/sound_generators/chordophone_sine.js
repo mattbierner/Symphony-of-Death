@@ -69,7 +69,7 @@ export default weapon_base((weapon, audio, event, data) => {
                 xOscillator.onended = () => { done = true; }
                 xOscillator.start(0);
             
-                xOscillator.stop(audio.ctx.currentTime + duration);
+                xOscillator.stop(time + duration);
             },
             stop() {
                 if (done)

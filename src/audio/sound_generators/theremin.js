@@ -1,5 +1,4 @@
 "use strict";
-const Wad = require('imports?this=>window!web-audio-daw');
 import * as num from '../../num';
 
 const min = 500;

@@ -15,31 +15,31 @@ webpackJsonp([0],{
 
 	var _event_list2 = _interopRequireDefault(_event_list);
 
-	var _options_panel = __webpack_require__(279);
+	var _options_panel = __webpack_require__(282);
 
 	var _options_panel2 = _interopRequireDefault(_options_panel);
 
-	var _match_options = __webpack_require__(280);
+	var _match_options = __webpack_require__(283);
 
 	var _match_options2 = _interopRequireDefault(_match_options);
 
-	var _audio_context = __webpack_require__(295);
+	var _audio_context = __webpack_require__(298);
 
 	var audioCtx = _interopRequireWildcard(_audio_context);
 
-	var _sound_manager = __webpack_require__(297);
+	var _sound_manager = __webpack_require__(300);
 
 	var _sound_manager2 = _interopRequireDefault(_sound_manager);
 
-	var _chordophone_sine = __webpack_require__(300);
+	var _chordophone_sine = __webpack_require__(303);
 
 	var _chordophone_sine2 = _interopRequireDefault(_chordophone_sine);
 
-	var _chordophone_piano = __webpack_require__(303);
+	var _chordophone_piano = __webpack_require__(306);
 
 	var _chordophone_piano2 = _interopRequireDefault(_chordophone_piano);
 
-	var _example_matches = __webpack_require__(282);
+	var _example_matches = __webpack_require__(285);
 
 	var _example_matches2 = _interopRequireDefault(_example_matches);
 
@@ -4229,7 +4229,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 279:
+/***/ 282:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4292,7 +4292,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 280:
+/***/ 283:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4303,11 +4303,11 @@ webpackJsonp([0],{
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _options_pane = __webpack_require__(281);
+	var _options_pane = __webpack_require__(284);
 
 	var _options_pane2 = _interopRequireDefault(_options_pane);
 
-	var _example_matches = __webpack_require__(282);
+	var _example_matches = __webpack_require__(285);
 
 	var _example_matches2 = _interopRequireDefault(_example_matches);
 
@@ -4373,7 +4373,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 281:
+/***/ 284:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4430,7 +4430,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 282:
+/***/ 285:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4439,13 +4439,13 @@ webpackJsonp([0],{
 	    value: true
 	});
 
-	var _match = __webpack_require__(283);
+	var _match = __webpack_require__(286);
 
 	var match = _interopRequireWildcard(_match);
 
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-	var data = __webpack_require__(294);
+	var data = __webpack_require__(297);
 
 	var matches = Object.keys(data).reduce(function (map, id) {
 	    return map.concat({
@@ -4459,7 +4459,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 283:
+/***/ 286:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4469,11 +4469,11 @@ webpackJsonp([0],{
 	});
 	exports.createFromFile = exports.createFromData = exports.Match = undefined;
 
-	var _DeathStream = __webpack_require__(284);
+	var _DeathStream = __webpack_require__(287);
 
 	var death_stream = _interopRequireWildcard(_DeathStream);
 
-	var _xhr = __webpack_require__(286);
+	var _xhr = __webpack_require__(289);
 
 	var _xhr2 = _interopRequireDefault(_xhr);
 
@@ -4520,7 +4520,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 284:
+/***/ 287:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4537,7 +4537,7 @@ webpackJsonp([0],{
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var THREE = __webpack_require__(3);
-	var createTree = __webpack_require__(285);
+	var createTree = __webpack_require__(288);
 	var moment = __webpack_require__(179);
 
 
@@ -4643,7 +4643,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 294:
+/***/ 297:
 /***/ function(module, exports) {
 
 	module.exports = {
@@ -4663,7 +4663,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 295:
+/***/ 298:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -4673,7 +4673,7 @@ webpackJsonp([0],{
 	});
 	exports.init = undefined;
 
-	var _reverb = __webpack_require__(296);
+	var _reverb = __webpack_require__(299);
 
 	var _reverb2 = _interopRequireDefault(_reverb);
 
@@ -4707,7 +4707,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 296:
+/***/ 299:
 /***/ function(module, exports) {
 
 	'use strict';
@@ -4880,7 +4880,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 297:
+/***/ 300:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4891,11 +4891,11 @@ webpackJsonp([0],{
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _audio_context = __webpack_require__(295);
+	var _audio_context = __webpack_require__(298);
 
 	var _audio_context2 = _interopRequireDefault(_audio_context);
 
-	var _audioLoader = __webpack_require__(298);
+	var _audioLoader = __webpack_require__(301);
 
 	var _audioLoader2 = _interopRequireDefault(_audioLoader);
 
@@ -5075,7 +5075,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 300:
+/***/ 303:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5084,11 +5084,11 @@ webpackJsonp([0],{
 	    value: true
 	});
 
-	var _weapon = __webpack_require__(301);
+	var _weapon = __webpack_require__(304);
 
 	var _weapon2 = _interopRequireDefault(_weapon);
 
-	var _ramp = __webpack_require__(302);
+	var _ramp = __webpack_require__(305);
 
 	var _ramp2 = _interopRequireDefault(_ramp);
 
@@ -5161,7 +5161,7 @@ webpackJsonp([0],{
 	                };
 	                xOscillator.start(0);
 
-	                xOscillator.stop(audio.ctx.currentTime + duration);
+	                xOscillator.stop(time + duration);
 	            },
 	            stop: function stop() {
 	                if (done) return;
@@ -5176,7 +5176,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 301:
+/***/ 304:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5200,7 +5200,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 302:
+/***/ 305:
 /***/ function(module, exports) {
 
 	"use strict";
@@ -5222,7 +5222,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 303:
+/***/ 306:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5231,26 +5231,24 @@ webpackJsonp([0],{
 	    value: true
 	});
 
-	var _weapon = __webpack_require__(301);
-
-	var _weapon2 = _interopRequireDefault(_weapon);
-
-	var _audio_context = __webpack_require__(295);
+	var _audio_context = __webpack_require__(298);
 
 	var _audio_context2 = _interopRequireDefault(_audio_context);
 
-	var _notes = __webpack_require__(304);
+	var _notes = __webpack_require__(307);
 
 	var _notes2 = _interopRequireDefault(_notes);
 
+	var _weapon = __webpack_require__(304);
+
+	var _weapon2 = _interopRequireDefault(_weapon);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	var Soundfont = __webpack_require__(305);
-
-	var instrumentNames = __webpack_require__(316);
+	var Soundfont = __webpack_require__(308);
+	var instrumentNames = __webpack_require__(319);
 
 	var maxGain = 0.2;
-
 	var duration = 2;
 
 	var instrument = _audio_context2.default.then(function (ctx) {
@@ -5293,7 +5291,6 @@ webpackJsonp([0],{
 	 * Changes pitch based on kill vector length.
 	 */
 	exports.default = (0, _weapon2.default)(function (weapon, audio, event, data) {
-
 	    var length = event.KillVectorLength;
 	    if (weapon.type === 'Grenade' || event.IsMelee) length = 0;
 
@@ -5301,22 +5298,22 @@ webpackJsonp([0],{
 	    var gain = computeGain(event, data, note);
 
 	    var done = false;
-	    return Promise.resolve({
-	        sound: {
-	            play: function play() {
-	                return instrument.then(function (x) {
-	                    return x.play(note, 0);
-	                });
+	    return instrument.then(function (instrument) {
+	        return {
+	            sound: {
+	                play: function play() {
+	                    return instrument.play(note, 0);
+	                },
+	                stop: function stop() {}
 	            },
-	            stop: function stop() {}
-	        },
-	        duration: duration * 1000
+	            duration: duration * 1000
+	        };
 	    });
 	});
 
 /***/ },
 
-/***/ 304:
+/***/ 307:
 /***/ function(module, exports) {
 
 	'use strict';
@@ -5331,7 +5328,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 316:
+/***/ 319:
 /***/ function(module, exports) {
 
 	module.exports = [
