@@ -14,8 +14,12 @@ export default class OptionsPane extends React.Component {
         };
     }
     
-    onCollapseButtonClick() {
+    onSettingsButtonClick() {
         this.setState({ active: !this.state.active, implicit: false });
+    }
+    
+    onCloseButtonClick() {
+        this.setState({ active: false, implicit: false });
     }
     
     render() {
@@ -27,10 +31,14 @@ export default class OptionsPane extends React.Component {
         
         return (
             <div className={'side-panel ' + classes.join(' ')}>
-                <button className="panel-collapse-button material-icons"
-                    onClick={this.onCollapseButtonClick.bind(this)}>{this.state.active ? 'settings' : 'settings'}
+                <button className="panel-settings-button material-icons"
+                    onClick={this.onSettingsButtonClick.bind(this)}>settings
+                </button>
+                <button className="panel-close-button material-icons"
+                    onClick={this.onCloseButtonClick.bind(this)}>clear
                 </button>
                 <div className="panel-contents">
+                    <h1>Options</h1>
                     {this.props.children}
                 </div>
             </div>);

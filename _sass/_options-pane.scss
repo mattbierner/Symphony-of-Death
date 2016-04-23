@@ -14,6 +14,10 @@ $options-pane-width: 300px;
     z-index: 100;
     float: right;
 
+    h1 {
+        font-weight: lighter;
+    }
+
     .panel-contents {
         height: 100%;
         box-sizing: border-box;
@@ -35,7 +39,8 @@ $options-pane-width: 300px;
     margin-right: $options-pane-width;
 }
 
-.panel-collapse-button {
+
+ .side-panel > button {
     width: 40px;
     height: 40px;
     text-align: center;
@@ -43,11 +48,21 @@ $options-pane-width: 300px;
     border: none;
     background: none;
     position: absolute;
-    left: 0;
-    bottom: 20px;
-    margin-left: -46px;
-    padding: 0;
-}
+    padding: 0; 
+    
+    &.panel-settings-button {
+        bottom: 20px;
+        left: 0;
+        margin-left: -46px;
+    }
+    
+    &.panel-close-button {
+        bottom: 20px;
+        right: 0;
+        left: 0;
+        margin-right: 10px;
+    }
+ }
 
 .options-pane {
     padding-top: 0.6em;
@@ -71,7 +86,23 @@ $options-pane-width: 300px;
         border: none;
     }
     
-    .main-view {
+    .side-panel:not(.active) + .main-view {
         margin-right: 0 !important;
+    }
+}
+
+// Make panel fullscreen
+@media only screen and (max-width: 500px) {
+    .side-panel.active {
+        float: none;
+
+        .panel-contents {
+            width: 100%;
+            border: none;
+        }
+    }
+
+    .side-panel.active + .main-view {
+        display: none;
     }
 }

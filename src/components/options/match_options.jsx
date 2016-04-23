@@ -25,7 +25,7 @@ export default class MatchOptions extends React.Component {
         
         return (
             <OptionsPane header="Match">
-                Match: <select value={this.props.selectedMatch}
+                <select value={this.props.selectedMatch}
                     onChange={this.onChange.bind(this)}>{options}</select>
             </OptionsPane>);
     }

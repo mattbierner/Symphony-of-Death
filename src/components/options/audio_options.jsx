@@ -48,10 +48,14 @@ export default class AudioOptions extends React.Component {
         
         return (
             <OptionsPane header="Instrument">
-                Type: <select value={this.props.selectedAudioType}
-                    onChange={this.onTypeChange.bind(this)}>{typeOptions}</select>
-                <select value={this.props.selectedAudioSubType}
-                    onChange={this.onSubTypeChange.bind(this)}>{subSelect}</select>
+                <div>
+                    <select value={this.props.selectedAudioType}
+                        onChange={this.onTypeChange.bind(this)}>{typeOptions}</select>
+                </div>
+                <div>
+                    <select value={this.props.selectedAudioSubType}
+                        onChange={this.onSubTypeChange.bind(this)}>{subSelect}</select>
+                </div>
             </OptionsPane>);
     }
 }; 

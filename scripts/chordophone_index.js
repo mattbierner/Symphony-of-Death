@@ -4496,9 +4496,14 @@ webpackJsonp([0],{
 	    }
 
 	    _createClass(OptionsPane, [{
-	        key: 'onCollapseButtonClick',
-	        value: function onCollapseButtonClick() {
+	        key: 'onSettingsButtonClick',
+	        value: function onSettingsButtonClick() {
 	            this.setState({ active: !this.state.active, implicit: false });
+	        }
+	    }, {
+	        key: 'onCloseButtonClick',
+	        value: function onCloseButtonClick() {
+	            this.setState({ active: false, implicit: false });
 	        }
 	    }, {
 	        key: 'render',
@@ -4512,13 +4517,24 @@ webpackJsonp([0],{
 	                { className: 'side-panel ' + classes.join(' ') },
 	                React.createElement(
 	                    'button',
-	                    { className: 'panel-collapse-button material-icons',
-	                        onClick: this.onCollapseButtonClick.bind(this) },
-	                    this.state.active ? 'settings' : 'settings'
+	                    { className: 'panel-settings-button material-icons',
+	                        onClick: this.onSettingsButtonClick.bind(this) },
+	                    'settings'
+	                ),
+	                React.createElement(
+	                    'button',
+	                    { className: 'panel-close-button material-icons',
+	                        onClick: this.onCloseButtonClick.bind(this) },
+	                    'clear'
 	                ),
 	                React.createElement(
 	                    'div',
 	                    { className: 'panel-contents' },
+	                    React.createElement(
+	                        'h1',
+	                        null,
+	                        'Options'
+	                    ),
 	                    this.props.children
 	                )
 	            );
@@ -4596,7 +4612,6 @@ webpackJsonp([0],{
 	            return React.createElement(
 	                _options_pane2.default,
 	                { header: 'Match' },
-	                'Match: ',
 	                React.createElement(
 	                    'select',
 	                    { value: this.props.selectedMatch,
@@ -4889,12 +4904,8 @@ webpackJsonp([0],{
 /***/ function(module, exports) {
 
 	module.exports = {
-		"5b27a620-cebf-40a3-b09c-a37f15fd135f": {
-			"name": "test1",
-			"file": "./data/5b27a620-cebf-40a3-b09c-a37f15fd135f.json"
-		},
 		"02156eed-70d3-4e47-a506-3b3d5513c29b": {
-			"name": "Tyrant - Slayer",
+			"name": "Slayer - Tyrant",
 			"file": "./data/02156eed-70d3-4e47-a506-3b3d5513c29b.json"
 		},
 		"7828013e-0d76-4d88-a9da-7a5fccbf5d39": {
@@ -5795,18 +5806,25 @@ webpackJsonp([0],{
 	            return React.createElement(
 	                _options_pane2.default,
 	                { header: 'Instrument' },
-	                'Type: ',
 	                React.createElement(
-	                    'select',
-	                    { value: this.props.selectedAudioType,
-	                        onChange: this.onTypeChange.bind(this) },
-	                    typeOptions
+	                    'div',
+	                    null,
+	                    React.createElement(
+	                        'select',
+	                        { value: this.props.selectedAudioType,
+	                            onChange: this.onTypeChange.bind(this) },
+	                        typeOptions
+	                    )
 	                ),
 	                React.createElement(
-	                    'select',
-	                    { value: this.props.selectedAudioSubType,
-	                        onChange: this.onSubTypeChange.bind(this) },
-	                    subSelect
+	                    'div',
+	                    null,
+	                    React.createElement(
+	                        'select',
+	                        { value: this.props.selectedAudioSubType,
+	                            onChange: this.onSubTypeChange.bind(this) },
+	                        subSelect
+	                    )
 	                )
 	            );
 	        }
