@@ -4345,16 +4345,16 @@ webpackJsonp([0],{
 	                    this.state.timeString
 	                ),
 	                ' -',
+	                React.createElement(Weapon, { event: event }),
+	                ' |  ',
 	                React.createElement(
-	                    'span',
+	                    'i',
 	                    { className: 'player killer' },
 	                    event.Killer && event.Killer.Gamertag
 	                ),
-	                ' | ',
-	                React.createElement(Weapon, { event: event }),
-	                '  | ',
+	                ' killed ',
 	                React.createElement(
-	                    'span',
+	                    'i',
 	                    { className: 'player victim' },
 	                    event.Victim && event.Victim.Gamertag
 	                )
@@ -5771,10 +5771,17 @@ webpackJsonp([0],{
 	    }
 
 	    _createClass(AudioOptions, [{
+	        key: 'getSubtypes',
+	        value: function getSubtypes(type) {
+	            return type === 'oscillator' ? oscillatorTypes : type === 'midi' ? __webpack_require__(321) : [];
+	        }
+	    }, {
 	        key: 'onTypeChange',
 	        value: function onTypeChange(e) {
 	            var type = e.target.value;
-	            this.props.onSelectedAudioTypeChange(type, this.props.selectedAudioSubType);
+	            if (type !== this.props.selectedAudioType) {
+	                this.props.onSelectedAudioTypeChange(type, this.getSubtypes(type)[0]);
+	            }
 	        }
 	    }, {
 	        key: 'onSubTypeChange',
@@ -5793,9 +5800,7 @@ webpackJsonp([0],{
 	                );
 	            });
 
-	            var subOptions = this.props.selectedAudioType === 'oscillator' ? oscillatorTypes : this.props.selectedAudioType === 'midi' ? __webpack_require__(321) : [];
-
-	            var subSelect = subOptions.map(function (x) {
+	            var subSelect = this.getSubtypes(this.props.selectedAudioType).map(function (x) {
 	                return React.createElement(
 	                    'option',
 	                    { key: x, value: x },

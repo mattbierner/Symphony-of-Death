@@ -22,9 +22,19 @@ export default class AudioOptions extends React.Component {
         super(props);
     }
     
+    getSubtypes(type) {
+        return type === 'oscillator'
+            ?oscillatorTypes
+        :type === 'midi'
+            ?require('soundfont-player/instruments.json')
+        :[];
+    }
+    
     onTypeChange(e) {
         const type = e.target.value;
-        this.props.onSelectedAudioTypeChange(type, this.props.selectedAudioSubType);
+        if (type !== this.props.selectedAudioType) {
+            this.props.onSelectedAudioTypeChange(type, this.getSubtypes(type)[0]);
+        }
     }
     
     onSubTypeChange(e) {
@@ -36,14 +46,7 @@ export default class AudioOptions extends React.Component {
         const typeOptions = types.map(type =>
             <option key={type.value} value={type.value}>{type.name}</option>);
         
-        let subOptions =
-            this.props.selectedAudioType === 'oscillator'
-                ?oscillatorTypes
-            :this.props.selectedAudioType === 'midi'
-                ?require('soundfont-player/instruments.json')
-            :[];
-            
-        const subSelect = subOptions.map(x =>
+        const subSelect = this.getSubtypes(this.props.selectedAudioType).map(x =>
             <option key={x} value={x}>{x}</option>);
         
         return (

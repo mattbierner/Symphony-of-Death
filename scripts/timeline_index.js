@@ -4234,16 +4234,16 @@ webpackJsonp([1],{
 	                    this.state.timeString
 	                ),
 	                ' -',
+	                React.createElement(Weapon, { event: event }),
+	                ' |  ',
 	                React.createElement(
-	                    'span',
+	                    'i',
 	                    { className: 'player killer' },
 	                    event.Killer && event.Killer.Gamertag
 	                ),
-	                ' | ',
-	                React.createElement(Weapon, { event: event }),
-	                '  | ',
+	                ' killed ',
 	                React.createElement(
-	                    'span',
+	                    'i',
 	                    { className: 'player victim' },
 	                    event.Victim && event.Victim.Gamertag
 	                )

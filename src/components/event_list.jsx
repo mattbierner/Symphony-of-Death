@@ -52,7 +52,7 @@ class Event extends React.Component {
         const event = this.props.event;
         return (
             <li className="event"><span className="time">{this.state.timeString}</span> -
-                <span className="player killer">{event.Killer && event.Killer.Gamertag}</span> | <Weapon  event={event} />  | <span className="player victim">{event.Victim && event.Victim.Gamertag}</span>
+               <Weapon  event={event} /> |  <i className="player killer">{event.Killer && event.Killer.Gamertag}</i> killed <i className="player victim">{event.Victim && event.Victim.Gamertag}</i>
             </li>);
     }
 }
