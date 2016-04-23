@@ -19,7 +19,7 @@ Maps out each kill of a match as a vibrating string in 3D space. The resulting i
 
 
 # Contributing
-
+Any contributions to the project are welcome. 
 
 ### Building and Running
 

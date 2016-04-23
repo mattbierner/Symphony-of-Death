@@ -4394,17 +4394,8 @@ webpackJsonp([1],{
 	var ambientVolume = 0.2;
 	var ambientFadeIn = 8;
 
-	var reverbNode = _audio_context2.default.then(function (ctx) {
-	    return new Promise(function (resolve) {
-	        var node = ctx.createReverbFromUrl("./sounds/reverb/TerrysFactoryWarehouse.m4a", function () {
-	            node.connect(ctx.destination);
-	            resolve(node);
-	        });
-	    });
-	});
-
 	/**
-	 * Manages playing sounds
+	 * Manages playing sounds.
 	 */
 
 	var SoundManager = function () {
@@ -4416,13 +4407,50 @@ webpackJsonp([1],{
 	        this._generators = generators || [];
 	    }
 
+	    /**
+	     * Force initilize the context.
+	     */
+
+
 	    _createClass(SoundManager, [{
+	        key: 'init',
+	        value: function init() {
+	            var _this = this;
+
+	            if (!this._root) {
+	                _ensureRootCtx();
+	            }
+	            return this._root.then(function () {
+	                return _this;
+	            });
+	        }
+	    }, {
+	        key: '_ensureRootCtx',
+	        value: function _ensureRootCtx() {
+	            if (!this._root) {
+	                this._root = _audio_context2.default.then(function (ctx) {
+	                    return new Promise(function (resolve) {
+	                        var node = ctx.createReverbFromUrl("./sounds/reverb/TerrysFactoryWarehouse.m4a", function () {
+	                            node.connect(ctx.destination);
+	                            resolve({ ctx: ctx, destination: node });
+	                        });
+	                    });
+	                });
+	            }
+	            return this._root;
+	        }
+
+	        /**
+	         * Get the root audio target.
+	         */
+
+	    }, {
 	        key: '_getRootCtx',
 	        value: function _getRootCtx(f) {
-	            _audio_context2.default.then(function (audioCtx) {
-	                return reverbNode.then(function (reverbNode) {
-	                    return f(audioCtx, reverbNode);
-	                });
+	            this._ensureRootCtx(function (_ref) {
+	                var ctx = _ref.ctx;
+	                var destination = _ref.destination;
+	                return f(ctx, destination);
 	            });
 	        }
 
@@ -4433,12 +4461,12 @@ webpackJsonp([1],{
 	    }, {
 	        key: 'play',
 	        value: function play(event, data) {
-	            var _this = this;
+	            var _this2 = this;
 
-	            this._getRootCtx(function (audioCtx, reverbNode) {
+	            this._getRootCtx(function (audioCtx, destination) {
 	                var audio = {
 	                    ctx: audioCtx,
-	                    destination: reverbNode
+	                    destination: destination
 	                };
 
 	                var _iteratorNormalCompletion = true;
@@ -4446,13 +4474,13 @@ webpackJsonp([1],{
 	                var _iteratorError = undefined;
 
 	                try {
-	                    for (var _iterator = _this._generators[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                    for (var _iterator = _this2._generators[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 	                        var generator = _step.value;
 
-	                        generator(audio, event, data).then(function (_ref) {
-	                            var sound = _ref.sound;
-	                            var duration = _ref.duration;
-	                            return _this._playSound(sound, duration);
+	                        generator(audio, event, data).then(function (_ref2) {
+	                            var sound = _ref2.sound;
+	                            var duration = _ref2.duration;
+	                            return _this2._playSound(sound, duration);
 	                        });
 	                    }
 	                } catch (err) {
@@ -4479,9 +4507,9 @@ webpackJsonp([1],{
 	    }, {
 	        key: 'playAmbient',
 	        value: function playAmbient(file) {
-	            var _this2 = this;
+	            var _this3 = this;
 
-	            this._getRootCtx(function (audioCtx, reverbNode) {
+	            this._getRootCtx(function (audioCtx, destination) {
 	                var ambientGain = audioCtx.createGain();
 	                ambientGain.gain.value = 0;
 
@@ -4490,13 +4518,13 @@ webpackJsonp([1],{
 	                    source.buffer = buffer;
 	                    source.loop = true;
 	                    source.connect(ambientGain);
-	                    ambientGain.connect(reverbNode);
+	                    ambientGain.connect(destination);
 	                    source.start(0);
 
 	                    ambientGain.gain.setValueAtTime(0, audioCtx.currentTime);
 	                    ambientGain.gain.linearRampToValueAtTime(ambientVolume, audioCtx.currentTime + ambientFadeIn);
 
-	                    _this2._longPlaying.add(source);
+	                    _this3._longPlaying.add(source);
 	                });
 	            });
 	        }
@@ -4543,14 +4571,14 @@ webpackJsonp([1],{
 	    }, {
 	        key: '_playSound',
 	        value: function _playSound(sound, duration) {
-	            var _this3 = this;
+	            var _this4 = this;
 
 	            this._playing.add(sound);
 	            sound.play();
 	            if (duration) {
 	                setTimeout(function () {
 	                    sound.stop();
-	                    _this3._playing.delete(sound);
+	                    _this4._playing.delete(sound);
 	                }, duration + 1000);
 	            }
 	        }

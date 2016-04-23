@@ -5,16 +5,8 @@ import audio_loader from 'audio-loader';
 const ambientVolume = 0.2;
 const ambientFadeIn = 8;
 
-const reverbNode = audioCtx.then(ctx =>
-    new Promise(resolve => {
-        const node = ctx.createReverbFromUrl("./sounds/reverb/TerrysFactoryWarehouse.m4a", function () {
-            node.connect(ctx.destination);
-            resolve(node);
-        });
-    }));
-
 /**
- * Manages playing sounds
+ * Manages playing sounds.
  */
 export default class SoundManager {
     constructor(generators) {
@@ -22,22 +14,47 @@ export default class SoundManager {
         this._longPlaying = new Set();
         this._generators = generators || [];
     }
-    
+
+    /**
+     * Force initilize the context.
+     */
+    init() {
+        if (!this._root) {
+            _ensureRootCtx();
+        }
+        return this._root.then(() => this);
+    }
+
+    _ensureRootCtx() {
+        if (!this._root) {
+            this._root = audioCtx.then(ctx =>
+                new Promise(resolve => {
+                    const node = ctx.createReverbFromUrl("./sounds/reverb/TerrysFactoryWarehouse.m4a", () => {
+                        node.connect(ctx.destination);
+                        resolve({ ctx: ctx, destination: node });
+                    });
+                }));
+        }
+        return this._root;
+    }
+
+    /**
+     * Get the root audio target.
+     */
     _getRootCtx(f) {
-        audioCtx.then(audioCtx =>
-            reverbNode.then(reverbNode => f(audioCtx, reverbNode)));
+        this._ensureRootCtx(({ctx, destination}) => f(ctx, destination));
     }
 
     /**
      * Play a sound for a given event.
      */
     play(event, data) {
-        this._getRootCtx((audioCtx, reverbNode) => {
+        this._getRootCtx((audioCtx, destination) => {
             const audio = {
                 ctx: audioCtx,
-                destination: reverbNode
-            }
-            
+                destination: destination
+            };
+
             for (let generator of this._generators) {
                 generator(audio, event, data)
                     .then(({sound, duration}) => this._playSound(sound, duration));
@@ -49,16 +66,16 @@ export default class SoundManager {
      * Play a looping ambient sound.
      */
     playAmbient(file) {
-        this._getRootCtx((audioCtx, reverbNode) => {
+        this._getRootCtx((audioCtx, destination) => {
             const ambientGain = audioCtx.createGain();
             ambientGain.gain.value = 0;
-            
+
             audio_loader(audioCtx)(file).then(buffer => {
                 const source = audioCtx.createBufferSource();
                 source.buffer = buffer;
                 source.loop = true;
                 source.connect(ambientGain);
-                ambientGain.connect(reverbNode);
+                ambientGain.connect(destination);
                 source.start(0);
 
                 ambientGain.gain.setValueAtTime(0, audioCtx.currentTime);
