@@ -42,7 +42,7 @@
         position: relative;
         height: 350px;
         z-index: -3;
-        border: 2px solid #222;
+        border: 2px solid $background-color;
         
         canvas {
             width: 100%;
@@ -80,6 +80,7 @@
             animation-delay: 0.4s;
             animation-fill-mode: forwards;
             animation-timing-function: ease-out;
+            animation-iteration-count: 1;
         }
     }
 }
@@ -160,28 +161,41 @@
 
 @media only screen and (max-width: 500px) {
     .page-header {
-         & > * {
+        height: auto;
+        padding-bottom: 3em;
+        
+        & > * {
             display: inline-block;
             max-width: 100%;
         }
     
-        .title div {
-            border-left: none;
-        }
-        
-        .title h1 {
-            white-space: nowrap;
-            text-align: center;
-            animation: none;
-            opacity: 1;
-            padding: 0;
-            font-size: 20px;
-            line-height: 22px;
+        .title {
+            width: 100%;
+
+            div {
+                border-left: none;
+                display: inline-block;
+            }
+            
+            h1 {
+                white-space: nowrap;
+                text-align: center;
+                animation-delay: 0;
+                animation-duration: 0s;
+                opacity: 1;
+                padding: 0;
+                font-size: 20px;
+                line-height: 22px;
+            }
         }
         
         .logo {
             width: 200px;
             height: 250px;
+        }
+        
+        .logo-wrapper {
+            margin-top: 10%;
         }
     }
 }
