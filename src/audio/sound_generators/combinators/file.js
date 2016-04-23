@@ -1,13 +1,27 @@
 "use strict";
-const Wad = require('imports?this=>window!web-audio-daw');
+import audio_loader from 'audio-loader';
 
 /**
  * Helper that adds weapon info to generator.
  */
 export default (root, mapper) =>
-    (audioCtx, event, data) => {
-        const fileName = mapper(audioCtx, event, data);
-        return {
-            sound: new Wad({ source: root + fileName })
-        };
+    (audio, event, data) => {
+        const fileName = mapper(audio, event, data);
+        return audio_loader(audio.ctx)(fileName).then(buffer => {
+            const source = audio.ctx.createBufferSource();
+            source.buffer = buffer;
+            ambientGain.connect(audio.destination);
+            
+            return {
+                sound: {
+                    play() {
+                        source.start(0);
+                    },
+                    stop() {
+                        source.stop(0);
+                    }
+                },
+                duration: Infinity
+            }
+        })
     };

@@ -5,10 +5,8 @@ const Soundfont = require('soundfont-player');
 
 import audioCtx from '../audio_context';
 const  instrumentNames = require('soundfont-player/instruments.json');
-import nodes from '../notes';
 
-const min = 100;
-const max = 1000;
+import nodes from '../notes';
 
 const maxGain = 0.2;
 
@@ -64,7 +62,7 @@ export default weapon_base((weapon, audio, event, data) => {
     const gain = computeGain(event, data, note); 
     
     let done = false;
-    return {
+    return Promise.resolve({
         sound: {
             play() {
                 return instrument.then(x => x.play(note, 0));
@@ -73,5 +71,5 @@ export default weapon_base((weapon, audio, event, data) => {
             }
         },
         duration: duration * 1000
-    };
+    });
 });

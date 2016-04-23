@@ -60,7 +60,7 @@ export default weapon_base((weapon, audio, event, data) => {
     gainNode.connect(audio.destination);
 
     let done = false;
-    return {
+    return Promise.resolve({
         sound: {
             play() {
                 const time = audio.ctx.currentTime;
@@ -80,5 +80,5 @@ export default weapon_base((weapon, audio, event, data) => {
             }
         },
         duration: duration * 1000
-    };
+    });
 });

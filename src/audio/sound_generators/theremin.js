@@ -25,7 +25,7 @@ export default (audio, event, data) => {
     xOscillator.connect(gainNode);
     gainNode.connect(audio.destination);
 
-    return {
+    return Promise.resolve({
         sound: {
             play() {
                 gainNode.gain.setValueAtTime(0, audio.ctx.currentTime);
@@ -43,5 +43,5 @@ export default (audio, event, data) => {
             }
         },
         duration: duration * 1000
-    };
+    });
 };

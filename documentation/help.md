@@ -14,3 +14,7 @@ View can be reset using 'Top', 'Front', or 'Side' buttons.
 - **Rotate View** - Two finger tap and drag.
 - **Zoom View** - Two finger tap and pinch.
 - **Pan View** - Three finger tap and drag.
+
+
+## Cordophone
+

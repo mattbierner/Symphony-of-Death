@@ -4961,12 +4961,11 @@ webpackJsonp([0],{
 	                    for (var _iterator = _this._generators[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 	                        var generator = _step.value;
 
-	                        var _generator = generator(audio, event, data);
-
-	                        var sound = _generator.sound;
-	                        var duration = _generator.duration;
-
-	                        _this._playSound(sound, duration);
+	                        generator(audio, event, data).then(function (_ref) {
+	                            var sound = _ref.sound;
+	                            var duration = _ref.duration;
+	                            return _this._playSound(sound, duration);
+	                        });
 	                    }
 	                } catch (err) {
 	                    _didIteratorError = true;
@@ -5151,7 +5150,7 @@ webpackJsonp([0],{
 	    gainNode.connect(audio.destination);
 
 	    var done = false;
-	    return {
+	    return Promise.resolve({
 	        sound: {
 	            play: function play() {
 	                var time = audio.ctx.currentTime;
@@ -5172,7 +5171,7 @@ webpackJsonp([0],{
 	            }
 	        },
 	        duration: duration * 1000
-	    };
+	    });
 	});
 
 /***/ },
@@ -5250,10 +5249,6 @@ webpackJsonp([0],{
 
 	var instrumentNames = __webpack_require__(316);
 
-
-	var min = 100;
-	var max = 1000;
-
 	var maxGain = 0.2;
 
 	var duration = 2;
@@ -5306,7 +5301,7 @@ webpackJsonp([0],{
 	    var gain = computeGain(event, data, note);
 
 	    var done = false;
-	    return {
+	    return Promise.resolve({
 	        sound: {
 	            play: function play() {
 	                return instrument.then(function (x) {
@@ -5316,7 +5311,7 @@ webpackJsonp([0],{
 	            stop: function stop() {}
 	        },
 	        duration: duration * 1000
-	    };
+	    });
 	});
 
 /***/ },

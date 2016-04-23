@@ -27,7 +27,7 @@ webpackJsonp([1],{
 
 	var _weird_male_screams2 = _interopRequireDefault(_weird_male_screams);
 
-	var _theremin = __webpack_require__(323);
+	var _theremin = __webpack_require__(322);
 
 	var _theremin2 = _interopRequireDefault(_theremin);
 
@@ -4449,12 +4449,11 @@ webpackJsonp([1],{
 	                    for (var _iterator = _this._generators[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
 	                        var generator = _step.value;
 
-	                        var _generator = generator(audio, event, data);
-
-	                        var sound = _generator.sound;
-	                        var duration = _generator.duration;
-
-	                        _this._playSound(sound, duration);
+	                        generator(audio, event, data).then(function (_ref) {
+	                            var sound = _ref.sound;
+	                            var duration = _ref.duration;
+	                            return _this._playSound(sound, duration);
+	                        });
 	                    }
 	                } catch (err) {
 	                    _didIteratorError = true;
@@ -5369,24 +5368,109 @@ webpackJsonp([1],{
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	var Wad = __webpack_require__(322);
+
+	var _audioLoader = __webpack_require__(298);
+
+	var _audioLoader2 = _interopRequireDefault(_audioLoader);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	/**
 	 * Helper that adds weapon info to generator.
 	 */
 
 	exports.default = function (root, mapper) {
-	    return function (audioCtx, event, data) {
-	        var fileName = mapper(audioCtx, event, data);
-	        return {
-	            sound: new Wad({ source: root + fileName })
-	        };
+	    return function (audio, event, data) {
+	        var fileName = mapper(audio, event, data);
+	        return (0, _audioLoader2.default)(audio.ctx)(fileName).then(function (buffer) {
+	            var source = audio.ctx.createBufferSource();
+	            source.buffer = buffer;
+	            ambientGain.connect(audio.destination);
+
+	            return {
+	                sound: {
+	                    play: function play() {
+	                        source.start(0);
+	                    },
+	                    stop: function stop() {
+	                        source.stop(0);
+	                    }
+	                },
+	                duration: Infinity
+	            };
+	        });
 	    };
 	};
 
 /***/ },
 
 /***/ 322:
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _num = __webpack_require__(319);
+
+	var num = _interopRequireWildcard(_num);
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+	var Wad = __webpack_require__(323);
+
+
+	var min = 500;
+	var max = 700;
+
+	var freqX = function freqX(event, progress) {
+	    return Math.min(max, 300 + num.sample(event.KillerWorldLocation.x, event.VictimWorldLocation.x, progress) / 10 * 100);
+	};
+
+	/**
+	 * Plays sound based on event world location.
+	 */
+
+	exports.default = function (audio, event, data) {
+	    var length = event.KillVectorLength;
+	    var duration = length * 2; // seconds
+
+	    var xOscillator = audio.ctx.createOscillator();
+	    xOscillator.type = 'triangle';
+	    xOscillator.frequency.value = freqX(event, 0);
+
+	    var gainNode = audio.ctx.createGain();
+	    gainNode.gain.value = 0;
+
+	    xOscillator.connect(gainNode);
+	    gainNode.connect(audio.destination);
+
+	    return Promise.resolve({
+	        sound: {
+	            play: function play() {
+	                gainNode.gain.setValueAtTime(0, audio.ctx.currentTime);
+	                gainNode.gain.linearRampToValueAtTime(0.1, audio.ctx.currentTime + duration * 0.2);
+	                gainNode.gain.setValueAtTime(0.1, audio.ctx.currentTime + duration * 0.7);
+	                gainNode.gain.linearRampToValueAtTime(0, audio.ctx.currentTime + duration * 1);
+
+	                xOscillator.frequency.setValueAtTime(freqX(event, 0), audio.ctx.currentTime);
+	                xOscillator.frequency.linearRampToValueAtTime(freqX(event, 1), duration * 1);
+	                xOscillator.start();
+	                xOscillator.stop(audio.ctx.currentTime + duration);
+	            },
+	            stop: function stop() {
+	                xOscillator.stop();
+	            }
+	        },
+	        duration: duration * 1000
+	    });
+	};
+
+/***/ },
+
+/***/ 323:
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*** IMPORTS FROM imports-loader ***/
@@ -5591,72 +5675,6 @@ webpackJsonp([1],{
 	// o.send( [ 0x80, 0x45, 0x7f ], window.performance.now() + 1000 );  // full velocity A4 note off in one second.
 	};var onErrorCallback=function onErrorCallback(err){console.log("uh-oh! Something went wrong!  Error code: "+err.code);};if(navigator&&navigator.requestMIDIAccess){try{navigator.requestMIDIAccess().then(onSuccessCallback,onErrorCallback);}catch(err){var text="There was an error on this page.\n\n";text+="Error description: "+err.message+"\n\n";text+="Click OK to continue.\n\n";console.log(text);}}Wad.presets={hiHatClosed:{source:'noise',env:{attack:.001,decay:.008,sustain:.2,hold:.03,release:.01},filter:{type:'highpass',frequency:400,q:1}},snare:{source:'noise',env:{attack:.001,decay:.01,sustain:.2,hold:.03,release:.02},filter:{type:'bandpass',frequency:300,q:.180}},hiHatOpen:{source:'noise',env:{attack:.001,decay:.008,sustain:.2,hold:.43,release:.01},filter:{type:'highpass',frequency:100,q:.2}},ghost:{source:'square',volume:.3,env:{attack:.01,decay:.002,sustain:.5,hold:2.5,release:.3},filter:{type:'lowpass',frequency:600,q:7,env:{attack:.7,frequency:1600}},vibrato:{attack:8,speed:8,magnitude:100}},piano:{source:'square',volume:1.4,env:{attack:.01,decay:.005,sustain:.2,hold:.015,release:.3},filter:{type:'lowpass',frequency:1200,q:8.5,env:{attack:.2,frequency:600}}}};return Wad;}();if(typeof module!=='undefined'&&module.exports){module.exports=Wad;}return Wad;});
 	}.call(window));
-
-/***/ },
-
-/***/ 323:
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _num = __webpack_require__(319);
-
-	var num = _interopRequireWildcard(_num);
-
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
-
-	var Wad = __webpack_require__(322);
-
-
-	var min = 500;
-	var max = 700;
-
-	var freqX = function freqX(event, progress) {
-	    return Math.min(max, 300 + num.sample(event.KillerWorldLocation.x, event.VictimWorldLocation.x, progress) / 10 * 100);
-	};
-
-	/**
-	 * Plays sound based on event world location.
-	 */
-
-	exports.default = function (audio, event, data) {
-	    var length = event.KillVectorLength;
-	    var duration = length * 2; // seconds
-
-	    var xOscillator = audio.ctx.createOscillator();
-	    xOscillator.type = 'triangle';
-	    xOscillator.frequency.value = freqX(event, 0);
-
-	    var gainNode = audio.ctx.createGain();
-	    gainNode.gain.value = 0;
-
-	    xOscillator.connect(gainNode);
-	    gainNode.connect(audio.destination);
-
-	    return {
-	        sound: {
-	            play: function play() {
-	                gainNode.gain.setValueAtTime(0, audio.ctx.currentTime);
-	                gainNode.gain.linearRampToValueAtTime(0.1, audio.ctx.currentTime + duration * 0.2);
-	                gainNode.gain.setValueAtTime(0.1, audio.ctx.currentTime + duration * 0.7);
-	                gainNode.gain.linearRampToValueAtTime(0, audio.ctx.currentTime + duration * 1);
-
-	                xOscillator.frequency.setValueAtTime(freqX(event, 0), audio.ctx.currentTime);
-	                xOscillator.frequency.linearRampToValueAtTime(freqX(event, 1), duration * 1);
-	                xOscillator.start();
-	                xOscillator.stop(audio.ctx.currentTime + duration);
-	            },
-	            stop: function stop() {
-	                xOscillator.stop();
-	            }
-	        },
-	        duration: duration * 1000
-	    };
-	};
 
 /***/ }
 

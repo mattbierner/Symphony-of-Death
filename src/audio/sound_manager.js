@@ -39,8 +39,8 @@ export default class SoundManager {
             }
             
             for (let generator of this._generators) {
-                let {sound, duration} = generator(audio, event, data);
-                this._playSound(sound, duration);
+                generator(audio, event, data)
+                    .then(({sound, duration}) => this._playSound(sound, duration));
             }
         });
     }
