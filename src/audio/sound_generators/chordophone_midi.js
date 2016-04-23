@@ -6,7 +6,7 @@ import notes from '../notes';
 import weapon_base from './combinators/weapon';
 import ramp from '../ramp';
 
-const maxGain = 0.60;
+const maxGain = 0.50;
 const duration = 2;
 
 

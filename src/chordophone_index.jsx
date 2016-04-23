@@ -11,7 +11,7 @@ import AudioOptions from './components/options/audio_options';
 
 import * as audioCtx from './audio/audio_context';
 import SoundManager from './audio/sound_manager';
-import Sine from './audio/sound_generators/chordophone_sine';
+import sineGenerator from './audio/sound_generators/chordophone_sine';
 import midiGenerator from './audio/sound_generators/chordophone_midi';
 
 import example_matches from './data/example_matches';
@@ -66,7 +66,7 @@ class Application extends React.Component {
             audioCtx.init();
 
         this._soundManager.playAmbient('./sounds/spaceambient.mp3');
-        this.onSelectedAudioTypeChange(this.props.selectedAudioType, this.props.selectedAudioSubType);
+        this.onSelectedAudioTypeChange(this.state.selectedAudioType, this.state.selectedAudioSubType);
     }
 
     onTouchStart() {
@@ -100,7 +100,7 @@ class Application extends React.Component {
         if (type === 'midi') {
             this._soundManager.setGenerator(midiGenerator(subtype));
         } else {
-            this._soundManager.setGenerator(Sine);
+            this._soundManager.setGenerator(sineGenerator(subtype));
         }
     }
 

@@ -12,7 +12,7 @@ const types = [
     { name: 'Midi', value: 'midi' }
 ];
 
-const oscillatorTypes = ['sine', 'square', 'triangle', 'saw'];
+const oscillatorTypes = ['sine', 'square', 'triangle', 'sawtooth'];
 
 /**
  * Set of options for a match.

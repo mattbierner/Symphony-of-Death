@@ -140,7 +140,7 @@ webpackJsonp([0],{
 	            if (!onIos()) audioCtx.init();
 
 	            this._soundManager.playAmbient('./sounds/spaceambient.mp3');
-	            this.onSelectedAudioTypeChange(this.props.selectedAudioType, this.props.selectedAudioSubType);
+	            this.onSelectedAudioTypeChange(this.state.selectedAudioType, this.state.selectedAudioSubType);
 	        }
 	    }, {
 	        key: 'onTouchStart',
@@ -197,7 +197,7 @@ webpackJsonp([0],{
 	            if (type === 'midi') {
 	                this._soundManager.setGenerator((0, _chordophone_midi2.default)(subtype));
 	            } else {
-	                this._soundManager.setGenerator(_chordophone_sine2.default);
+	                this._soundManager.setGenerator((0, _chordophone_sine2.default)(subtype));
 	            }
 	        }
 	    }, {
@@ -5459,7 +5459,7 @@ webpackJsonp([0],{
 	    // Play high pitched sounds softer
 	    computedGain *= Math.max(0.2, 1.0 - (frequency - min) / (max - min));
 
-	    if (!isNaN(data.velocity)) computedGain *= data.velocity / 0.5;
+	    if (!isNaN(data.velocity)) computedGain *= data.velocity / 1;
 
 	    return Math.min(maxGain, maxGain * computedGain);
 	};
@@ -5469,47 +5469,50 @@ webpackJsonp([0],{
 	 * 
 	 * Changes pitch based on kill vector length.
 	 */
-	exports.default = (0, _weapon2.default)(function (weapon, audio, event, data) {
-	    var length = event.KillVectorLength;
-	    if (weapon.type === 'Grenade' || event.IsMelee) length = 0;
 
-	    var frequency = computeFrequency(event, data);
-	    var gain = computeGain(event, data, frequency);
+	exports.default = function (waveType) {
+	    return (0, _weapon2.default)(function (weapon, audio, event, data) {
+	        var length = event.KillVectorLength;
+	        if (weapon.type === 'Grenade' || event.IsMelee) length = 0;
 
-	    var xOscillator = audio.ctx.createOscillator();
-	    xOscillator.type = 'sine';
-	    xOscillator.frequency.value = frequency;
+	        var frequency = computeFrequency(event, data);
+	        var gain = computeGain(event, data, frequency);
 
-	    var gainNode = audio.ctx.createGain();
-	    gainNode.gain.value = 0;
+	        var xOscillator = audio.ctx.createOscillator();
+	        xOscillator.type = waveType;
+	        xOscillator.frequency.value = frequency;
 
-	    xOscillator.connect(gainNode);
-	    gainNode.connect(audio.destination);
+	        var gainNode = audio.ctx.createGain();
+	        gainNode.gain.value = 0;
 
-	    var done = false;
-	    return Promise.resolve({
-	        sound: {
-	            play: function play() {
-	                var time = audio.ctx.currentTime;
+	        xOscillator.connect(gainNode);
+	        gainNode.connect(audio.destination);
 
-	                (0, _ramp2.default)(gainNode.gain, gain, time, 0.2, 0.5, duration);
-	                xOscillator.onended = function () {
-	                    done = true;
-	                };
-	                xOscillator.start(0);
+	        var done = false;
+	        return Promise.resolve({
+	            sound: {
+	                play: function play() {
+	                    var time = audio.ctx.currentTime;
 
-	                xOscillator.stop(time + duration);
+	                    (0, _ramp2.default)(gainNode.gain, gain, time, 0.2, 0.5, duration);
+	                    xOscillator.onended = function () {
+	                        done = true;
+	                    };
+	                    xOscillator.start(0);
+
+	                    xOscillator.stop(time + duration);
+	                },
+	                stop: function stop() {
+	                    if (done) return;
+	                    try {
+	                        xOscillator.stop();
+	                    } catch (e) {}
+	                }
 	            },
-	            stop: function stop() {
-	                if (done) return;
-	                try {
-	                    xOscillator.stop();
-	                } catch (e) {}
-	            }
-	        },
-	        duration: duration * 1000
+	            duration: duration * 1000
+	        });
 	    });
-	});
+	};
 
 /***/ },
 
@@ -5741,7 +5744,7 @@ webpackJsonp([0],{
 	 */
 	var types = [{ name: 'Oscillator', value: 'oscillator' }, { name: 'Midi', value: 'midi' }];
 
-	var oscillatorTypes = ['sine', 'square', 'triangle', 'saw'];
+	var oscillatorTypes = ['sine', 'square', 'triangle', 'sawtooth'];
 
 	/**
 	 * Set of options for a match.
@@ -5846,7 +5849,7 @@ webpackJsonp([0],{
 
 	var Soundfont = __webpack_require__(310);
 
-	var maxGain = 0.60;
+	var maxGain = 0.50;
 	var duration = 2;
 
 	/** 

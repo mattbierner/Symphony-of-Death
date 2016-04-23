@@ -31,7 +31,7 @@ const computeGain = (event, data, frequency) => {
     computedGain *= Math.max(0.2, 1.0 - (frequency - min) / (max - min));
 
     if (!isNaN(data.velocity)) 
-        computedGain *= data.velocity / 0.5;
+        computedGain *= data.velocity / 1;
     
     return Math.min(maxGain, maxGain * computedGain)
 }
@@ -41,44 +41,45 @@ const computeGain = (event, data, frequency) => {
  * 
  * Changes pitch based on kill vector length.
  */
-export default weapon_base((weapon, audio, event, data) => {
-    let length = event.KillVectorLength;
-    if (weapon.type === 'Grenade' || event.IsMelee)
-        length = 0;
-    
-    const frequency = computeFrequency(event, data);
-    const gain = computeGain(event, data, frequency); 
-    
-    const xOscillator = audio.ctx.createOscillator();
-    xOscillator.type = 'sine';
-    xOscillator.frequency.value = frequency;
+export default (waveType) =>
+    weapon_base((weapon, audio, event, data) => {
+        let length = event.KillVectorLength;
+        if (weapon.type === 'Grenade' || event.IsMelee)
+            length = 0;
+        
+        const frequency = computeFrequency(event, data);
+        const gain = computeGain(event, data, frequency); 
+        
+        const xOscillator = audio.ctx.createOscillator();
+        xOscillator.type = waveType;
+        xOscillator.frequency.value = frequency;
 
-    const gainNode = audio.ctx.createGain();
-    gainNode.gain.value = 0;
+        const gainNode = audio.ctx.createGain();
+        gainNode.gain.value = 0;
 
-    xOscillator.connect(gainNode);
-    gainNode.connect(audio.destination);
+        xOscillator.connect(gainNode);
+        gainNode.connect(audio.destination);
 
-    let done = false;
-    return Promise.resolve({
-        sound: {
-            play() {
-                const time = audio.ctx.currentTime;
+        let done = false;
+        return Promise.resolve({
+            sound: {
+                play() {
+                    const time = audio.ctx.currentTime;
+                    
+                    ramp(gainNode.gain, gain, time, 0.2, 0.5, duration);
+                    xOscillator.onended = () => { done = true; }
+                    xOscillator.start(0);
                 
-                ramp(gainNode.gain, gain, time, 0.2, 0.5, duration);
-                xOscillator.onended = () => { done = true; }
-                xOscillator.start(0);
-            
-                xOscillator.stop(time + duration);
+                    xOscillator.stop(time + duration);
+                },
+                stop() {
+                    if (done)
+                        return;
+                    try {
+                        xOscillator.stop();
+                    } catch (e) { }
+                }
             },
-            stop() {
-                if (done)
-                    return;
-                try {
-                    xOscillator.stop();
-                } catch (e) { }
-            }
-        },
-        duration: duration * 1000
+            duration: duration * 1000
+        });
     });
-});
