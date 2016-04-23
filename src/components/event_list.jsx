@@ -39,7 +39,13 @@ class Event extends React.Component {
     
     componentDidMount() {
         const element = ReactDOM.findDOMNode(this);
-        element.addEventListener('animationend', () => this.props.onFadeOut(this.props.index, this.props.event), false);
+        element.addEventListener('animationend', () => this.removeSelf(), false);
+        // handle case where animation does not play due to parent being hidden.
+        setTimeout(() => this.removeSelf(), 2000);
+    }
+    
+    removeSelf() {
+        this.props.onFadeOut(this.props.index, this.props.event);
     }
     
     render() {

@@ -20,6 +20,9 @@ import OrbitControls from './3d/OrbitControls'
 
 import {getWeaponsTable} from './data/weapons';
 
+const ResizeSensor = require('imports?this=>window!css-element-queries/src/ResizeSensor');
+
+
 const enableGlow = false;
 
 const dustDensity = 1 / 10000;
@@ -69,7 +72,7 @@ export default class Viewer {
         this.initControls(container);
         this.initComposer();
 
-        window.addEventListener('resize', this.onWindowResize.bind(this), false);
+        new ResizeSensor(container, this.onWindowResize.bind(this));
         this.onWindowResize();
         
         this.animate = () => this.animateImpl();
@@ -211,19 +214,24 @@ export default class Viewer {
         this.goToTopView();
     }
 
+    _getDistanceForView(a, b) {
+        const padding = 1.1;
+        return Math.max(a, b) * 2 * padding;
+    }
+
     goToFrontView() {
         this._controls.reset();
-        this._camera.position.set(0, Math.max(this.bounds.x, this.bounds.z) * 2, 0);
+        this._camera.position.set(0, this._getDistanceForView(this.bounds.x, this.bounds.z), 0);
     }
 
     goToSideView() {
         this._controls.reset();
-        this._camera.position.set(Math.max(this.bounds.y, this.bounds.z) * 2, 0, 0);
+        this._camera.position.set(this._getDistanceForView(this.bounds.y, this.bounds.z), 0, 0);
     }
 
     goToTopView() {
         this._controls.reset();
-        this._camera.position.set(0, 0, Math.max(this.bounds.x, this.bounds.y) * 2);
+        this._camera.position.set(0, 0, this._getDistanceForView(this.bounds.x, this.bounds.y));
     }
     
     /**

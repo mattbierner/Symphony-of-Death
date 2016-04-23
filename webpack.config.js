@@ -4,7 +4,7 @@ var package = require('./package.json');
 
 module.exports = {
     entry: {
-        vendor: [].concat(Object.keys(package.dependencies)),
+        vendor: [].concat(Object.keys(package.dependencies)).filter(x => x !== 'css-element-queries'),
         chordophone_index: './src/chordophone_index.jsx',
         timeline_index: './src/timeline_index.jsx'
     },

@@ -4,9 +4,10 @@ const  instrumentNames = require('soundfont-player/instruments.json');
 
 import audioCtx from '../audio_context';
 import notes from '../notes';
-import weapon_base from './combinators/weapon'
+import weapon_base from './combinators/weapon';
+import ramp from '../ramp';
 
-const maxGain = 0.2;
+const maxGain = 0.60;
 const duration = 2;
 
 const instrument = audioCtx.then(ctx => {
@@ -53,18 +54,24 @@ export default weapon_base((weapon, audio, event, data) => {
     const note = computeNote(event, data);
     const gain = computeGain(event, data, note); 
     
-  //  const gainNode = audio.ctx.createGain();
-    //gainNode.gain.value = 0;
-
-//    gainNode.connect(audio.destination);
+    const gainNode = audio.ctx.createGain();
+    gainNode.gain.value = 0;
+    gainNode.connect(audio.destination);
     
     let done = false;
+    let node;
     return instrument.then(instrument => ({
         sound: {
             play() {
-                return instrument.play(note, 0);
+                const time = audio.ctx.currentTime;
+                ramp(gainNode.gain, gain, time, 0, 0.5, duration);
+                node = instrument.play(note, time, duration, { destination: gainNode });
             },
             stop() {
+                if (node) {
+                    node.stop(0)
+                }
+                
             }
         },
         duration: duration * 1000

@@ -33,7 +33,7 @@
     "react": "^0.14.8",
     "react-dom": "^0.14.8",
     "shader-particle-engine": "^1.0.5",
-    "soundfont-player": "^0.7.0",
+    "soundfont-player": "^0.8.0",
     "three": "^0.75.0",
     "xhr": "^2.2.0"
   }
