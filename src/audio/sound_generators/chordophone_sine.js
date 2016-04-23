@@ -1,5 +1,6 @@
 "use strict";
-import weapon_base from './combinators/weapon'
+import weapon_base from './combinators/weapon';
+import ramp from '../ramp';
 
 const min = 100;
 const max = 1000;
@@ -62,11 +63,9 @@ export default weapon_base((weapon, audio, event, data) => {
     return {
         sound: {
             play() {
-                gainNode.gain.setValueAtTime(0, audio.ctx.currentTime);
-                gainNode.gain.linearRampToValueAtTime(gain, audio.ctx.currentTime + duration * 0.2);
-                gainNode.gain.setValueAtTime(gain, audio.ctx.currentTime + duration * 0.5);
-                gainNode.gain.linearRampToValueAtTime(0, audio.ctx.currentTime + duration * 1);
+                const time = audio.ctx.currentTime;
                 
+                ramp(gainNode.gain, gain, time, 0.2, 0.5, duration);
                 xOscillator.onended = () => { done = true; }
                 xOscillator.start(0);
             

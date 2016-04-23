@@ -76,7 +76,7 @@
 /******/ 			script.charset = 'utf-8';
 /******/ 			script.async = true;
 
-/******/ 			script.src = __webpack_require__.p + "" + chunkId + "." + ({"0":"interactive_index","1":"timeline_index"}[chunkId]||chunkId) + ".js";
+/******/ 			script.src = __webpack_require__.p + "" + chunkId + "." + ({"0":"chordophone_index","1":"timeline_index"}[chunkId]||chunkId) + ".js";
 /******/ 			head.appendChild(script);
 /******/ 		}
 /******/ 	};
@@ -98,15 +98,16 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
+	__webpack_require__(298);
 	__webpack_require__(285);
-	__webpack_require__(292);
 	__webpack_require__(179);
 	__webpack_require__(20);
 	__webpack_require__(177);
-	__webpack_require__(309);
+	__webpack_require__(321);
+	__webpack_require__(303);
 	__webpack_require__(3);
-	__webpack_require__(310);
-	module.exports = __webpack_require__(293);
+	__webpack_require__(322);
+	module.exports = __webpack_require__(286);
 
 
 /***/ },
@@ -32736,186 +32737,6 @@
 /* 283 */,
 /* 284 */,
 /* 285 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(module) {/* global XMLHttpRequest */
-	'use strict';
-
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
-
-	var b64decode = __webpack_require__(286);
-	var PREFIXED = /^(@[\w-]+)\/(.*)$/;
-	var AUDIO = /\.(mp3|wav|ogg)/;
-
-	function merge(dest, src) {
-	  Object.keys(src).forEach(function (k) {
-	    dest[k] = src[k];
-	  });
-	  return dest;
-	}
-
-	/**
-	 * Create a sample loader
-	 *
-	 * @param {AudioContext} ac - the audio context
-	 * @param {HashMap} options - (Optional) options. The options can include:
-	 * @return {Function} a load function
-	 */
-	function loader(ac, options) {
-	  var opts = options || {};
-	  var fetch = opts.fetch || httpRequest;
-	  var prefixes = merge({}, PREFIXES);
-	  if (opts.sources) merge(prefixes, opts.sources);
-
-	  return function load(value) {
-	    if (value instanceof Promise) return value.then(function (v) {
-	      return load(v);
-	    });
-
-	    if (value instanceof ArrayBuffer) return loadArrayBuffer(ac, value);else if (Array.isArray(value)) return loadArrayData(value, load);else if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object') return loadObjectData(value, load);else if (typeof value === 'string') {
-	      if (/^data:audio/.test(value)) return decodeBase64(value, load);else if (/\.json$/.test(value)) return loadJsonFile(value, load, fetch);else if (PREFIXED.test(value)) return loadPrefix(prefixes, value, load, fetch);else if (AUDIO.test(value)) return loadAudioFile(value, load, fetch);else return Promise.resolve(value);
-	    } else return Promise.resolve(value);
-	  };
-	}
-
-	function loadArrayBuffer(ac, data) {
-	  if (!(data instanceof ArrayBuffer)) return null;
-	  return new Promise(function (done, reject) {
-	    ac.decodeAudioData(data, function (buffer) {
-	      done(buffer);
-	    }, function () {
-	      reject("Can't decode audio data (" + data.slice(0, 30) + '...)');
-	    });
-	  });
-	}
-
-	function loadArrayData(array, load) {
-	  return Promise.all(array.map(load));
-	}
-
-	function loadObjectData(source, load) {
-	  var dest = {};
-	  var promises = Object.keys(source).map(function (key) {
-	    return load(source[key]).then(function (result) {
-	      dest[key] = result;
-	    });
-	  });
-	  return Promise.all(promises).then(function () {
-	    return dest;
-	  });
-	}
-
-	function decodeBase64(data, load) {
-	  var payload = data.split(',')[1];
-	  return load(b64decode(payload).buffer);
-	}
-
-	function loadAudioFile(url, load, fetch) {
-	  return load(fetch(url, 'arraybuffer'));
-	}
-
-	function loadJsonFile(url, load, fetch) {
-	  return load(fetch(url, 'json'));
-	}
-
-	function loadPrefix(prefixes, value, load, fetch) {
-	  var m = PREFIXED.exec(value);
-	  var prefix = m[1];
-	  var path = m[2];
-	  var fn = prefixes[prefix];
-	  if (!fn) return Promise.reject('Unknown prefix: ' + prefix);else if (typeof fn === 'function') return fn(path, load, fetch);else return load(fn + '/' + path);
-	}
-
-	var PREFIXES = {
-	  '@midijs': function midijs(url, load, fetch) {
-	    return fetch(url, 'text').then(function (data) {
-	      var begin = data.indexOf('MIDI.Soundfont.');
-	      if (begin < 0) throw Error('Invalid MIDI.js Soundfont format');
-	      begin = data.indexOf('=', begin) + 2;
-	      var end = data.lastIndexOf(',');
-	      return JSON.parse(data.slice(begin, end) + '}');
-	    }).then(load);
-	  },
-	  '@soundfont': function soundfont(name, load) {
-	    var url = 'https://cdn.rawgit.com/gleitz/midi-js-Soundfonts/master/FluidR3_GM/' + name + '-ogg.js';
-	    return load('@midijs/' + url);
-	  },
-	  '@drum-machines': function drumMachines(name, load) {
-	    var path = name + '/' + name + '.json';
-	    var url = 'https://cdn.rawgit.com/danigb/smplr/master/packages/drum-machines/' + path;
-	    return load(url);
-	  }
-	};
-
-	/**
-	 * Wrap a GET request into a promise
-	 *
-	 * @private
-	 */
-	function httpRequest(url, type) {
-	  return new Promise(function (done, reject) {
-	    var req = new XMLHttpRequest();
-	    if (type) req.responseType = type;
-	    req.open('GET', url);
-
-	    req.onload = function () {
-	      if (req.status === 200) {
-	        done(req.response);
-	      } else {
-	        reject(Error(req.statusText));
-	      }
-	    };
-	    req.onerror = function () {
-	      reject(Error('Network Error'));
-	    };
-	    req.send();
-	  });
-	}
-
-	if (( false ? 'undefined' : _typeof(module)) === 'object' && module.exports) module.exports = loader;
-	if (typeof window !== 'undefined') window.loader = loader;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(180)(module)))
-
-/***/ },
-/* 286 */
-/***/ function(module, exports) {
-
-	'use strict';
-
-	function b64ToUint6(nChr) {
-	  return nChr > 64 && nChr < 91 ? nChr - 65 : nChr > 96 && nChr < 123 ? nChr - 71 : nChr > 47 && nChr < 58 ? nChr + 4 : nChr === 43 ? 62 : nChr === 47 ? 63 : 0;
-	}
-
-	// Decode Base64 to Uint8Array
-	// ---------------------------
-	function base64DecodeToArray(sBase64, nBlocksSize) {
-	  var sB64Enc = sBase64.replace(/[^A-Za-z0-9\+\/]/g, "");
-	  var nInLen = sB64Enc.length;
-	  var nOutLen = nBlocksSize ? Math.ceil((nInLen * 3 + 1 >> 2) / nBlocksSize) * nBlocksSize : nInLen * 3 + 1 >> 2;
-	  var taBytes = new Uint8Array(nOutLen);
-
-	  for (var nMod3, nMod4, nUint24 = 0, nOutIdx = 0, nInIdx = 0; nInIdx < nInLen; nInIdx++) {
-	    nMod4 = nInIdx & 3;
-	    nUint24 |= b64ToUint6(sB64Enc.charCodeAt(nInIdx)) << 18 - 6 * nMod4;
-	    if (nMod4 === 3 || nInLen - nInIdx === 1) {
-	      for (nMod3 = 0; nMod3 < 3 && nOutIdx < nOutLen; nMod3++, nOutIdx++) {
-	        taBytes[nOutIdx] = nUint24 >>> (16 >>> nMod3 & 24) & 255;
-	      }
-	      nUint24 = 0;
-	    }
-	  }
-	  return taBytes;
-	}
-
-	module.exports = base64DecodeToArray;
-
-/***/ },
-/* 287 */,
-/* 288 */,
-/* 289 */,
-/* 290 */,
-/* 291 */,
-/* 292 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -33925,16 +33746,16 @@
 	}
 
 /***/ },
-/* 293 */
+/* 286 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
-	var window = __webpack_require__(294);
-	var once = __webpack_require__(295);
-	var isFunction = __webpack_require__(296);
-	var parseHeaders = __webpack_require__(297);
-	var xtend = __webpack_require__(300);
+	var window = __webpack_require__(287);
+	var once = __webpack_require__(288);
+	var isFunction = __webpack_require__(289);
+	var parseHeaders = __webpack_require__(290);
+	var xtend = __webpack_require__(293);
 
 	module.exports = createXHR;
 	createXHR.XMLHttpRequest = window.XMLHttpRequest || noop;
@@ -34146,7 +33967,7 @@
 	function noop() {}
 
 /***/ },
-/* 294 */
+/* 287 */
 /***/ function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {"use strict";
@@ -34163,7 +33984,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
-/* 295 */
+/* 288 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -34189,7 +34010,7 @@
 	}
 
 /***/ },
-/* 296 */
+/* 289 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -34206,13 +34027,13 @@
 	};
 
 /***/ },
-/* 297 */
+/* 290 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var trim = __webpack_require__(298),
-	    forEach = __webpack_require__(299),
+	var trim = __webpack_require__(291),
+	    forEach = __webpack_require__(292),
 	    isArray = function isArray(arg) {
 	  return Object.prototype.toString.call(arg) === '[object Array]';
 	};
@@ -34240,7 +34061,7 @@
 	};
 
 /***/ },
-/* 298 */
+/* 291 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -34260,12 +34081,12 @@
 	};
 
 /***/ },
-/* 299 */
+/* 292 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var isFunction = __webpack_require__(296);
+	var isFunction = __webpack_require__(289);
 
 	module.exports = forEach;
 
@@ -34308,7 +34129,7 @@
 	}
 
 /***/ },
-/* 300 */
+/* 293 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -34334,15 +34155,672 @@
 	}
 
 /***/ },
+/* 294 */,
+/* 295 */,
+/* 296 */,
+/* 297 */,
+/* 298 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(module) {/* global XMLHttpRequest */
+	'use strict';
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+	var b64decode = __webpack_require__(299);
+	var PREFIXED = /^(@[\w-]+)\/(.*)$/;
+	var AUDIO = /\.(mp3|wav|ogg)/;
+
+	function merge(dest, src) {
+	  Object.keys(src).forEach(function (k) {
+	    dest[k] = src[k];
+	  });
+	  return dest;
+	}
+
+	/**
+	 * Create a sample loader
+	 *
+	 * @param {AudioContext} ac - the audio context
+	 * @param {HashMap} options - (Optional) options. The options can include:
+	 * @return {Function} a load function
+	 */
+	function loader(ac, options) {
+	  var opts = options || {};
+	  var fetch = opts.fetch || httpRequest;
+	  var prefixes = merge({}, PREFIXES);
+	  if (opts.sources) merge(prefixes, opts.sources);
+
+	  return function load(value) {
+	    if (value instanceof Promise) return value.then(function (v) {
+	      return load(v);
+	    });
+
+	    if (value instanceof ArrayBuffer) return loadArrayBuffer(ac, value);else if (Array.isArray(value)) return loadArrayData(value, load);else if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object') return loadObjectData(value, load);else if (typeof value === 'string') {
+	      if (/^data:audio/.test(value)) return decodeBase64(value, load);else if (/\.json$/.test(value)) return loadJsonFile(value, load, fetch);else if (PREFIXED.test(value)) return loadPrefix(prefixes, value, load, fetch);else if (AUDIO.test(value)) return loadAudioFile(value, load, fetch);else return Promise.resolve(value);
+	    } else return Promise.resolve(value);
+	  };
+	}
+
+	function loadArrayBuffer(ac, data) {
+	  if (!(data instanceof ArrayBuffer)) return null;
+	  return new Promise(function (done, reject) {
+	    ac.decodeAudioData(data, function (buffer) {
+	      done(buffer);
+	    }, function () {
+	      reject("Can't decode audio data (" + data.slice(0, 30) + '...)');
+	    });
+	  });
+	}
+
+	function loadArrayData(array, load) {
+	  return Promise.all(array.map(load));
+	}
+
+	function loadObjectData(source, load) {
+	  var dest = {};
+	  var promises = Object.keys(source).map(function (key) {
+	    return load(source[key]).then(function (result) {
+	      dest[key] = result;
+	    });
+	  });
+	  return Promise.all(promises).then(function () {
+	    return dest;
+	  });
+	}
+
+	function decodeBase64(data, load) {
+	  var payload = data.split(',')[1];
+	  return load(b64decode(payload).buffer);
+	}
+
+	function loadAudioFile(url, load, fetch) {
+	  return load(fetch(url, 'arraybuffer'));
+	}
+
+	function loadJsonFile(url, load, fetch) {
+	  return load(fetch(url, 'json'));
+	}
+
+	function loadPrefix(prefixes, value, load, fetch) {
+	  var m = PREFIXED.exec(value);
+	  var prefix = m[1];
+	  var path = m[2];
+	  var fn = prefixes[prefix];
+	  if (!fn) return Promise.reject('Unknown prefix: ' + prefix);else if (typeof fn === 'function') return fn(path, load, fetch);else return load(fn + '/' + path);
+	}
+
+	var PREFIXES = {
+	  '@midijs': function midijs(url, load, fetch) {
+	    return fetch(url, 'text').then(function (data) {
+	      var begin = data.indexOf('MIDI.Soundfont.');
+	      if (begin < 0) throw Error('Invalid MIDI.js Soundfont format');
+	      begin = data.indexOf('=', begin) + 2;
+	      var end = data.lastIndexOf(',');
+	      return JSON.parse(data.slice(begin, end) + '}');
+	    }).then(load);
+	  },
+	  '@soundfont': function soundfont(name, load) {
+	    var url = 'https://cdn.rawgit.com/gleitz/midi-js-Soundfonts/master/FluidR3_GM/' + name + '-ogg.js';
+	    return load('@midijs/' + url);
+	  },
+	  '@drum-machines': function drumMachines(name, load) {
+	    var path = name + '/' + name + '.json';
+	    var url = 'https://cdn.rawgit.com/danigb/smplr/master/packages/drum-machines/' + path;
+	    return load(url);
+	  }
+	};
+
+	/**
+	 * Wrap a GET request into a promise
+	 *
+	 * @private
+	 */
+	function httpRequest(url, type) {
+	  return new Promise(function (done, reject) {
+	    var req = new XMLHttpRequest();
+	    if (type) req.responseType = type;
+	    req.open('GET', url);
+
+	    req.onload = function () {
+	      if (req.status === 200) {
+	        done(req.response);
+	      } else {
+	        reject(Error(req.statusText));
+	      }
+	    };
+	    req.onerror = function () {
+	      reject(Error('Network Error'));
+	    };
+	    req.send();
+	  });
+	}
+
+	if (( false ? 'undefined' : _typeof(module)) === 'object' && module.exports) module.exports = loader;
+	if (typeof window !== 'undefined') window.loader = loader;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(180)(module)))
+
+/***/ },
+/* 299 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	function b64ToUint6(nChr) {
+	  return nChr > 64 && nChr < 91 ? nChr - 65 : nChr > 96 && nChr < 123 ? nChr - 71 : nChr > 47 && nChr < 58 ? nChr + 4 : nChr === 43 ? 62 : nChr === 47 ? 63 : 0;
+	}
+
+	// Decode Base64 to Uint8Array
+	// ---------------------------
+	function base64DecodeToArray(sBase64, nBlocksSize) {
+	  var sB64Enc = sBase64.replace(/[^A-Za-z0-9\+\/]/g, "");
+	  var nInLen = sB64Enc.length;
+	  var nOutLen = nBlocksSize ? Math.ceil((nInLen * 3 + 1 >> 2) / nBlocksSize) * nBlocksSize : nInLen * 3 + 1 >> 2;
+	  var taBytes = new Uint8Array(nOutLen);
+
+	  for (var nMod3, nMod4, nUint24 = 0, nOutIdx = 0, nInIdx = 0; nInIdx < nInLen; nInIdx++) {
+	    nMod4 = nInIdx & 3;
+	    nUint24 |= b64ToUint6(sB64Enc.charCodeAt(nInIdx)) << 18 - 6 * nMod4;
+	    if (nMod4 === 3 || nInLen - nInIdx === 1) {
+	      for (nMod3 = 0; nMod3 < 3 && nOutIdx < nOutLen; nMod3++, nOutIdx++) {
+	        taBytes[nOutIdx] = nUint24 >>> (16 >>> nMod3 & 24) & 255;
+	      }
+	      nUint24 = 0;
+	    }
+	  }
+	  return taBytes;
+	}
+
+	module.exports = base64DecodeToArray;
+
+/***/ },
+/* 300 */,
 /* 301 */,
 /* 302 */,
-/* 303 */,
-/* 304 */,
-/* 305 */,
-/* 306 */,
-/* 307 */,
-/* 308 */,
+/* 303 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(module) {'use strict';
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+	var loadBank = __webpack_require__(304);
+	var oscillatorPlayer = __webpack_require__(311);
+	var buffersPlayer = __webpack_require__(313);
+
+	/**
+	 * Create a Soundfont object
+	 *
+	 * @param {AudioContext} context - the [audio context](https://developer.mozilla.org/en/docs/Web/API/AudioContext)
+	 * @return {Soundfont} a soundfont object
+	 */
+	function Soundfont(ctx, nameToUrl) {
+	  if (!(this instanceof Soundfont)) return new Soundfont(ctx);
+
+	  this.nameToUrl = nameToUrl || Soundfont.nameToUrl || gleitzUrl;
+	  this.ctx = ctx;
+	  this.instruments = {};
+	  this.promises = [];
+	}
+
+	Soundfont.prototype.instrument = function (name, options) {
+	  var ctx = this.ctx;
+	  name = name || 'default';
+	  if (name in this.instruments) return this.instruments[name];
+	  var inst = { name: name, play: oscillatorPlayer(ctx, options) };
+	  this.instruments[name] = inst;
+	  var promise = loadBank(ctx, this.nameToUrl(name)).then(function (buffers) {
+	    inst.play = buffersPlayer(ctx, buffers, options);
+	    return inst;
+	  });
+	  this.promises.push(promise);
+	  inst.onready = function (cb) {
+	    promise.then(cb);
+	  };
+	  return inst;
+	};
+
+	Soundfont.loadBuffers = function (ctx, name) {
+	  var nameToUrl = Soundfont.nameToUrl || gleitzUrl;
+	  return loadBank(ctx, nameToUrl(name));
+	};
+
+	/*
+	 * Given an instrument name returns a URL to to the Benjamin Gleitzman's
+	 * package of [pre-rendered sound fonts](https://github.com/gleitz/midi-js-soundfonts)
+	 *
+	 * @param {String} name - instrument name
+	 * @returns {String} the Soundfont file url
+	 */
+	function gleitzUrl(name) {
+	  return 'https://cdn.rawgit.com/gleitz/midi-js-Soundfonts/master/FluidR3_GM/' + name + '-ogg.js';
+	}
+
+	if (( false ? 'undefined' : _typeof(module)) === 'object' && module.exports) module.exports = Soundfont;
+	if (typeof window !== 'undefined') window.Soundfont = Soundfont;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(180)(module)))
+
+/***/ },
+/* 304 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var midi = __webpack_require__(305);
+	var decodeBuffer = __webpack_require__(309);
+
+	/**
+	 * Load a soundfont bank
+	 *
+	 * @param {AudioContext} ctx - the audio context object
+	 * @param {String} url - the url of the js file
+	 * @param {Function} get - (Optional) given a url return a promise with the contents
+	 * @param {Function} parse - (Optinal) given a js file return JSON object
+	 */
+	module.exports = function (ctx, url, get, parse) {
+	  get = get || getContent;
+	  parse = parse || parseJavascript;
+	  return Promise.resolve(url).then(get).then(parse).then(function (data) {
+	    return { ctx: ctx, data: data, buffers: {} };
+	  }).then(decodeBank).then(function (bank) {
+	    return bank.buffers;
+	  });
+	};
+
+	function getContent(url) {
+	  return new Promise(function (done, reject) {
+	    var req = new window.XMLHttpRequest();
+	    req.open('GET', url);
+
+	    req.onload = function () {
+	      if (req.status === 200) {
+	        done(req.response);
+	      } else {
+	        reject(Error(req.statusText));
+	      }
+	    };
+	    req.onerror = function () {
+	      reject(Error('Network Error'));
+	    };
+	    req.send();
+	  });
+	}
+
+	/**
+	 *  Parse the SoundFont data and return a JSON object
+	 *  (SoundFont data are .js files wrapping json data)
+	 *
+	 * @param {String} data - the SoundFont js file content
+	 * @return {JSON} the parsed data as JSON object
+	 * @api private
+	 */
+	function parseJavascript(data) {
+	  var begin = data.indexOf('MIDI.Soundfont.');
+	  begin = data.indexOf('=', begin) + 2;
+	  var end = data.lastIndexOf(',');
+	  return JSON.parse(data.slice(begin, end) + '}');
+	}
+
+	/*
+	 * Decode a bank
+	 * @param {Object} bank - the bank object
+	 * @return {Promise} a promise that resolves to the bank with the buffers decoded
+	 * @api private
+	 */
+	function decodeBank(bank) {
+	  var promises = Object.keys(bank.data).map(function (note) {
+	    return decodeBuffer(bank.ctx, bank.data[note]).then(function (buffer) {
+	      bank.buffers[midi(note)] = buffer;
+	    });
+	  });
+
+	  return Promise.all(promises).then(function () {
+	    return bank;
+	  });
+	}
+
+/***/ },
+/* 305 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(module) {'use strict';
+
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+	var parse = __webpack_require__(306);
+
+	/**
+	 * Get the midi number of a note
+	 *
+	 * If the argument passed to this function is a valid midi number, it returns it
+	 *
+	 * The note can be an string in scientific notation or
+	 * [array pitch notation](https://github.com/danigb/music.array.notation)
+	 *
+	 * @name midi
+	 * @function
+	 * @param {String|Array|Integer} note - the note in string or array notation.
+	 * If the parameter is a valid midi number it return it as it.
+	 * @return {Integer} the midi number
+	 *
+	 * @example
+	 * var midi = require('note-midi')
+	 * midi('A4') // => 69
+	 * midi('a3') // => 57
+	 * midi([0, 2]) // => 36 (C2 in array notation)
+	 * midi(60) // => 60
+	 * midi('C') // => null (pitch classes don't have midi number)
+	 */
+	function midi(note) {
+	  if ((typeof note === 'number' || typeof note === 'string') && note > 0 && note < 128) return +note;
+	  var p = Array.isArray(note) ? note : parse(note);
+	  if (!p || p.length < 2) return null;
+	  return p[0] * 7 + p[1] * 12 + 12;
+	}
+
+	if (( false ? 'undefined' : _typeof(module)) === 'object' && module.exports) module.exports = midi;
+	if (typeof window !== 'undefined') window.midi = midi;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(180)(module)))
+
+/***/ },
+/* 306 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var memoize = __webpack_require__(307);
+	var R = __webpack_require__(308);
+	var BASES = { C: [0, 0], D: [2, -1], E: [4, -2], F: [-1, 1], G: [1, 0], A: [3, -1], B: [5, -2] };
+
+	/**
+	 * Get a pitch in [array notation]()
+	 * from a string in [scientific pitch notation](https://en.wikipedia.org/wiki/Scientific_pitch_notation)
+	 *
+	 * The string to parse must be in the form of: `letter[accidentals][octave]`
+	 * The accidentals can be up to four # (sharp) or b (flat) or two x (double sharps)
+	 *
+	 * This function is cached for better performance.
+	 *
+	 * @name note.parse
+	 * @function
+	 * @param {String} str - the string to parse
+	 * @return {Array} the note in array notation or null if not valid note
+	 *
+	 * @example
+	 * var parse = require('music-notation/note/parse')
+	 * parse('C') // => [ 0 ]
+	 * parse('c#') // => [ 8 ]
+	 * parse('c##') // => [ 16 ]
+	 * parse('Cx') // => [ 16 ] (double sharp)
+	 * parse('Cb') // => [ -6 ]
+	 * parse('db') // => [ -4 ]
+	 * parse('G4') // => [ 2, 3, null ]
+	 * parse('c#3') // => [ 8, -1, null ]
+	 */
+	module.exports = memoize(function (str) {
+	  var m = R.exec(str);
+	  if (!m || m[5]) return null;
+
+	  var base = BASES[m[1].toUpperCase()];
+	  var alt = m[2].replace(/x/g, '##').length;
+	  if (m[2][0] === 'b') alt *= -1;
+	  var fifths = base[0] + 7 * alt;
+	  if (!m[3]) return [fifths];
+	  var oct = +m[3] + base[1] - 4 * alt;
+	  var dur = m[4] ? +m[4].substring(1) : null;
+	  return [fifths, oct, dur];
+	});
+
+/***/ },
+/* 307 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	/**
+	 * A simple and fast memoization function
+	 *
+	 * It helps creating functions that convert from string to pitch in array format.
+	 * Basically it does two things:
+	 * - ensure the function only receives strings
+	 * - memoize the result
+	 *
+	 * @name memoize
+	 * @function
+	 * @private
+	 */
+
+	module.exports = function (fn) {
+	  var cache = {};
+	  return function (str) {
+	    if (typeof str !== 'string') return null;
+	    return str in cache ? cache[str] : cache[str] = fn(str);
+	  };
+	};
+
+/***/ },
+/* 308 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	/**
+	 * A regex for matching note strings in scientific notation.
+	 *
+	 * The note string should have the form `letter[accidentals][octave][/duration]`
+	 * where:
+	 *
+	 * - letter: (Required) is a letter from A to G either upper or lower case
+	 * - accidentals: (Optional) can be one or more `b` (flats), `#` (sharps) or `x` (double sharps).
+	 * They can NOT be mixed.
+	 * - octave: (Optional) a positive or negative integer
+	 * - duration: (Optional) anything follows a slash `/` is considered to be the duration
+	 * - element: (Optional) additionally anything after the duration is considered to
+	 * be the element name (for example: 'C2 dorian')
+	 *
+	 * @name note.regex
+	 * @example
+	 * var R = require('music-notation/note/regex')
+	 * R.exec('c#4') // => ['c#4', 'c', '#', '4', '', '']
+	 */
+
+	module.exports = /^([a-gA-G])(#{1,}|b{1,}|x{1,}|)(-?\d*)(\/\d+|)\s*(.*)\s*$/;
+
+/***/ },
 /* 309 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var base64DecodeToArray = __webpack_require__(310);
+
+	/**
+	 * Given a base64 encoded audio data, return a prmomise with an audio buffer
+	 *
+	 * @param {AudioContext} context - the [audio context](https://developer.mozilla.org/en/docs/Web/API/AudioContext)
+	 * @param {String} data - the base64 encoded audio data
+	 * @return {Promise} a promise that resolves to an [audio buffer](https://developer.mozilla.org/en-US/docs/Web/API/AudioBuffer)
+	 * @api private
+	 */
+	module.exports = function (context, data) {
+	  return new Promise(function (done, reject) {
+	    var decodedData = base64DecodeToArray(data.split(',')[1]).buffer;
+	    context.decodeAudioData(decodedData, function (buffer) {
+	      done(buffer);
+	    }, function (e) {
+	      reject('DecodeAudioData error', e);
+	    });
+	  });
+	};
+
+/***/ },
+/* 310 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	function b64ToUint6(nChr) {
+	  return nChr > 64 && nChr < 91 ? nChr - 65 : nChr > 96 && nChr < 123 ? nChr - 71 : nChr > 47 && nChr < 58 ? nChr + 4 : nChr === 43 ? 62 : nChr === 47 ? 63 : 0;
+	}
+
+	// Decode Base64 to Uint8Array
+	// ---------------------------
+	function base64DecodeToArray(sBase64, nBlocksSize) {
+	  var sB64Enc = sBase64.replace(/[^A-Za-z0-9\+\/]/g, "");
+	  var nInLen = sB64Enc.length;
+	  var nOutLen = nBlocksSize ? Math.ceil((nInLen * 3 + 1 >> 2) / nBlocksSize) * nBlocksSize : nInLen * 3 + 1 >> 2;
+	  var taBytes = new Uint8Array(nOutLen);
+
+	  for (var nMod3, nMod4, nUint24 = 0, nOutIdx = 0, nInIdx = 0; nInIdx < nInLen; nInIdx++) {
+	    nMod4 = nInIdx & 3;
+	    nUint24 |= b64ToUint6(sB64Enc.charCodeAt(nInIdx)) << 18 - 6 * nMod4;
+	    if (nMod4 === 3 || nInLen - nInIdx === 1) {
+	      for (nMod3 = 0; nMod3 < 3 && nOutIdx < nOutLen; nMod3++, nOutIdx++) {
+	        taBytes[nOutIdx] = nUint24 >>> (16 >>> nMod3 & 24) & 255;
+	      }
+	      nUint24 = 0;
+	    }
+	  }
+	  return taBytes;
+	}
+
+	module.exports = base64DecodeToArray;
+
+/***/ },
+/* 311 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var freq = __webpack_require__(312)(440);
+	var midi = __webpack_require__(305);
+
+	/**
+	 * Returns a function that plays an oscillator
+	 *
+	 * @param {AudioContext} ac - the audio context
+	 * @param {Hash} options - (Optional) a hash of options:
+	 * - vcoType: the oscillator type (default: 'sine')
+	 * - gain: the output gain value (default: 0.2)
+	 * - destination: the player destination (default: ac.destination)
+	 */
+	module.exports = function (ctx, options) {
+	  options = options || {};
+	  var destination = options.destination || ctx.destination;
+	  var vcoType = options.vcoType || 'sine';
+	  var gain = options.gain || 0.2;
+
+	  return function (note, time, duration) {
+	    var f = freq(midi(note));
+	    if (!f) return;
+
+	    duration = duration || 0.2;
+
+	    var vco = ctx.createOscillator();
+	    vco.type = vcoType;
+	    vco.frequency.value = f;
+
+	    /* VCA */
+	    var vca = ctx.createGain();
+	    vca.gain.value = gain;
+
+	    /* Connections */
+	    vco.connect(vca);
+	    vca.connect(destination);
+
+	    vco.start(time);
+	    if (duration > 0) vco.stop(time + duration);
+	    return vco;
+	  };
+	};
+
+/***/ },
+/* 312 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	/**
+	 * Get the pitch frequency in herzs (with custom concert tuning) from a midi number
+	 *
+	 * This function is currified so it can be partially applied (see examples)
+	 *
+	 * @name midi.freq
+	 * @function
+	 * @param {Float} tuning - the frequency of A4 (null means 440)
+	 * @param {Integer} midi - the midi number
+	 * @return {Float} the frequency of the note
+	 *
+	 * @example
+	 * var freq = require('midi-freq')
+	 * // 69 midi is A4
+	 * freq(null, 69) // => 440
+	 * freq(444, 69) // => 444
+	 *
+	 * @example
+	 * // partially applied
+	 * var freq = require('midi-freq')(440)
+	 * freq(69) // => 440
+	 */
+	module.exports = function freq(tuning, midi) {
+	  tuning = tuning || 440;
+	  if (arguments.length > 1) return freq(tuning)(midi);
+
+	  return function (m) {
+	    return m > 0 && m < 128 ? Math.pow(2, (m - 69) / 12) * tuning : null;
+	  };
+	};
+
+/***/ },
+/* 313 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var midi = __webpack_require__(305);
+
+	/**
+	 * Create a soundfont buffers player
+	 *
+	 * @param {AudioContext} ac - the audio context
+	 * @param {Hash} buffers - a midi number to audio buffer hash map
+	 * @param {Hash} options - (Optional) a hash of options:
+	 * - gain: the output gain (default: 2)
+	 * - destination: the destination of the player (default: `ac.destination`)
+	 */
+	module.exports = function (ctx, buffers, options) {
+	  options = options || {};
+	  var gain = options.gain || 2;
+	  var destination = options.destination || ctx.destination;
+
+	  return function (note, time, duration) {
+	    var m = note > 0 && note < 128 ? note : midi(note);
+	    var buffer = buffers[m];
+	    if (!buffer) return;
+	    var source = ctx.createBufferSource();
+	    source.buffer = buffer;
+
+	    /* VCA */
+	    var vca = ctx.createGain();
+	    vca.gain.value = gain;
+	    source.connect(vca);
+	    vca.connect(destination);
+
+	    source.start(time);
+	    if (duration > 0) source.stop(time + duration);
+	    return source;
+	  };
+	};
+
+/***/ },
+/* 314 */,
+/* 315 */,
+/* 316 */,
+/* 317 */,
+/* 318 */,
+/* 319 */,
+/* 320 */,
+/* 321 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_RESULT__;"use strict";
@@ -34842,7 +35320,7 @@
 	};
 
 /***/ },
-/* 310 */
+/* 322 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;'use strict';var _typeof=typeof Symbol==="function"&&typeof Symbol.iterator==="symbol"?function(obj){return typeof obj;}:function(obj){return obj&&typeof Symbol==="function"&&obj.constructor===Symbol?"symbol":typeof obj;};(function(root,factory){if(true){ // AMD. Register as an anonymous module unless amdModuleId is set

@@ -7,7 +7,6 @@ import MatchView from './components/match_view';
 import EventList from './components/event_list';
 
 import SoundManager from './audio/sound_manager';
-import Sine from './audio/sound_generators/sine';
 import WeirdMaleScreams from './audio/sound_generators/weird_male_screams';
 import Theremin from './audio/sound_generators/theremin';
 
@@ -26,7 +25,7 @@ class Application extends React.Component {
         };
         
         this._soundManager = new SoundManager([
-            Sine
+            Theremin
         ]);
     }
     

@@ -9,7 +9,8 @@ import MatchOptions from './components/options/match_options';
 
 import * as audioCtx from './audio/audio_context';
 import SoundManager from './audio/sound_manager';
-import Sine from './audio/sound_generators/sine';
+import Sine from './audio/sound_generators/chordophone_sine';
+import Piano from './audio/sound_generators/chordophone_piano';
 
 import example_matches from './data/example_matches';
 
@@ -46,7 +47,7 @@ class Application extends React.Component {
         };
 
         this._soundManager = new SoundManager([
-            Sine
+            Piano
         ]);
     }
 

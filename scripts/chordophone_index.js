@@ -23,19 +23,23 @@ webpackJsonp([0],{
 
 	var _match_options2 = _interopRequireDefault(_match_options);
 
-	var _audio_context = __webpack_require__(282);
+	var _audio_context = __webpack_require__(295);
 
 	var audioCtx = _interopRequireWildcard(_audio_context);
 
-	var _sound_manager = __webpack_require__(284);
+	var _sound_manager = __webpack_require__(297);
 
 	var _sound_manager2 = _interopRequireDefault(_sound_manager);
 
-	var _sine = __webpack_require__(287);
+	var _chordophone_sine = __webpack_require__(300);
 
-	var _sine2 = _interopRequireDefault(_sine);
+	var _chordophone_sine2 = _interopRequireDefault(_chordophone_sine);
 
-	var _example_matches = __webpack_require__(311);
+	var _chordophone_piano = __webpack_require__(302);
+
+	var _chordophone_piano2 = _interopRequireDefault(_chordophone_piano);
+
+	var _example_matches = __webpack_require__(282);
 
 	var _example_matches2 = _interopRequireDefault(_example_matches);
 
@@ -107,7 +111,7 @@ webpackJsonp([0],{
 	            stream: null
 	        };
 
-	        _this2._soundManager = new _sound_manager2.default([_sine2.default]);
+	        _this2._soundManager = new _sound_manager2.default([_chordophone_piano2.default]);
 	        return _this2;
 	    }
 
@@ -431,7 +435,7 @@ webpackJsonp([0],{
 
 	var _OrbitControls2 = _interopRequireDefault(_OrbitControls);
 
-	var _weapons = __webpack_require__(312);
+	var _weapons = __webpack_require__(17);
 
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -3260,6 +3264,66 @@ webpackJsonp([0],{
 
 /***/ },
 
+/***/ 17:
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var instance = void 0;
+
+	var normalizeWeaponName = function normalizeWeaponName(name) {
+	    return name.replace(/\s/g, '-').toLowerCase();
+	};
+
+	/**
+	 * Map of weapon ids to weapon metadata.
+	 */
+
+	var WeaponsTable = function () {
+	    function WeaponsTable() {
+	        _classCallCheck(this, WeaponsTable);
+
+	        var weaponsData = __webpack_require__(18);
+
+	        this._data = weaponsData.reduce(function (map, data) {
+	            map.set(+data.id, Object.assign({}, data, {
+	                name: normalizeWeaponName(data.name),
+	                displayName: data.name
+	            }));
+	            return map;
+	        }, new Map());
+	    }
+
+	    _createClass(WeaponsTable, [{
+	        key: 'get',
+	        value: function get(id) {
+	            return this._data.get(+id);
+	        }
+	    }]);
+
+	    return WeaponsTable;
+	}();
+
+	/**
+	 * Get an instance of the weapons table that maps weapon id to weapon data.
+	 */
+
+
+	var getWeaponsTable = exports.getWeaponsTable = function getWeaponsTable() {
+	    instance = instance || new WeaponsTable();
+	    return instance;
+	};
+
+/***/ },
+
 /***/ 18:
 /***/ function(module, exports) {
 
@@ -3958,7 +4022,7 @@ webpackJsonp([0],{
 
 	var _moment2 = _interopRequireDefault(_moment);
 
-	var _weapons = __webpack_require__(312);
+	var _weapons = __webpack_require__(17);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4240,7 +4304,7 @@ webpackJsonp([0],{
 
 	var _options_pane2 = _interopRequireDefault(_options_pane);
 
-	var _example_matches = __webpack_require__(311);
+	var _example_matches = __webpack_require__(282);
 
 	var _example_matches2 = _interopRequireDefault(_example_matches);
 
@@ -4366,6 +4430,239 @@ webpackJsonp([0],{
 /***/ 282:
 /***/ function(module, exports, __webpack_require__) {
 
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _match = __webpack_require__(283);
+
+	var match = _interopRequireWildcard(_match);
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+	var data = __webpack_require__(294);
+
+	var matches = Object.keys(data).reduce(function (map, id) {
+	    return map.concat({
+	        id: id,
+	        name: data[id].name,
+	        match: match.createFromFile(id, data[id].file)
+	    });
+	}, []);
+
+	exports.default = matches;
+
+/***/ },
+
+/***/ 283:
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.createFromFile = exports.createFromData = exports.Match = undefined;
+
+	var _DeathStream = __webpack_require__(284);
+
+	var death_stream = _interopRequireWildcard(_DeathStream);
+
+	var _xhr = __webpack_require__(286);
+
+	var _xhr2 = _interopRequireDefault(_xhr);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	/**
+	 * Halo 5 match
+	 */
+
+	var Match = exports.Match = function Match(id, events) {
+	    _classCallCheck(this, Match);
+
+	    this.id = id;
+	    this.events = events;
+	    this.stream = death_stream.createFromJson(events);
+	};
+
+	/**
+	 * Create a match.
+	 */
+
+
+	var createFromData = exports.createFromData = function createFromData(id, data) {
+	    return new Match(id, data.GameEvents);
+	};
+
+	/**
+	 * Create a match from a file.
+	 */
+	var createFromFile = exports.createFromFile = function createFromFile(id, path) {
+	    return new Promise(function (resolve, reject) {
+	        (0, _xhr2.default)(path, {}, function (error, response, data) {
+	            if (error || response.statusCode !== 200) return reject("could not load file: " + path);
+	            return resolve(JSON.parse(data));
+	        });
+	    }).then(function (data) {
+	        return createFromData(id, data);
+	    });
+	};
+
+/***/ },
+
+/***/ 284:
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.createFromJson = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _weapons = __webpack_require__(17);
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var THREE = __webpack_require__(3);
+	var createTree = __webpack_require__(285);
+	var moment = __webpack_require__(179);
+
+
+	var createTreeFromEvents = function createTreeFromEvents(events) {
+	    return events.reduce(function (tree, event) {
+	        return tree.insert(event.TimeSinceStart.asMilliseconds(), event);
+	    }, createTree());
+	};
+
+	var createMapFromEvents = function createMapFromEvents(events) {
+	    return events.reduce(function (map, event) {
+	        map.set(event.Id, event);
+	        return map;
+	    }, new Map());
+	};
+
+	/**
+	 * Stream of death events.
+	 */
+
+	var DeathStream = function () {
+	    function DeathStream(eventsData) {
+	        _classCallCheck(this, DeathStream);
+
+	        var weapons = (0, _weapons.getWeaponsTable)();
+
+	        var duration = eventsData.length ? eventsData[eventsData.length - 1].TimeSinceStart.asMilliseconds() : 0;
+
+	        var maxX = 0,
+	            maxY = 0,
+	            maxZ = 0;
+	        var minLength = Infinity,
+	            maxLength = 0;
+
+	        var events = eventsData.map(function (eventData, i) {
+	            var isMelee = eventData.IsGroundPound || eventData.IsMelee || eventData.IsShoulderBash;
+
+	            var KillerWorldLocation = new THREE.Vector3().copy(eventData.KillerWorldLocation);
+	            var VictimWorldLocation = new THREE.Vector3().copy(eventData.VictimWorldLocation);
+
+	            var KillVector = new THREE.Vector3().subVectors(KillerWorldLocation, VictimWorldLocation);
+
+	            maxX = Math.max(maxX, Math.abs(KillerWorldLocation.x), Math.abs(VictimWorldLocation.x));
+	            maxY = Math.max(maxY, Math.abs(KillerWorldLocation.y), Math.abs(VictimWorldLocation.y));
+	            maxZ = Math.max(maxZ, Math.abs(KillerWorldLocation.z), Math.abs(VictimWorldLocation.z));
+
+	            var weapon = weapons.get(eventData.KillerWeaponStockId);
+	            if (!isMelee && weapon && weapon.Type !== 'Grenade') {
+	                minLength = Math.min(minLength, KillVector.length());
+	                maxLength = Math.max(maxLength, KillVector.length());
+	            }
+
+	            return Object.assign({}, eventData, {
+	                Id: '' + i,
+	                MatchProgress: (eventData.TimeSinceStart.asMilliseconds() + 1.0) / duration,
+	                KillVector: KillVector,
+	                ShotLine: new THREE.Line3(KillerWorldLocation, VictimWorldLocation),
+	                KillerWorldLocation: KillerWorldLocation,
+	                VictimWorldLocation: VictimWorldLocation,
+	                KillVectorLength: KillVector.length(),
+	                IsMelee: isMelee
+	            });
+	        });
+
+	        this.duration = duration;
+	        this.times = createTreeFromEvents(events);
+	        this._map = createMapFromEvents(events);
+
+	        this.bounds = { x: maxX, y: maxY, z: maxZ };
+
+	        this.minLength = minLength;
+	        this.maxLength = maxLength;
+	    }
+
+	    _createClass(DeathStream, [{
+	        key: "forEach",
+	        value: function forEach(f) {
+	            this.times.forEach(function (_, x) {
+	                f(x);return false;
+	            });
+	        }
+	    }]);
+
+	    return DeathStream;
+	}();
+
+	/**
+	 * Create a `DeathStream` from json.
+	 */
+
+
+	var createFromJson = exports.createFromJson = function createFromJson(events) {
+	    var deaths = events.filter(function (x) {
+	        return x && x.EventName === "Death";
+	    });
+
+	    return new DeathStream(deaths.map(function (eventData) {
+	        return Object.assign({}, eventData, {
+	            TimeSinceStart: moment.duration(eventData.TimeSinceStart)
+	        });
+	    }));
+	};
+
+/***/ },
+
+/***/ 294:
+/***/ function(module, exports) {
+
+	module.exports = {
+		"5b27a620-cebf-40a3-b09c-a37f15fd135f": {
+			"name": "test1",
+			"file": "./data/5b27a620-cebf-40a3-b09c-a37f15fd135f.json"
+		},
+		"02156eed-70d3-4e47-a506-3b3d5513c29b": {
+			"name": "Tyrant - Slayer",
+			"file": "./data/02156eed-70d3-4e47-a506-3b3d5513c29b.json"
+		},
+		"7828013e-0d76-4d88-a9da-7a5fccbf5d39": {
+			"name": "Warzone - Skirmish at Darkstar",
+			"file": "./data/7828013e-0d76-4d88-a9da-7a5fccbf5d39.json"
+		}
+	};
+
+/***/ },
+
+/***/ 295:
+/***/ function(module, exports, __webpack_require__) {
+
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
@@ -4373,7 +4670,7 @@ webpackJsonp([0],{
 	});
 	exports.init = undefined;
 
-	var _reverb = __webpack_require__(283);
+	var _reverb = __webpack_require__(296);
 
 	var _reverb2 = _interopRequireDefault(_reverb);
 
@@ -4407,7 +4704,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 283:
+/***/ 296:
 /***/ function(module, exports) {
 
 	'use strict';
@@ -4580,7 +4877,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 284:
+/***/ 297:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4591,11 +4888,11 @@ webpackJsonp([0],{
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _audio_context = __webpack_require__(282);
+	var _audio_context = __webpack_require__(295);
 
 	var _audio_context2 = _interopRequireDefault(_audio_context);
 
-	var _audioLoader = __webpack_require__(285);
+	var _audioLoader = __webpack_require__(298);
 
 	var _audioLoader2 = _interopRequireDefault(_audioLoader);
 
@@ -4776,7 +5073,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 287:
+/***/ 300:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4785,7 +5082,7 @@ webpackJsonp([0],{
 	    value: true
 	});
 
-	var _weapon = __webpack_require__(288);
+	var _weapon = __webpack_require__(301);
 
 	var _weapon2 = _interopRequireDefault(_weapon);
 
@@ -4875,7 +5172,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 288:
+/***/ 301:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4884,7 +5181,7 @@ webpackJsonp([0],{
 	    value: true
 	});
 
-	var _weapons = __webpack_require__(312);
+	var _weapons = __webpack_require__(17);
 
 	/**
 	 * Helper that adds weapon info to generator.
@@ -4899,27 +5196,7 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 301:
-/***/ function(module, exports) {
-
-	module.exports = {
-		"5b27a620-cebf-40a3-b09c-a37f15fd135f": {
-			"name": "test1",
-			"file": "./data/5b27a620-cebf-40a3-b09c-a37f15fd135f.json"
-		},
-		"02156eed-70d3-4e47-a506-3b3d5513c29b": {
-			"name": "Tyrant - Slayer",
-			"file": "./data/02156eed-70d3-4e47-a506-3b3d5513c29b.json"
-		},
-		"7828013e-0d76-4d88-a9da-7a5fccbf5d39": {
-			"name": "Warzone - Skirmish at Darkstar",
-			"file": "./data/7828013e-0d76-4d88-a9da-7a5fccbf5d39.json"
-		}
-	};
-
-/***/ },
-
-/***/ 311:
+/***/ 302:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4928,267 +5205,87 @@ webpackJsonp([0],{
 	    value: true
 	});
 
-	var _match = __webpack_require__(313);
+	var _weapon = __webpack_require__(301);
 
-	var match = _interopRequireWildcard(_match);
+	var _weapon2 = _interopRequireDefault(_weapon);
 
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	var _audio_context = __webpack_require__(295);
 
-	var data = __webpack_require__(301);
-
-	var matches = Object.keys(data).reduce(function (map, id) {
-	    return map.concat({
-	        id: id,
-	        name: data[id].name,
-	        match: match.createFromFile(id, data[id].file)
-	    });
-	}, []);
-
-	exports.default = matches;
-
-/***/ },
-
-/***/ 312:
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var instance = void 0;
-
-	var normalizeWeaponName = function normalizeWeaponName(name) {
-	    return name.replace(/\s/g, '-').toLowerCase();
-	};
-
-	/**
-	 * Map of weapon ids to weapon metadata.
-	 */
-
-	var WeaponsTable = function () {
-	    function WeaponsTable() {
-	        _classCallCheck(this, WeaponsTable);
-
-	        var weaponsData = __webpack_require__(18);
-
-	        this._data = weaponsData.reduce(function (map, data) {
-	            map.set(+data.id, Object.assign({}, data, {
-	                name: normalizeWeaponName(data.name),
-	                displayName: data.name
-	            }));
-	            return map;
-	        }, new Map());
-	    }
-
-	    _createClass(WeaponsTable, [{
-	        key: 'get',
-	        value: function get(id) {
-	            return this._data.get(+id);
-	        }
-	    }]);
-
-	    return WeaponsTable;
-	}();
-
-	/**
-	 * Get an instance of the weapons table that maps weapon id to weapon data.
-	 */
-
-
-	var getWeaponsTable = exports.getWeaponsTable = function getWeaponsTable() {
-	    instance = instance || new WeaponsTable();
-	    return instance;
-	};
-
-/***/ },
-
-/***/ 313:
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	exports.createFromFile = exports.createFromData = exports.Match = undefined;
-
-	var _DeathStream = __webpack_require__(314);
-
-	var death_stream = _interopRequireWildcard(_DeathStream);
-
-	var _xhr = __webpack_require__(293);
-
-	var _xhr2 = _interopRequireDefault(_xhr);
+	var _audio_context2 = _interopRequireDefault(_audio_context);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+	var Soundfont = __webpack_require__(303);
 
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	var min = 100;
+	var max = 1000;
 
-	/**
-	 * Halo 5 match
-	 */
+	var maxGain = 0.2;
 
-	var Match = exports.Match = function Match(id, events) {
-	    _classCallCheck(this, Match);
+	var duration = 2;
 
-	    this.id = id;
-	    this.events = events;
-	    this.stream = death_stream.createFromJson(events);
-	};
+	var notes = ['A0', 'Bb0', 'B0', 'C1', 'Db1', 'D1', 'Eb1', 'E1', 'F1', 'Gb1', 'G1', 'Ab1', 'A1', 'Bb1', 'B1', 'C2', 'Db2', 'D2', 'Eb2', 'E2', 'F2', 'Gb2', 'G2', 'Ab2', 'A2', 'Bb2', 'B2', 'C3', 'Db3', 'D3', 'Eb3', 'E3', 'F3', 'Gb3', 'G3', 'Ab3', 'A3', 'Bb3', 'B3', 'C4', 'Db4', 'D4', 'Eb4', 'E4', 'F4', 'Gb4', 'G4', 'Ab4', 'A4', 'Bb4', 'B4', 'C5', 'Db5', 'D5', 'Eb5', 'E5', 'F5', 'Gb5', 'G5', 'Ab5', 'A5', 'Bb5', 'B5', 'C6', 'Db6', 'D6', 'Eb6', 'E6', 'F6', 'Gb6', 'G6', 'Ab6', 'A6', 'Bb6', 'B6', 'C7', 'Db7', 'D7', 'Eb7', 'E7', 'F7', 'Gb7', 'G7', 'Ab7', 'A7', 'Bb7', 'B7', 'C8'];
 
-	/**
-	 * Create a match.
-	 */
-
-
-	var createFromData = exports.createFromData = function createFromData(id, data) {
-	    return new Match(id, data.GameEvents);
-	};
-
-	/**
-	 * Create a match from a file.
-	 */
-	var createFromFile = exports.createFromFile = function createFromFile(id, path) {
+	var instrument = _audio_context2.default.then(function (ctx) {
+	    var font = new Soundfont(ctx);
+	    var instrument = font.instrument('choir_aahs');
 	    return new Promise(function (resolve, reject) {
-	        (0, _xhr2.default)(path, {}, function (error, response, data) {
-	            if (error || response.statusCode !== 200) return reject("could not load file: " + path);
-	            return resolve(JSON.parse(data));
-	        });
-	    }).then(function (data) {
-	        return createFromData(id, data);
+	        return instrument.onready(resolve);
 	    });
-	};
-
-/***/ },
-
-/***/ 314:
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
 	});
-	exports.createFromJson = undefined;
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _weapons = __webpack_require__(312);
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var THREE = __webpack_require__(3);
-	var createTree = __webpack_require__(292);
-	var moment = __webpack_require__(179);
-
-
-	var createTreeFromEvents = function createTreeFromEvents(events) {
-	    return events.reduce(function (tree, event) {
-	        return tree.insert(event.TimeSinceStart.asMilliseconds(), event);
-	    }, createTree());
-	};
-
-	var createMapFromEvents = function createMapFromEvents(events) {
-	    return events.reduce(function (map, event) {
-	        map.set(event.Id, event);
-	        return map;
-	    }, new Map());
-	};
 
 	/**
-	 * Stream of death events.
+	 * Calculate the frequency for an event.
 	 */
-
-	var DeathStream = function () {
-	    function DeathStream(eventsData) {
-	        _classCallCheck(this, DeathStream);
-
-	        var weapons = (0, _weapons.getWeaponsTable)();
-
-	        var duration = eventsData.length ? eventsData[eventsData.length - 1].TimeSinceStart.asMilliseconds() : 0;
-
-	        var maxX = 0,
-	            maxY = 0,
-	            maxZ = 0;
-	        var minLength = Infinity,
-	            maxLength = 0;
-
-	        var events = eventsData.map(function (eventData, i) {
-	            var isMelee = eventData.IsGroundPound || eventData.IsMelee || eventData.IsShoulderBash;
-
-	            var KillerWorldLocation = new THREE.Vector3().copy(eventData.KillerWorldLocation);
-	            var VictimWorldLocation = new THREE.Vector3().copy(eventData.VictimWorldLocation);
-
-	            var KillVector = new THREE.Vector3().subVectors(KillerWorldLocation, VictimWorldLocation);
-
-	            maxX = Math.max(maxX, Math.abs(KillerWorldLocation.x), Math.abs(VictimWorldLocation.x));
-	            maxY = Math.max(maxY, Math.abs(KillerWorldLocation.y), Math.abs(VictimWorldLocation.y));
-	            maxZ = Math.max(maxZ, Math.abs(KillerWorldLocation.z), Math.abs(VictimWorldLocation.z));
-
-	            var weapon = weapons.get(eventData.KillerWeaponStockId);
-	            if (!isMelee && weapon && weapon.Type !== 'Grenade') {
-	                minLength = Math.min(minLength, KillVector.length());
-	                maxLength = Math.max(maxLength, KillVector.length());
-	            }
-
-	            return Object.assign({}, eventData, {
-	                Id: '' + i,
-	                MatchProgress: (eventData.TimeSinceStart.asMilliseconds() + 1.0) / duration,
-	                KillVector: KillVector,
-	                ShotLine: new THREE.Line3(KillerWorldLocation, VictimWorldLocation),
-	                KillerWorldLocation: KillerWorldLocation,
-	                VictimWorldLocation: VictimWorldLocation,
-	                KillVectorLength: KillVector.length(),
-	                IsMelee: isMelee
-	            });
-	        });
-
-	        this.duration = duration;
-	        this.times = createTreeFromEvents(events);
-	        this._map = createMapFromEvents(events);
-
-	        this.bounds = { x: maxX, y: maxY, z: maxZ };
-
-	        this.minLength = minLength;
-	        this.maxLength = maxLength;
+	var computeNote = function computeNote(event, data) {
+	    var value = 0;
+	    if (data.stream) {
+	        value = 1 - (event.KillVectorLength - data.stream.minLength) / (data.stream.maxLength - data.stream.minLength);
 	    }
 
-	    _createClass(DeathStream, [{
-	        key: "forEach",
-	        value: function forEach(f) {
-	            this.times.forEach(function (_, x) {
-	                f(x);return false;
-	            });
-	        }
-	    }]);
-
-	    return DeathStream;
-	}();
+	    return notes[Math.floor(value * notes.length)];
+	};
 
 	/**
-	 * Create a `DeathStream` from json.
+	 * Calculate the volume for an event.
 	 */
+	var computeGain = function computeGain(event, data, frequency) {
+	    var computedGain = 1;
 
+	    // Play high pitched sounds softer
+	    computedGain *= Math.max(0.2, 1.0 - (frequency - min) / (max - min));
 
-	var createFromJson = exports.createFromJson = function createFromJson(events) {
-	    var deaths = events.filter(function (x) {
-	        return x && x.EventName === "Death";
-	    });
+	    if (!isNaN(data.velocity)) computedGain *= data.velocity / 0.5;
 
-	    return new DeathStream(deaths.map(function (eventData) {
-	        return Object.assign({}, eventData, {
-	            TimeSinceStart: moment.duration(eventData.TimeSinceStart)
-	        });
-	    }));
+	    return Math.min(maxGain, maxGain * computedGain);
 	};
+
+	/**
+	 * Simple sine wave sound generator.
+	 * 
+	 * Changes pitch based on kill vector length.
+	 */
+	exports.default = (0, _weapon2.default)(function (weapon, audio, event, data) {
+
+	    var length = event.KillVectorLength;
+	    if (weapon.type === 'Grenade' || event.IsMelee) length = 0;
+
+	    var note = computeNote(event, data);
+	    var gain = computeGain(event, data, note);
+
+	    var done = false;
+	    return {
+	        sound: {
+	            play: function play() {
+	                return instrument.then(function (x) {
+	                    return x.play(note, 0);
+	                });
+	            },
+	            stop: function stop() {}
+	        },
+	        duration: duration * 1000
+	    };
+	});
 
 /***/ }
 

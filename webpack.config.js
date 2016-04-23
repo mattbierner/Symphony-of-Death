@@ -5,7 +5,7 @@ var package = require('./package.json');
 module.exports = {
     entry: {
         vendor: [].concat(Object.keys(package.dependencies)),
-        interactive_index: './src/interactive_index.jsx',
+        chordophone_index: './src/chordophone_index.jsx',
         timeline_index: './src/timeline_index.jsx'
     },
     output: {

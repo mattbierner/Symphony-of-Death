@@ -7,7 +7,7 @@ webpackJsonp([1],{
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _controls = __webpack_require__(302);
+	var _controls = __webpack_require__(314);
 
 	var _controls2 = _interopRequireDefault(_controls);
 
@@ -19,19 +19,15 @@ webpackJsonp([1],{
 
 	var _event_list2 = _interopRequireDefault(_event_list);
 
-	var _sound_manager = __webpack_require__(284);
+	var _sound_manager = __webpack_require__(297);
 
 	var _sound_manager2 = _interopRequireDefault(_sound_manager);
 
-	var _sine = __webpack_require__(287);
-
-	var _sine2 = _interopRequireDefault(_sine);
-
-	var _weird_male_screams = __webpack_require__(305);
+	var _weird_male_screams = __webpack_require__(317);
 
 	var _weird_male_screams2 = _interopRequireDefault(_weird_male_screams);
 
-	var _theremin = __webpack_require__(308);
+	var _theremin = __webpack_require__(320);
 
 	var _theremin2 = _interopRequireDefault(_theremin);
 
@@ -65,7 +61,7 @@ webpackJsonp([1],{
 	            shownEvents: new Set()
 	        };
 
-	        _this._soundManager = new _sound_manager2.default([_sine2.default]);
+	        _this._soundManager = new _sound_manager2.default([_theremin2.default]);
 	        return _this;
 	    }
 
@@ -361,7 +357,7 @@ webpackJsonp([1],{
 
 	var _OrbitControls2 = _interopRequireDefault(_OrbitControls);
 
-	var _weapons = __webpack_require__(312);
+	var _weapons = __webpack_require__(17);
 
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -3190,6 +3186,66 @@ webpackJsonp([1],{
 
 /***/ },
 
+/***/ 17:
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var instance = void 0;
+
+	var normalizeWeaponName = function normalizeWeaponName(name) {
+	    return name.replace(/\s/g, '-').toLowerCase();
+	};
+
+	/**
+	 * Map of weapon ids to weapon metadata.
+	 */
+
+	var WeaponsTable = function () {
+	    function WeaponsTable() {
+	        _classCallCheck(this, WeaponsTable);
+
+	        var weaponsData = __webpack_require__(18);
+
+	        this._data = weaponsData.reduce(function (map, data) {
+	            map.set(+data.id, Object.assign({}, data, {
+	                name: normalizeWeaponName(data.name),
+	                displayName: data.name
+	            }));
+	            return map;
+	        }, new Map());
+	    }
+
+	    _createClass(WeaponsTable, [{
+	        key: 'get',
+	        value: function get(id) {
+	            return this._data.get(+id);
+	        }
+	    }]);
+
+	    return WeaponsTable;
+	}();
+
+	/**
+	 * Get an instance of the weapons table that maps weapon id to weapon data.
+	 */
+
+
+	var getWeaponsTable = exports.getWeaponsTable = function getWeaponsTable() {
+	    instance = instance || new WeaponsTable();
+	    return instance;
+	};
+
+/***/ },
+
 /***/ 18:
 /***/ function(module, exports) {
 
@@ -3888,7 +3944,7 @@ webpackJsonp([1],{
 
 	var _moment2 = _interopRequireDefault(_moment);
 
-	var _weapons = __webpack_require__(312);
+	var _weapons = __webpack_require__(17);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4092,7 +4148,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 282:
+/***/ 295:
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -4102,7 +4158,7 @@ webpackJsonp([1],{
 	});
 	exports.init = undefined;
 
-	var _reverb = __webpack_require__(283);
+	var _reverb = __webpack_require__(296);
 
 	var _reverb2 = _interopRequireDefault(_reverb);
 
@@ -4136,7 +4192,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 283:
+/***/ 296:
 /***/ function(module, exports) {
 
 	'use strict';
@@ -4309,7 +4365,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 284:
+/***/ 297:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4320,11 +4376,11 @@ webpackJsonp([1],{
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _audio_context = __webpack_require__(282);
+	var _audio_context = __webpack_require__(295);
 
 	var _audio_context2 = _interopRequireDefault(_audio_context);
 
-	var _audioLoader = __webpack_require__(285);
+	var _audioLoader = __webpack_require__(298);
 
 	var _audioLoader2 = _interopRequireDefault(_audioLoader);
 
@@ -4505,7 +4561,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 287:
+/***/ 301:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4514,106 +4570,7 @@ webpackJsonp([1],{
 	    value: true
 	});
 
-	var _weapon = __webpack_require__(288);
-
-	var _weapon2 = _interopRequireDefault(_weapon);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	var min = 100;
-	var max = 1000;
-
-	var maxGain = 0.2;
-
-	var duration = 2;
-
-	/**
-	 * Calculate the frequency for an event.
-	 */
-	var computeFrequency = function computeFrequency(event, data) {
-	    if (data.stream) {
-	        return max - (max - min) * (event.KillVectorLength - data.stream.minLength) / (data.stream.maxLength - data.stream.minLength);
-	    } else {
-	        var progress = 400 + (5.0 - event.KillVectorLength) * 150;
-	        return Math.min(max, Math.max(min, progress));
-	    }
-	};
-
-	/**
-	 * Calculate the volume for an event.
-	 */
-	var computeGain = function computeGain(event, data, frequency) {
-	    var computedGain = 1;
-
-	    // Play high pitched sounds softer
-	    computedGain *= Math.max(0.2, 1.0 - (frequency - min) / (max - min));
-
-	    if (!isNaN(data.velocity)) computedGain *= data.velocity / 0.5;
-
-	    return Math.min(maxGain, maxGain * computedGain);
-	};
-
-	/**
-	 * Simple sine wave sound generator.
-	 * 
-	 * Changes pitch based on kill vector length.
-	 */
-	exports.default = (0, _weapon2.default)(function (weapon, audio, event, data) {
-	    var length = event.KillVectorLength;
-	    if (weapon.type === 'Grenade' || event.IsMelee) length = 0;
-
-	    var frequency = computeFrequency(event, data);
-	    var gain = computeGain(event, data, frequency);
-
-	    var xOscillator = audio.ctx.createOscillator();
-	    xOscillator.type = 'sine';
-	    xOscillator.frequency.value = frequency;
-
-	    var gainNode = audio.ctx.createGain();
-	    gainNode.gain.value = 0;
-
-	    xOscillator.connect(gainNode);
-	    gainNode.connect(audio.destination);
-
-	    var done = false;
-	    return {
-	        sound: {
-	            play: function play() {
-	                gainNode.gain.setValueAtTime(0, audio.ctx.currentTime);
-	                gainNode.gain.linearRampToValueAtTime(gain, audio.ctx.currentTime + duration * 0.2);
-	                gainNode.gain.setValueAtTime(gain, audio.ctx.currentTime + duration * 0.5);
-	                gainNode.gain.linearRampToValueAtTime(0, audio.ctx.currentTime + duration * 1);
-
-	                xOscillator.onended = function () {
-	                    done = true;
-	                };
-	                xOscillator.start(0);
-
-	                xOscillator.stop(audio.ctx.currentTime + duration);
-	            },
-	            stop: function stop() {
-	                if (done) return;
-	                try {
-	                    xOscillator.stop();
-	                } catch (e) {}
-	            }
-	        },
-	        duration: duration * 1000
-	    };
-	});
-
-/***/ },
-
-/***/ 288:
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _weapons = __webpack_require__(312);
+	var _weapons = __webpack_require__(17);
 
 	/**
 	 * Helper that adds weapon info to generator.
@@ -4628,7 +4585,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 302:
+/***/ 314:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4641,7 +4598,7 @@ webpackJsonp([1],{
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _timeline = __webpack_require__(303);
+	var _timeline = __webpack_require__(315);
 
 	var _timeline2 = _interopRequireDefault(_timeline);
 
@@ -4954,7 +4911,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 303:
+/***/ 315:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -4967,11 +4924,11 @@ webpackJsonp([1],{
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _num = __webpack_require__(304);
+	var _num = __webpack_require__(316);
 
 	var num = _interopRequireWildcard(_num);
 
-	var _weapons = __webpack_require__(312);
+	var _weapons = __webpack_require__(17);
 
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -5285,7 +5242,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 304:
+/***/ 316:
 /***/ function(module, exports) {
 
 	"use strict";
@@ -5303,7 +5260,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 305:
+/***/ 317:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5312,11 +5269,11 @@ webpackJsonp([1],{
 	    value: true
 	});
 
-	var _file = __webpack_require__(306);
+	var _file = __webpack_require__(318);
 
 	var _file2 = _interopRequireDefault(_file);
 
-	var _weapon = __webpack_require__(288);
+	var _weapon = __webpack_require__(301);
 
 	var _weapon2 = _interopRequireDefault(_weapon);
 
@@ -5401,7 +5358,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 306:
+/***/ 318:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5409,7 +5366,7 @@ webpackJsonp([1],{
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	var Wad = __webpack_require__(307);
+	var Wad = __webpack_require__(319);
 
 	/**
 	 * Helper that adds weapon info to generator.
@@ -5426,7 +5383,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 307:
+/***/ 319:
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*** IMPORTS FROM imports-loader ***/
@@ -5634,7 +5591,7 @@ webpackJsonp([1],{
 
 /***/ },
 
-/***/ 308:
+/***/ 320:
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -5643,13 +5600,13 @@ webpackJsonp([1],{
 	    value: true
 	});
 
-	var _num = __webpack_require__(304);
+	var _num = __webpack_require__(316);
 
 	var num = _interopRequireWildcard(_num);
 
 	function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-	var Wad = __webpack_require__(307);
+	var Wad = __webpack_require__(319);
 
 
 	var min = 500;
@@ -5696,66 +5653,6 @@ webpackJsonp([1],{
 	        },
 	        duration: duration * 1000
 	    };
-	};
-
-/***/ },
-
-/***/ 312:
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var instance = void 0;
-
-	var normalizeWeaponName = function normalizeWeaponName(name) {
-	    return name.replace(/\s/g, '-').toLowerCase();
-	};
-
-	/**
-	 * Map of weapon ids to weapon metadata.
-	 */
-
-	var WeaponsTable = function () {
-	    function WeaponsTable() {
-	        _classCallCheck(this, WeaponsTable);
-
-	        var weaponsData = __webpack_require__(18);
-
-	        this._data = weaponsData.reduce(function (map, data) {
-	            map.set(+data.id, Object.assign({}, data, {
-	                name: normalizeWeaponName(data.name),
-	                displayName: data.name
-	            }));
-	            return map;
-	        }, new Map());
-	    }
-
-	    _createClass(WeaponsTable, [{
-	        key: 'get',
-	        value: function get(id) {
-	            return this._data.get(+id);
-	        }
-	    }]);
-
-	    return WeaponsTable;
-	}();
-
-	/**
-	 * Get an instance of the weapons table that maps weapon id to weapon data.
-	 */
-
-
-	var getWeaponsTable = exports.getWeaponsTable = function getWeaponsTable() {
-	    instance = instance || new WeaponsTable();
-	    return instance;
 	};
 
 /***/ }
