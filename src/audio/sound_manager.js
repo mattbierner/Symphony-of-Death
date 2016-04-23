@@ -9,10 +9,10 @@ const ambientFadeIn = 8;
  * Manages playing sounds.
  */
 export default class SoundManager {
-    constructor(generators) {
+    constructor(generator) {
         this._playing = new Set();
         this._longPlaying = new Set();
-        this._generators = generators || [];
+        this._generator = generator;
     }
 
     /**
@@ -24,7 +24,14 @@ export default class SoundManager {
         }
         return this._root.then(() => this);
     }
-
+    
+    /**
+     * 
+     */
+    setGenerator(generator) {
+        this._generator = generator; 
+    }
+    
     _ensureRootCtx() {
         if (!this._root) {
             this._root = audioCtx.then(ctx =>
@@ -49,16 +56,18 @@ export default class SoundManager {
      * Play a sound for a given event.
      */
     play(event, data) {
+        const gen = this._generator;
+        if (!gen)
+            return; 
+
         this._getRootCtx((audioCtx, destination) => {
             const audio = {
                 ctx: audioCtx,
                 destination: destination
             };
 
-            for (let generator of this._generators) {
-                generator(audio, event, data)
-                    .then(({sound, duration}) => this._playSound(sound, duration));
-            }
+            gen(audio, event, data)
+                .then(({sound, duration}) => this._playSound(sound, duration));
         });
     }
 

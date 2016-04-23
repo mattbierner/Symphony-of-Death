@@ -4593,12 +4593,12 @@ webpackJsonp([1],{
 	 */
 
 	var SoundManager = function () {
-	    function SoundManager(generators) {
+	    function SoundManager(generator) {
 	        _classCallCheck(this, SoundManager);
 
 	        this._playing = new Set();
 	        this._longPlaying = new Set();
-	        this._generators = generators || [];
+	        this._generator = generator;
 	    }
 
 	    /**
@@ -4617,6 +4617,16 @@ webpackJsonp([1],{
 	            return this._root.then(function () {
 	                return _this;
 	            });
+	        }
+
+	        /**
+	         * 
+	         */
+
+	    }, {
+	        key: 'setGenerator',
+	        value: function setGenerator(generator) {
+	            this._generator = generator;
 	        }
 	    }, {
 	        key: '_ensureRootCtx',
@@ -4657,40 +4667,20 @@ webpackJsonp([1],{
 	        value: function play(event, data) {
 	            var _this2 = this;
 
+	            var gen = this._generator;
+	            if (!gen) return;
+
 	            this._getRootCtx(function (audioCtx, destination) {
 	                var audio = {
 	                    ctx: audioCtx,
 	                    destination: destination
 	                };
 
-	                var _iteratorNormalCompletion = true;
-	                var _didIteratorError = false;
-	                var _iteratorError = undefined;
-
-	                try {
-	                    for (var _iterator = _this2._generators[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	                        var generator = _step.value;
-
-	                        generator(audio, event, data).then(function (_ref2) {
-	                            var sound = _ref2.sound;
-	                            var duration = _ref2.duration;
-	                            return _this2._playSound(sound, duration);
-	                        });
-	                    }
-	                } catch (err) {
-	                    _didIteratorError = true;
-	                    _iteratorError = err;
-	                } finally {
-	                    try {
-	                        if (!_iteratorNormalCompletion && _iterator.return) {
-	                            _iterator.return();
-	                        }
-	                    } finally {
-	                        if (_didIteratorError) {
-	                            throw _iteratorError;
-	                        }
-	                    }
-	                }
+	                gen(audio, event, data).then(function (_ref2) {
+	                    var sound = _ref2.sound;
+	                    var duration = _ref2.duration;
+	                    return _this2._playSound(sound, duration);
+	                });
 	            });
 	        }
 
@@ -4730,27 +4720,27 @@ webpackJsonp([1],{
 	    }, {
 	        key: 'stopAll',
 	        value: function stopAll() {
-	            var _iteratorNormalCompletion2 = true;
-	            var _didIteratorError2 = false;
-	            var _iteratorError2 = undefined;
+	            var _iteratorNormalCompletion = true;
+	            var _didIteratorError = false;
+	            var _iteratorError = undefined;
 
 	            try {
-	                for (var _iterator2 = this._playing[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	                    var x = _step2.value;
+	                for (var _iterator = this._playing[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                    var x = _step.value;
 
 	                    x.stop();
 	                }
 	            } catch (err) {
-	                _didIteratorError2 = true;
-	                _iteratorError2 = err;
+	                _didIteratorError = true;
+	                _iteratorError = err;
 	            } finally {
 	                try {
-	                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	                        _iterator2.return();
+	                    if (!_iteratorNormalCompletion && _iterator.return) {
+	                        _iterator.return();
 	                    }
 	                } finally {
-	                    if (_didIteratorError2) {
-	                        throw _iteratorError2;
+	                    if (_didIteratorError) {
+	                        throw _iteratorError;
 	                    }
 	                }
 	            }

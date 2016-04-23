@@ -7,11 +7,12 @@ import EventList from './components/event_list';
 import OptionsPanel from './components/options_panel';
 import MatchOptions from './components/options/match_options';
 import LinksPane from './components/options/links_pane';
+import AudioOptions from './components/options/audio_options';
 
 import * as audioCtx from './audio/audio_context';
 import SoundManager from './audio/sound_manager';
 import Sine from './audio/sound_generators/chordophone_sine';
-import Piano from './audio/sound_generators/chordophone_piano';
+import midiGenerator from './audio/sound_generators/chordophone_midi';
 
 import example_matches from './data/example_matches';
 
@@ -28,6 +29,7 @@ class InteractiveOptions extends React.Component {
         return (
             <OptionsPanel>
                 <MatchOptions {...this.props} />
+                <AudioOptions {...this.props} />
                 <LinksPane />
             </OptionsPanel>
         );
@@ -42,15 +44,17 @@ class Application extends React.Component {
         super(props);
         this.state = {
             match: null,
+            
             selectedMatch: example_matches[0],
             selectedMatchId: example_matches[0].id,
+            selectedAudioType: 'oscillator',
+            selectedAudioSubType: 'sine',
+            
             shownEvents: new Set(),
             stream: null
         };
-
-        this._soundManager = new SoundManager([
-            Piano
-        ]);
+        
+        this._soundManager = new SoundManager();
     }
 
     componentWillMount() {
@@ -62,6 +66,7 @@ class Application extends React.Component {
             audioCtx.init();
 
         this._soundManager.playAmbient('./sounds/spaceambient.mp3');
+        this.onSelectedAudioTypeChange(this.props.selectedAudioType, this.props.selectedAudioSubType);
     }
 
     onTouchStart() {
@@ -85,6 +90,19 @@ class Application extends React.Component {
             }
         }
     }
+    
+    onSelectedAudioTypeChange(type, subtype) {
+        this.setState({
+            selectedAudioType: type,
+            selectedAudioSubType: subtype
+        });
+        
+        if (type === 'midi') {
+            this._soundManager.setGenerator(midiGenerator(subtype));
+        } else {
+            this._soundManager.setGenerator(Sine);
+        }
+    }
 
     setSelectedMatch(match) {
         this.setState({ selectedMatch: match, selectedMatchId: match.id })
@@ -100,7 +118,11 @@ class Application extends React.Component {
     render() {
         return (
             <div className='full-container' onTouchStart={this.onTouchStart.bind(this) }>
-                <InteractiveOptions onSelectedMatchChange={this.onSelectedMatchChange.bind(this) } />
+                <InteractiveOptions
+                    onSelectedMatchChange={this.onSelectedMatchChange.bind(this)}
+                    onSelectedAudioTypeChange={this.onSelectedAudioTypeChange.bind(this)}
+                    selectedAudioType={this.state.selectedAudioType}
+                    selectedAudioSubType={this.state.selectedAudioSubType} />
                 <div className="main-view">
                     <div className='full-container'>
                         <EventList registerOnEvent={(f) => { this._eventCallback = f; } } />

@@ -27,6 +27,10 @@ webpackJsonp([0],{
 
 	var _links_pane2 = _interopRequireDefault(_links_pane);
 
+	var _audio_options = __webpack_require__(329);
+
+	var _audio_options2 = _interopRequireDefault(_audio_options);
+
 	var _audio_context = __webpack_require__(300);
 
 	var audioCtx = _interopRequireWildcard(_audio_context);
@@ -39,9 +43,9 @@ webpackJsonp([0],{
 
 	var _chordophone_sine2 = _interopRequireDefault(_chordophone_sine);
 
-	var _chordophone_piano = __webpack_require__(308);
+	var _chordophone_midi = __webpack_require__(330);
 
-	var _chordophone_piano2 = _interopRequireDefault(_chordophone_piano);
+	var _chordophone_midi2 = _interopRequireDefault(_chordophone_midi);
 
 	var _example_matches = __webpack_require__(286);
 
@@ -87,6 +91,7 @@ webpackJsonp([0],{
 	                _options_panel2.default,
 	                null,
 	                React.createElement(_match_options2.default, this.props),
+	                React.createElement(_audio_options2.default, this.props),
 	                React.createElement(_links_pane2.default, null)
 	            );
 	        }
@@ -110,13 +115,17 @@ webpackJsonp([0],{
 
 	        _this2.state = {
 	            match: null,
+
 	            selectedMatch: _example_matches2.default[0],
 	            selectedMatchId: _example_matches2.default[0].id,
+	            selectedAudioType: 'oscillator',
+	            selectedAudioSubType: 'sine',
+
 	            shownEvents: new Set(),
 	            stream: null
 	        };
 
-	        _this2._soundManager = new _sound_manager2.default([_chordophone_piano2.default]);
+	        _this2._soundManager = new _sound_manager2.default();
 	        return _this2;
 	    }
 
@@ -131,6 +140,7 @@ webpackJsonp([0],{
 	            if (!onIos()) audioCtx.init();
 
 	            this._soundManager.playAmbient('./sounds/spaceambient.mp3');
+	            this.onSelectedAudioTypeChange(this.props.selectedAudioType, this.props.selectedAudioSubType);
 	        }
 	    }, {
 	        key: 'onTouchStart',
@@ -177,6 +187,20 @@ webpackJsonp([0],{
 	            }
 	        }
 	    }, {
+	        key: 'onSelectedAudioTypeChange',
+	        value: function onSelectedAudioTypeChange(type, subtype) {
+	            this.setState({
+	                selectedAudioType: type,
+	                selectedAudioSubType: subtype
+	            });
+
+	            if (type === 'midi') {
+	                this._soundManager.setGenerator((0, _chordophone_midi2.default)(subtype));
+	            } else {
+	                this._soundManager.setGenerator(_chordophone_sine2.default);
+	            }
+	        }
+	    }, {
 	        key: 'setSelectedMatch',
 	        value: function setSelectedMatch(match) {
 	            var _this3 = this;
@@ -200,7 +224,11 @@ webpackJsonp([0],{
 	            return React.createElement(
 	                'div',
 	                { className: 'full-container', onTouchStart: this.onTouchStart.bind(this) },
-	                React.createElement(InteractiveOptions, { onSelectedMatchChange: this.onSelectedMatchChange.bind(this) }),
+	                React.createElement(InteractiveOptions, {
+	                    onSelectedMatchChange: this.onSelectedMatchChange.bind(this),
+	                    onSelectedAudioTypeChange: this.onSelectedAudioTypeChange.bind(this),
+	                    selectedAudioType: this.state.selectedAudioType,
+	                    selectedAudioSubType: this.state.selectedAudioSubType }),
 	                React.createElement(
 	                    'div',
 	                    { className: 'main-view' },
@@ -5202,12 +5230,12 @@ webpackJsonp([0],{
 	 */
 
 	var SoundManager = function () {
-	    function SoundManager(generators) {
+	    function SoundManager(generator) {
 	        _classCallCheck(this, SoundManager);
 
 	        this._playing = new Set();
 	        this._longPlaying = new Set();
-	        this._generators = generators || [];
+	        this._generator = generator;
 	    }
 
 	    /**
@@ -5226,6 +5254,16 @@ webpackJsonp([0],{
 	            return this._root.then(function () {
 	                return _this;
 	            });
+	        }
+
+	        /**
+	         * 
+	         */
+
+	    }, {
+	        key: 'setGenerator',
+	        value: function setGenerator(generator) {
+	            this._generator = generator;
 	        }
 	    }, {
 	        key: '_ensureRootCtx',
@@ -5266,40 +5304,20 @@ webpackJsonp([0],{
 	        value: function play(event, data) {
 	            var _this2 = this;
 
+	            var gen = this._generator;
+	            if (!gen) return;
+
 	            this._getRootCtx(function (audioCtx, destination) {
 	                var audio = {
 	                    ctx: audioCtx,
 	                    destination: destination
 	                };
 
-	                var _iteratorNormalCompletion = true;
-	                var _didIteratorError = false;
-	                var _iteratorError = undefined;
-
-	                try {
-	                    for (var _iterator = _this2._generators[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-	                        var generator = _step.value;
-
-	                        generator(audio, event, data).then(function (_ref2) {
-	                            var sound = _ref2.sound;
-	                            var duration = _ref2.duration;
-	                            return _this2._playSound(sound, duration);
-	                        });
-	                    }
-	                } catch (err) {
-	                    _didIteratorError = true;
-	                    _iteratorError = err;
-	                } finally {
-	                    try {
-	                        if (!_iteratorNormalCompletion && _iterator.return) {
-	                            _iterator.return();
-	                        }
-	                    } finally {
-	                        if (_didIteratorError) {
-	                            throw _iteratorError;
-	                        }
-	                    }
-	                }
+	                gen(audio, event, data).then(function (_ref2) {
+	                    var sound = _ref2.sound;
+	                    var duration = _ref2.duration;
+	                    return _this2._playSound(sound, duration);
+	                });
 	            });
 	        }
 
@@ -5339,27 +5357,27 @@ webpackJsonp([0],{
 	    }, {
 	        key: 'stopAll',
 	        value: function stopAll() {
-	            var _iteratorNormalCompletion2 = true;
-	            var _didIteratorError2 = false;
-	            var _iteratorError2 = undefined;
+	            var _iteratorNormalCompletion = true;
+	            var _didIteratorError = false;
+	            var _iteratorError = undefined;
 
 	            try {
-	                for (var _iterator2 = this._playing[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-	                    var x = _step2.value;
+	                for (var _iterator = this._playing[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+	                    var x = _step.value;
 
 	                    x.stop();
 	                }
 	            } catch (err) {
-	                _didIteratorError2 = true;
-	                _iteratorError2 = err;
+	                _didIteratorError = true;
+	                _iteratorError = err;
 	            } finally {
 	                try {
-	                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
-	                        _iterator2.return();
+	                    if (!_iteratorNormalCompletion && _iterator.return) {
+	                        _iterator.return();
 	                    }
 	                } finally {
-	                    if (_didIteratorError2) {
-	                        throw _iteratorError2;
+	                    if (_didIteratorError) {
+	                        throw _iteratorError;
 	                    }
 	                }
 	            }
@@ -5541,109 +5559,6 @@ webpackJsonp([0],{
 
 /***/ },
 
-/***/ 308:
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-
-	var _audio_context = __webpack_require__(300);
-
-	var _audio_context2 = _interopRequireDefault(_audio_context);
-
-	var _notes = __webpack_require__(309);
-
-	var _notes2 = _interopRequireDefault(_notes);
-
-	var _weapon = __webpack_require__(306);
-
-	var _weapon2 = _interopRequireDefault(_weapon);
-
-	var _ramp = __webpack_require__(307);
-
-	var _ramp2 = _interopRequireDefault(_ramp);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	var Soundfont = __webpack_require__(310);
-	var instrumentNames = __webpack_require__(321);
-
-	var maxGain = 0.60;
-	var duration = 2;
-
-	var instrument = _audio_context2.default.then(function (ctx) {
-	    var font = new Soundfont(ctx);
-	    var instrument = font.instrument('pizzicato_strings');
-	    return new Promise(function (resolve, reject) {
-	        return instrument.onready(resolve);
-	    });
-	});
-
-	/** 
-	 * Calculate the frequency for an event.
-	 */
-	var computeNote = function computeNote(event, data) {
-	    var value = 0;
-	    if (data.stream) {
-	        value = 1 - (event.KillVectorLength - data.stream.minLength) / (data.stream.maxLength - data.stream.minLength);
-	    }
-
-	    return _notes2.default[Math.floor(value * _notes2.default.length)];
-	};
-
-	/**
-	 * Calculate the volume for an event.
-	 */
-	var computeGain = function computeGain(event, data, frequency) {
-	    var computedGain = 1;
-
-	    if (!isNaN(data.velocity)) computedGain *= data.velocity / 0.5;
-
-	    return Math.min(maxGain, maxGain * computedGain);
-	};
-
-	/**
-	 * Simple sine wave sound generator.
-	 * 
-	 * Changes pitch based on kill vector length.
-	 */
-	exports.default = (0, _weapon2.default)(function (weapon, audio, event, data) {
-	    var length = event.KillVectorLength;
-	    if (weapon.type === 'Grenade' || event.IsMelee) length = 0;
-
-	    var note = computeNote(event, data);
-	    var gain = computeGain(event, data, note);
-
-	    var gainNode = audio.ctx.createGain();
-	    gainNode.gain.value = 0;
-	    gainNode.connect(audio.destination);
-
-	    var done = false;
-	    var node = void 0;
-	    return instrument.then(function (instrument) {
-	        return {
-	            sound: {
-	                play: function play() {
-	                    var time = audio.ctx.currentTime;
-	                    (0, _ramp2.default)(gainNode.gain, gain, time, 0, 0.5, duration);
-	                    node = instrument.play(note, time, duration, { destination: gainNode });
-	                },
-	                stop: function stop() {
-	                    if (node) {
-	                        node.stop(0);
-	                    }
-	                }
-	            },
-	            duration: duration * 1000
-	        };
-	    });
-	});
-
-/***/ },
-
 /***/ 309:
 /***/ function(module, exports) {
 
@@ -5792,6 +5707,218 @@ webpackJsonp([0],{
 		"woodblock",
 		"xylophone"
 	];
+
+/***/ },
+
+/***/ 329:
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _options_pane = __webpack_require__(285);
+
+	var _options_pane2 = _interopRequireDefault(_options_pane);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var React = __webpack_require__(21);
+	var ReactDOM = __webpack_require__(178);
+
+	/**
+	 * Top level types of instruments
+	 */
+	var types = [{ name: 'Oscillator', value: 'oscillator' }, { name: 'Midi', value: 'midi' }];
+
+	var oscillatorTypes = ['sine', 'square', 'triangle', 'saw'];
+
+	/**
+	 * Set of options for a match.
+	 */
+
+	var AudioOptions = function (_React$Component) {
+	    _inherits(AudioOptions, _React$Component);
+
+	    function AudioOptions(props) {
+	        _classCallCheck(this, AudioOptions);
+
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(AudioOptions).call(this, props));
+	    }
+
+	    _createClass(AudioOptions, [{
+	        key: 'onTypeChange',
+	        value: function onTypeChange(e) {
+	            var type = e.target.value;
+	            this.props.onSelectedAudioTypeChange(type, this.props.selectedAudioSubType);
+	        }
+	    }, {
+	        key: 'onSubTypeChange',
+	        value: function onSubTypeChange(e) {
+	            var subType = e.target.value;
+	            this.props.onSelectedAudioTypeChange(this.props.selectedAudioType, subType);
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            var typeOptions = types.map(function (type) {
+	                return React.createElement(
+	                    'option',
+	                    { key: type.value, value: type.value },
+	                    type.name
+	                );
+	            });
+
+	            var subOptions = this.props.selectedAudioType === 'oscillator' ? oscillatorTypes : this.props.selectedAudioType === 'midi' ? __webpack_require__(321) : [];
+
+	            var subSelect = subOptions.map(function (x) {
+	                return React.createElement(
+	                    'option',
+	                    { key: x, value: x },
+	                    x
+	                );
+	            });
+
+	            return React.createElement(
+	                _options_pane2.default,
+	                { header: 'Instrument' },
+	                'Type: ',
+	                React.createElement(
+	                    'select',
+	                    { value: this.props.selectedAudioType,
+	                        onChange: this.onTypeChange.bind(this) },
+	                    typeOptions
+	                ),
+	                React.createElement(
+	                    'select',
+	                    { value: this.props.selectedAudioSubType,
+	                        onChange: this.onSubTypeChange.bind(this) },
+	                    subSelect
+	                )
+	            );
+	        }
+	    }]);
+
+	    return AudioOptions;
+	}(React.Component);
+
+	exports.default = AudioOptions;
+	;
+
+/***/ },
+
+/***/ 330:
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _audio_context = __webpack_require__(300);
+
+	var _audio_context2 = _interopRequireDefault(_audio_context);
+
+	var _notes = __webpack_require__(309);
+
+	var _notes2 = _interopRequireDefault(_notes);
+
+	var _weapon = __webpack_require__(306);
+
+	var _weapon2 = _interopRequireDefault(_weapon);
+
+	var _ramp = __webpack_require__(307);
+
+	var _ramp2 = _interopRequireDefault(_ramp);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var Soundfont = __webpack_require__(310);
+
+	var maxGain = 0.60;
+	var duration = 2;
+
+	/** 
+	 * Calculate the frequency for an event.
+	 */
+	var computeNote = function computeNote(event, data) {
+	    var value = 0;
+	    if (data.stream) {
+	        value = 1 - (event.KillVectorLength - data.stream.minLength) / (data.stream.maxLength - data.stream.minLength);
+	    }
+
+	    return _notes2.default[Math.floor(value * _notes2.default.length)];
+	};
+
+	/**
+	 * Calculate the volume for an event.
+	 */
+	var computeGain = function computeGain(event, data, frequency) {
+	    var computedGain = 1;
+
+	    if (!isNaN(data.velocity)) computedGain *= data.velocity / 0.5;
+
+	    return Math.min(maxGain, maxGain * computedGain);
+	};
+
+	/**
+	 * Simple sine wave sound generator.
+	 * 
+	 * Changes pitch based on kill vector length.
+	 */
+
+	exports.default = function (instrumentName) {
+	    var instrument = _audio_context2.default.then(function (ctx) {
+	        var font = new Soundfont(ctx);
+	        var instrument = font.instrument(instrumentName);
+	        return new Promise(function (resolve, reject) {
+	            return instrument.onready(resolve);
+	        });
+	    });
+
+	    return (0, _weapon2.default)(function (weapon, audio, event, data) {
+	        var length = event.KillVectorLength;
+	        if (weapon.type === 'Grenade' || event.IsMelee) length = 0;
+
+	        var note = computeNote(event, data);
+	        var gain = computeGain(event, data, note);
+
+	        var gainNode = audio.ctx.createGain();
+	        gainNode.gain.value = 0;
+	        gainNode.connect(audio.destination);
+
+	        var done = false;
+	        var node = void 0;
+	        return instrument.then(function (instrument) {
+	            return {
+	                sound: {
+	                    play: function play() {
+	                        var time = audio.ctx.currentTime;
+	                        (0, _ramp2.default)(gainNode.gain, gain, time, 0, 0.5, duration);
+	                        node = instrument.play(note, time, duration, { destination: gainNode });
+	                    },
+	                    stop: function stop() {
+	                        if (node) {
+	                            node.stop(0);
+	                        }
+	                    }
+	                },
+	                duration: duration * 1000
+	            };
+	        });
+	    });
+	};
 
 /***/ }
 
