@@ -38,6 +38,21 @@ $options-pane-width: 300px;
     padding: 0;
 }
 
+.options-pane {
+    padding-top: 0.6em;
+    padding-bottom: 3em;
+    border-bottom: 1px solid #444;
+    h2 {
+       font-weight: lighter;
+    }
+}
+
+.options-links {
+    a {
+        display: block;
+    }
+}
+
 // hide panel on screen if user has not manually expanded it
 @media only screen and (max-width: 1200px) {
     .side-panel.implicit {

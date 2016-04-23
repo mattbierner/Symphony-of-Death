@@ -3,7 +3,7 @@ const Soundfont = require('soundfont-player');
 const  instrumentNames = require('soundfont-player/instruments.json');
 
 import audioCtx from '../audio_context';
-import nodes from '../notes';
+import notes from '../notes';
 import weapon_base from './combinators/weapon'
 
 const maxGain = 0.2;
@@ -11,12 +11,12 @@ const duration = 2;
 
 const instrument = audioCtx.then(ctx => {
     const font = new Soundfont(ctx);
-    const instrument = font.instrument('choir_aahs');
+    const instrument = font.instrument('pizzicato_strings');
     return new Promise((resolve, reject) =>
         instrument.onready(resolve));
 });
 
-/**
+/** 
  * Calculate the frequency for an event.
  */
 const computeNote = (event, data) => {
@@ -34,9 +34,6 @@ const computeNote = (event, data) => {
 const computeGain = (event, data, frequency) => {
     let computedGain = 1;
     
-    // Play high pitched sounds softer
-    computedGain *= Math.max(0.2, 1.0 - (frequency - min) / (max - min));
-
     if (!isNaN(data.velocity)) 
         computedGain *= data.velocity / 0.5;
     
@@ -55,6 +52,11 @@ export default weapon_base((weapon, audio, event, data) => {
     
     const note = computeNote(event, data);
     const gain = computeGain(event, data, note); 
+    
+  //  const gainNode = audio.ctx.createGain();
+    //gainNode.gain.value = 0;
+
+//    gainNode.connect(audio.destination);
     
     let done = false;
     return instrument.then(instrument => ({

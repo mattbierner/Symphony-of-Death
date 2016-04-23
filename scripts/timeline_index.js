@@ -4447,7 +4447,7 @@ webpackJsonp([1],{
 	    }, {
 	        key: '_getRootCtx',
 	        value: function _getRootCtx(f) {
-	            this._ensureRootCtx(function (_ref) {
+	            this._ensureRootCtx().then(function (_ref) {
 	                var ctx = _ref.ctx;
 	                var destination = _ref.destination;
 	                return f(ctx, destination);

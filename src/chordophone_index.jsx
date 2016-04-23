@@ -6,6 +6,7 @@ import MatchView from './components/match_view';
 import EventList from './components/event_list';
 import OptionsPanel from './components/options_panel';
 import MatchOptions from './components/options/match_options';
+import LinksPane from './components/options/links_pane';
 
 import * as audioCtx from './audio/audio_context';
 import SoundManager from './audio/sound_manager';
@@ -27,6 +28,7 @@ class InteractiveOptions extends React.Component {
         return (
             <OptionsPanel>
                 <MatchOptions {...this.props} />
+                <LinksPane />
             </OptionsPanel>
         );
     }

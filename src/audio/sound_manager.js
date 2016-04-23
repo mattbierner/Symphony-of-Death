@@ -42,7 +42,7 @@ export default class SoundManager {
      * Get the root audio target.
      */
     _getRootCtx(f) {
-        this._ensureRootCtx(({ctx, destination}) => f(ctx, destination));
+        this._ensureRootCtx().then(({ctx, destination}) => f(ctx, destination));
     }
 
     /**

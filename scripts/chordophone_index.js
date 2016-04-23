@@ -23,6 +23,10 @@ webpackJsonp([0],{
 
 	var _match_options2 = _interopRequireDefault(_match_options);
 
+	var _links_pane = __webpack_require__(327);
+
+	var _links_pane2 = _interopRequireDefault(_links_pane);
+
 	var _audio_context = __webpack_require__(298);
 
 	var audioCtx = _interopRequireWildcard(_audio_context);
@@ -82,7 +86,8 @@ webpackJsonp([0],{
 	            return React.createElement(
 	                _options_panel2.default,
 	                null,
-	                React.createElement(_match_options2.default, this.props)
+	                React.createElement(_match_options2.default, this.props),
+	                React.createElement(_links_pane2.default, null)
 	            );
 	        }
 	    }]);
@@ -4355,6 +4360,7 @@ webpackJsonp([0],{
 	            return React.createElement(
 	                _options_pane2.default,
 	                { header: 'Match' },
+	                'Match: ',
 	                React.createElement(
 	                    'select',
 	                    { value: this.props.selectedMatch,
@@ -4411,7 +4417,7 @@ webpackJsonp([0],{
 	        value: function render() {
 	            return React.createElement(
 	                'div',
-	                { className: 'options-pane' },
+	                { className: "options-pane " + (this.props.className || '') },
 	                React.createElement(
 	                    'h2',
 	                    { className: '' },
@@ -4959,7 +4965,7 @@ webpackJsonp([0],{
 	    }, {
 	        key: '_getRootCtx',
 	        value: function _getRootCtx(f) {
-	            this._ensureRootCtx(function (_ref) {
+	            this._ensureRootCtx().then(function (_ref) {
 	                var ctx = _ref.ctx;
 	                var destination = _ref.destination;
 	                return f(ctx, destination);
@@ -5281,13 +5287,13 @@ webpackJsonp([0],{
 
 	var instrument = _audio_context2.default.then(function (ctx) {
 	    var font = new Soundfont(ctx);
-	    var instrument = font.instrument('choir_aahs');
+	    var instrument = font.instrument('pizzicato_strings');
 	    return new Promise(function (resolve, reject) {
 	        return instrument.onready(resolve);
 	    });
 	});
 
-	/**
+	/** 
 	 * Calculate the frequency for an event.
 	 */
 	var computeNote = function computeNote(event, data) {
@@ -5296,7 +5302,7 @@ webpackJsonp([0],{
 	        value = 1 - (event.KillVectorLength - data.stream.minLength) / (data.stream.maxLength - data.stream.minLength);
 	    }
 
-	    return notes[Math.floor(value * notes.length)];
+	    return _notes2.default[Math.floor(value * _notes2.default.length)];
 	};
 
 	/**
@@ -5304,9 +5310,6 @@ webpackJsonp([0],{
 	 */
 	var computeGain = function computeGain(event, data, frequency) {
 	    var computedGain = 1;
-
-	    // Play high pitched sounds softer
-	    computedGain *= Math.max(0.2, 1.0 - (frequency - min) / (max - min));
 
 	    if (!isNaN(data.velocity)) computedGain *= data.velocity / 0.5;
 
@@ -5324,6 +5327,11 @@ webpackJsonp([0],{
 
 	    var note = computeNote(event, data);
 	    var gain = computeGain(event, data, note);
+
+	    //  const gainNode = audio.ctx.createGain();
+	    //gainNode.gain.value = 0;
+
+	    //    gainNode.connect(audio.destination);
 
 	    var done = false;
 	    return instrument.then(function (instrument) {
@@ -5489,6 +5497,83 @@ webpackJsonp([0],{
 		"woodblock",
 		"xylophone"
 	];
+
+/***/ },
+
+/***/ 327:
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _options_pane = __webpack_require__(284);
+
+	var _options_pane2 = _interopRequireDefault(_options_pane);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	var React = __webpack_require__(20);
+	var ReactDOM = __webpack_require__(177);
+
+	/**
+	 * Links options pane.
+	 */
+
+	var MatchOptions = function (_React$Component) {
+	    _inherits(MatchOptions, _React$Component);
+
+	    function MatchOptions(props) {
+	        _classCallCheck(this, MatchOptions);
+
+	        return _possibleConstructorReturn(this, Object.getPrototypeOf(MatchOptions).call(this, props));
+	    }
+
+	    _createClass(MatchOptions, [{
+	        key: 'render',
+	        value: function render() {
+	            return React.createElement(
+	                _options_pane2.default,
+	                { header: 'Links', className: 'options-links' },
+	                React.createElement(
+	                    'a',
+	                    { href: 'https://github.com/mattbierner/Symphony-of-Death/blob/gh-pages/documentation/help.md' },
+	                    'Help'
+	                ),
+	                React.createElement(
+	                    'a',
+	                    { href: 'https://github.com/mattbierner/Symphony-of-Death/issues' },
+	                    'Report an Issue'
+	                ),
+	                React.createElement(
+	                    'a',
+	                    { href: 'https://github.com/mattbierner/Symphony-of-Death' },
+	                    'Source'
+	                ),
+	                React.createElement(
+	                    'a',
+	                    { href: 'https://github.com/mattbierner/Symphony-of-Death/blob/gh-pages/documentation/credits.md' },
+	                    'Credits'
+	                )
+	            );
+	        }
+	    }]);
+
+	    return MatchOptions;
+	}(React.Component);
+
+	exports.default = MatchOptions;
+	;
 
 /***/ }
 
