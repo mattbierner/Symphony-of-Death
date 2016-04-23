@@ -551,7 +551,8 @@ webpackJsonp([0],{
 	        value: function initRenderer(canvas) {
 	            this._renderer = new _three2.default.WebGLRenderer({
 	                canvas: canvas,
-	                alpha: true
+	                alpha: true,
+	                antialias: true
 	            });
 	            this._renderer.setClearColor(0xffffff, 0);
 	            this._renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
@@ -5898,6 +5899,10 @@ webpackJsonp([0],{
 	    return Math.min(maxGain, maxGain * computedGain);
 	};
 
+	var loader = function loader(name) {
+	    return 'https://cdn.rawgit.com/gleitz/midi-js-Soundfonts/master/FluidR3_GM/' + name + '-mp3.js';
+	};
+
 	/**
 	 * Simple sine wave sound generator.
 	 * 
@@ -5906,7 +5911,7 @@ webpackJsonp([0],{
 
 	exports.default = function (instrumentName) {
 	    var instrument = _audio_context2.default.then(function (ctx) {
-	        var font = new Soundfont(ctx);
+	        var font = new Soundfont(ctx, loader);
 	        var instrument = font.instrument(instrumentName);
 	        return new Promise(function (resolve, reject) {
 	            return instrument.onready(resolve);

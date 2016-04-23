@@ -10,7 +10,6 @@ const maxGain = 0.50;
 const duration = 2;
 
 
-
 /** 
  * Calculate the frequency for an event.
  */
@@ -35,6 +34,9 @@ const computeGain = (event, data, frequency) => {
     return Math.min(maxGain, maxGain * computedGain)
 }
 
+const loader = (name) =>
+    'https://cdn.rawgit.com/gleitz/midi-js-Soundfonts/master/FluidR3_GM/' + name + '-mp3.js';
+
 /**
  * Simple sine wave sound generator.
  * 
@@ -42,7 +44,7 @@ const computeGain = (event, data, frequency) => {
  */
 export default (instrumentName) => {
     const instrument = audioCtx.then(ctx => {
-        const font = new Soundfont(ctx);
+        const font = new Soundfont(ctx, loader);
         const instrument = font.instrument(instrumentName);
         return new Promise((resolve, reject) => instrument.onready(resolve));
     });

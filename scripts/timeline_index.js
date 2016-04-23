@@ -440,7 +440,8 @@ webpackJsonp([1],{
 	        value: function initRenderer(canvas) {
 	            this._renderer = new _three2.default.WebGLRenderer({
 	                canvas: canvas,
-	                alpha: true
+	                alpha: true,
+	                antialias: true
 	            });
 	            this._renderer.setClearColor(0xffffff, 0);
 	            this._renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
