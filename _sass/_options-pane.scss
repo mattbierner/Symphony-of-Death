@@ -5,23 +5,34 @@ $options-pane-width: 300px;
 .main-view {
     height: 100%;
     position: relative;
-    margin-right: $options-pane-width;
-}
-
-.match-view {
-    width: 100%;
 }
 
 .side-panel {
     box-sizing: border-box;
     position: relative;
-    float: right;
-    width: $options-pane-width;
-    background: $panel-color;
-    border-left: 1px solid $border-color;
     height: 100%;
     z-index: 100;
-    text-align: center;
+    float: right;
+
+    .panel-contents {
+        height: 100%;
+        box-sizing: border-box;
+        border-left: 1px solid $border-color;
+        background: $panel-color;
+        display: none;
+        width: $options-pane-width;
+        text-align: center;
+    }
+    
+    &.implicit .panel-contents  ,
+    &.active .panel-contents  {
+        display: block;
+    }
+}
+
+ .side-panel.implicit + .main-view,
+ .side-panel.active + .main-view {
+    margin-right: $options-pane-width;
 }
 
 .panel-collapse-button {
@@ -55,12 +66,12 @@ $options-pane-width: 300px;
 
 // hide panel on screen if user has not manually expanded it
 @media only screen and (max-width: 1200px) {
-    .side-panel.implicit {
-        width: 0;
+    .side-panel:not(.active) .panel-contents {
+        display: none;
         border: none;
     }
     
     .main-view {
-        margin-right: 0;
+        margin-right: 0 !important;
     }
 }

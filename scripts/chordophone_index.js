@@ -4255,7 +4255,7 @@ webpackJsonp([0],{
 	var ReactDOM = __webpack_require__(177);
 
 	/**
-	 * Side panel for a set of options
+	 * Collapsible side panel containing a set of options.
 	 */
 
 	var OptionsPane = function (_React$Component) {
@@ -4274,17 +4274,31 @@ webpackJsonp([0],{
 	    }
 
 	    _createClass(OptionsPane, [{
+	        key: 'onCollapseButtonClick',
+	        value: function onCollapseButtonClick() {
+	            this.setState({ active: !this.state.active, implicit: false });
+	        }
+	    }, {
 	        key: 'render',
 	        value: function render() {
+	            var classes = [];
+	            if (this.state.implicit) classes.push('implicit');
+	            if (this.state.active) classes.push('active');
+
 	            return React.createElement(
 	                'div',
-	                { className: 'side-panel ' + (this.state.implicit ? 'implicit' : '') },
+	                { className: 'side-panel ' + classes.join(' ') },
 	                React.createElement(
 	                    'button',
-	                    { className: 'panel-collapse-button material-icons' },
+	                    { className: 'panel-collapse-button material-icons',
+	                        onClick: this.onCollapseButtonClick.bind(this) },
 	                    this.state.active ? 'settings' : 'settings'
 	                ),
-	                this.props.children
+	                React.createElement(
+	                    'div',
+	                    { className: 'panel-contents' },
+	                    this.props.children
+	                )
 	            );
 	        }
 	    }]);

@@ -1,10 +1,13 @@
 .match-view {
+    width: 100%;
     height: 100%;
     -webkit-user-select: none;
     user-select: none;
     
     canvas {
         opacity: 0;
+        width: 100% !important;
+        height: 100% !important;
     }
 
     canvas.ready {
