@@ -242,7 +242,7 @@ webpackJsonp([0],{
 	                            stream: this.state.stream,
 	                            shownEvents: this.state.shownEvents,
 	                            onEventActivate: this.onEventActivate.bind(this) }),
-	                        React.createElement('a', { href: '/', className: 'page-logo' })
+	                        React.createElement('a', { href: '..', className: 'page-logo' })
 	                    )
 	                )
 	            );
