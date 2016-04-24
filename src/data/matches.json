@@ -14,5 +14,33 @@
     "30ad64c2-0a27-4b89-8c97-c2834d1763fe": {
         "name": "The Rig - Super Fiesta",
         "file": "./data/30ad64c2-0a27-4b89-8c97-c2834d1763fe.json"
+    },
+    "ac32141a-ea80-4aa7-ad6b-14d815fc9011": {
+        "name": "Coliseum - Free for All",
+        "file": "./data/ac32141a-ea80-4aa7-ad6b-14d815fc9011.json"
+    },
+    "c3c90610-11a6-4dae-8799-d420b691e748": {
+        "name": "Deadlock - Big Team Battle",
+        "file": "./data/c3c90610-11a6-4dae-8799-d420b691e748.json"
+    },
+    "91137518-59e9-451e-88d5-1747b9fd40c4": {
+        "name": "Empire - Team Arena",
+        "file": "./data/91137518-59e9-451e-88d5-1747b9fd40c4.json"
+    },
+    "2d484984-a62b-46bb-b2f2-0c5094564914": {
+        "name": "Basin - Social Multi Team",
+        "file": "./data/2d484984-a62b-46bb-b2f2-0c5094564914.json"
+    },
+    "8bd3cd7a-771e-4927-8f41-a1f00847bfa6": {
+        "name": "Eden - SWAT",
+        "file": "./data/8bd3cd7a-771e-4927-8f41-a1f00847bfa6.json"
+    },
+    "81ad76be-10a6-44ca-8920-06552d850de1": {
+        "name": "Recurve - Big Team Strongholds",
+        "file": "./data/81ad76be-10a6-44ca-8920-06552d850de1.json"
+    },
+    "b3d2644a-4274-4b37-b91f-31ea91f2ac5a": {
+        "name": "March on Stormbreak - Warzone",
+        "file": "./data/b3d2644a-4274-4b37-b91f-31ea91f2ac5a.json"
     }
 }
