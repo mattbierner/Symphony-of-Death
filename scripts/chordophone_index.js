@@ -4936,6 +4936,10 @@ webpackJsonp([0],{
 		"32049996-82e0-4afe-8346-2a7d1b2f7215": {
 			"name": "Guillotine - Big Team Battle",
 			"file": "./data/32049996-82e0-4afe-8346-2a7d1b2f7215.json"
+		},
+		"30ad64c2-0a27-4b89-8c97-c2834d1763fe": {
+			"name": "The Rig - Super Fiesta",
+			"file": "./data/30ad64c2-0a27-4b89-8c97-c2834d1763fe.json"
 		}
 	};
 
