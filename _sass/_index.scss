@@ -5,7 +5,7 @@
     padding-bottom: 4em;
     font-weight: 300;
     min-width: 320px;
-    
+    margin: 0 0.5em;
     & > {
         max-width: 600px;
     }
@@ -42,7 +42,6 @@
         position: relative;
         height: 350px;
         z-index: -3;
-        border: 2px solid $background-color;
         
         canvas {
             width: 100%;
@@ -60,6 +59,18 @@
             width: 100%;
             height: 100%;
         }
+        
+        &::before {
+            content: "";
+            display: block;
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            width: 100%;
+            height: 100%;
+            border: 8px solid $background-color;
+            z-index: 10;
+        }
     }
     
     .title {
@@ -76,7 +87,8 @@
             text-align: left;
             z-index: 99;
             
-            animation: fadeinlogo 0.8s;
+            animation-name: fadeinlogo;
+            animation-duration: 0.8s;
             animation-delay: 0.4s;
             animation-fill-mode: forwards;
             animation-timing-function: ease-out;
@@ -159,7 +171,19 @@
     }
 }
 
-@media only screen and (max-width: 500px) {
+@media screen and (max-height: 500px) {
+    .page-header {
+        .logo, .title h1 {
+            width: 200px;
+        }
+        
+        .logo {
+            height: 250px;
+        }
+    }
+}
+
+@media screen and (max-width: 500px) {
     .page-header {
         height: auto;
         padding-bottom: 3em;
@@ -180,7 +204,6 @@
             h1 {
                 white-space: nowrap;
                 text-align: center;
-                animation-delay: 0;
                 animation-duration: 0s;
                 opacity: 1;
                 padding: 0;
