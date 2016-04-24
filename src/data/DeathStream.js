@@ -26,21 +26,36 @@ class DeathStream {
         
         const duration = eventsData.length ? eventsData[eventsData.length - 1].TimeSinceStart.asMilliseconds() : 0;
         
-        let maxX = 0, maxY = 0, maxZ = 0;
+
         let minLength = Infinity, maxLength = 0;
         
+        // Compute bounds
+        let max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
+        let min = new THREE.Vector3(Infinity, Infinity, Infinity);
+        eventsData.forEach(eventData =>  {
+            const {KillerWorldLocation, VictimWorldLocation} = eventData;
+            
+            max.x = Math.max(max.x, KillerWorldLocation.x, VictimWorldLocation.x);
+            max.y = Math.max(max.y, KillerWorldLocation.y, VictimWorldLocation.y);
+            max.z = Math.max(max.z, KillerWorldLocation.z, VictimWorldLocation.z);
+            
+            min.x = Math.min(min.x, KillerWorldLocation.x, VictimWorldLocation.x);
+            min.y = Math.min(min.y, KillerWorldLocation.y, VictimWorldLocation.y);
+            min.z = Math.min(min.z, KillerWorldLocation.z, VictimWorldLocation.z);
+        });
+        
+        // Center data
+        const offset = new THREE.Vector3().addVectors(min, max).divideScalar(2);
+        
+        // Create actual events
         const events = eventsData.map((eventData, i) => {
             const isMelee = eventData.IsGroundPound || eventData.IsMelee || eventData.IsShoulderBash;
             
-            const KillerWorldLocation = new THREE.Vector3().copy(eventData.KillerWorldLocation);
-            const VictimWorldLocation = new THREE.Vector3().copy(eventData.VictimWorldLocation);
+            const KillerWorldLocation = new THREE.Vector3().copy(eventData.KillerWorldLocation).sub(offset);
+            const VictimWorldLocation = new THREE.Vector3().copy(eventData.VictimWorldLocation).sub(offset);
             
             const KillVector = new THREE.Vector3().subVectors(KillerWorldLocation, VictimWorldLocation);
-            
-            maxX = Math.max(maxX, Math.abs(KillerWorldLocation.x), Math.abs(VictimWorldLocation.x));
-            maxY = Math.max(maxY, Math.abs(KillerWorldLocation.y), Math.abs(VictimWorldLocation.y));
-            maxZ = Math.max(maxZ, Math.abs(KillerWorldLocation.z), Math.abs(VictimWorldLocation.z));
-            
+         
             const weapon = weapons.get(eventData.KillerWeaponStockId);
             if (!isMelee && (weapon && weapon.Type !== 'Grenade')) {
                 minLength = Math.min(minLength, KillVector.length());
@@ -63,7 +78,13 @@ class DeathStream {
         this.times = createTreeFromEvents(events);
         this._map = createMapFromEvents(events);
         
-        this.bounds = { x: maxX, y: maxY, z: maxZ };
+        min.sub(offset);
+        max.sub(offset);
+        this.bounds = {
+            x: Math.max(Math.abs(max.x), Math.abs(min.x)),
+            y: Math.max(Math.abs(max.y), Math.abs(min.y)),
+            z: Math.max(Math.abs(max.z), Math.abs(min.z))
+        };
         
         this.minLength = minLength;
         this.maxLength = maxLength;

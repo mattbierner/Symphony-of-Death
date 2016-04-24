@@ -4824,23 +4824,37 @@ webpackJsonp([0],{
 
 	        var duration = eventsData.length ? eventsData[eventsData.length - 1].TimeSinceStart.asMilliseconds() : 0;
 
-	        var maxX = 0,
-	            maxY = 0,
-	            maxZ = 0;
 	        var minLength = Infinity,
 	            maxLength = 0;
 
+	        // Compute bounds
+	        var max = new THREE.Vector3(-Infinity, -Infinity, -Infinity);
+	        var min = new THREE.Vector3(Infinity, Infinity, Infinity);
+	        eventsData.forEach(function (eventData) {
+	            var KillerWorldLocation = eventData.KillerWorldLocation;
+	            var VictimWorldLocation = eventData.VictimWorldLocation;
+
+
+	            max.x = Math.max(max.x, KillerWorldLocation.x, VictimWorldLocation.x);
+	            max.y = Math.max(max.y, KillerWorldLocation.y, VictimWorldLocation.y);
+	            max.z = Math.max(max.z, KillerWorldLocation.z, VictimWorldLocation.z);
+
+	            min.x = Math.min(min.x, KillerWorldLocation.x, VictimWorldLocation.x);
+	            min.y = Math.min(min.y, KillerWorldLocation.y, VictimWorldLocation.y);
+	            min.z = Math.min(min.z, KillerWorldLocation.z, VictimWorldLocation.z);
+	        });
+
+	        // Center data
+	        var offset = new THREE.Vector3().addVectors(min, max).divideScalar(2);
+
+	        // Create actual events
 	        var events = eventsData.map(function (eventData, i) {
 	            var isMelee = eventData.IsGroundPound || eventData.IsMelee || eventData.IsShoulderBash;
 
-	            var KillerWorldLocation = new THREE.Vector3().copy(eventData.KillerWorldLocation);
-	            var VictimWorldLocation = new THREE.Vector3().copy(eventData.VictimWorldLocation);
+	            var KillerWorldLocation = new THREE.Vector3().copy(eventData.KillerWorldLocation).sub(offset);
+	            var VictimWorldLocation = new THREE.Vector3().copy(eventData.VictimWorldLocation).sub(offset);
 
 	            var KillVector = new THREE.Vector3().subVectors(KillerWorldLocation, VictimWorldLocation);
-
-	            maxX = Math.max(maxX, Math.abs(KillerWorldLocation.x), Math.abs(VictimWorldLocation.x));
-	            maxY = Math.max(maxY, Math.abs(KillerWorldLocation.y), Math.abs(VictimWorldLocation.y));
-	            maxZ = Math.max(maxZ, Math.abs(KillerWorldLocation.z), Math.abs(VictimWorldLocation.z));
 
 	            var weapon = weapons.get(eventData.KillerWeaponStockId);
 	            if (!isMelee && weapon && weapon.Type !== 'Grenade') {
@@ -4864,7 +4878,13 @@ webpackJsonp([0],{
 	        this.times = createTreeFromEvents(events);
 	        this._map = createMapFromEvents(events);
 
-	        this.bounds = { x: maxX, y: maxY, z: maxZ };
+	        min.sub(offset);
+	        max.sub(offset);
+	        this.bounds = {
+	            x: Math.max(Math.abs(max.x), Math.abs(min.x)),
+	            y: Math.max(Math.abs(max.y), Math.abs(min.y)),
+	            z: Math.max(Math.abs(max.z), Math.abs(min.z))
+	        };
 
 	        this.minLength = minLength;
 	        this.maxLength = maxLength;
@@ -4906,12 +4926,16 @@ webpackJsonp([0],{
 
 	module.exports = {
 		"02156eed-70d3-4e47-a506-3b3d5513c29b": {
-			"name": "Slayer - Tyrant",
+			"name": "Tyrant - Slayer",
 			"file": "./data/02156eed-70d3-4e47-a506-3b3d5513c29b.json"
 		},
 		"7828013e-0d76-4d88-a9da-7a5fccbf5d39": {
-			"name": "Warzone - Skirmish at Darkstar",
+			"name": "Skirmish at Darkstar - Warzone",
 			"file": "./data/7828013e-0d76-4d88-a9da-7a5fccbf5d39.json"
+		},
+		"32049996-82e0-4afe-8346-2a7d1b2f7215": {
+			"name": "Guillotine - Big Team Battle",
+			"file": "./data/32049996-82e0-4afe-8346-2a7d1b2f7215.json"
 		}
 	};
 

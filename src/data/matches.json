@@ -1,10 +1,14 @@
 {
     "02156eed-70d3-4e47-a506-3b3d5513c29b": {
-        "name": "Slayer - Tyrant",
+        "name": "Tyrant - Slayer",
         "file": "./data/02156eed-70d3-4e47-a506-3b3d5513c29b.json"
     },
     "7828013e-0d76-4d88-a9da-7a5fccbf5d39": {
-        "name": "Warzone - Skirmish at Darkstar",
+        "name": "Skirmish at Darkstar - Warzone",
         "file": "./data/7828013e-0d76-4d88-a9da-7a5fccbf5d39.json"
+    },
+    "32049996-82e0-4afe-8346-2a7d1b2f7215": {
+        "name": "Guillotine - Big Team Battle",
+        "file": "./data/32049996-82e0-4afe-8346-2a7d1b2f7215.json"
     }
 }
