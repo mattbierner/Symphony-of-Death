@@ -130,7 +130,7 @@ class Application extends React.Component {
                             stream={this.state.stream}
                             shownEvents={this.state.shownEvents}
                             onEventActivate={this.onEventActivate.bind(this) } />
-                        <a href=".." className="page-logo" />
+                        <a href="http://mattbierner.github.io/Symphony-of-Death" className="page-logo" />
                     </div>
                 </div>
             </div>);
