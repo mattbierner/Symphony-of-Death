@@ -120,7 +120,8 @@
     display: block;
     color: inherit;
     padding: 8px;
-    
+    text-align: center;
+
     &:visited {
         color: inherit;
     }
@@ -183,7 +184,19 @@
     }
 }
 
-@media screen and (max-width: 500px) {
+@media screen and (max-width: 700px) {
+    .experiment {
+        img {
+            float: none;
+        }
+        
+        h1 {
+            padding-top: 0;
+        }
+    }
+}
+
+@media screen and (max-width: 600px) {
     .page-header {
         height: auto;
         padding-bottom: 3em;
@@ -202,6 +215,7 @@
             }
             
             h1 {
+                width: auto;
                 white-space: nowrap;
                 text-align: center;
                 animation-duration: 0s;
