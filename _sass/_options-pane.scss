@@ -20,13 +20,14 @@ $options-pane-width: 300px;
     }
 
     .panel-contents {
-        min-height: 100%;
+        height: 100%;
         box-sizing: border-box;
         border-left: 1px solid $border-color;
         background: $panel-color;
         display: none;
         width: $options-pane-width;
         text-align: center;
+        overflow-y: scroll;
     }
     
     &.implicit .panel-contents  ,
