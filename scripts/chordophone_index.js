@@ -850,7 +850,7 @@ webpackJsonp([0],{
 	                    { className: 'time' },
 	                    this.state.timeString
 	                ),
-	                ' -',
+	                ' - ',
 	                React.createElement(Weapon, { event: event }),
 	                ' |  ',
 	                React.createElement(
