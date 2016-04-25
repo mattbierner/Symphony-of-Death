@@ -1,5 +1,5 @@
 <div align="center" >
-    <img src="https://raw.githubusercontent.com/mattbierner/symphony-of-death/gh-pages/documentation/logo.png" alt="Symphony of Death" />
+    <img src="https://raw.githubusercontent.com/mattbierner/Symphony-of-Death/gh-pages/documentation/images/logo.png" alt="Symphony of Death" />
 </div>
 
 *Symphony of Death* is a collection of experiments translating *Halo 5* match events into interactive instruments using WebGL and Web Audio. 
