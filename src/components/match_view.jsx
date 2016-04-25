@@ -2,7 +2,7 @@
 const React = require('react');
 const ReactDOM = require('react-dom');
 
-import Match3dView from '../match_3d_view';
+import Match3dView from '../chordophone_match_3d_view';
 import ViewControls from './view_controls'
 
 /**

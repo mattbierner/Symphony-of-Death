@@ -1,20 +1,7 @@
 "use strict";
 import THREE from 'three';
 
-import CopyShader from 'imports?THREE=three!three/examples/js/shaders/CopyShader';
-import HorizontalBlurShader from 'imports?THREE=three!three/examples/js/shaders/HorizontalBlurShader';
-import VerticalBlurShader from 'imports?THREE=three!three/examples/js/shaders/VerticalBlurShader';
-import MaskPass from 'imports?THREE=three!three/examples/js/postprocessing/MaskPass';
-import RenderPass from 'imports?THREE=three!three/examples/js/postprocessing/RenderPass';
-import ShaderPass from 'imports?THREE=three!three/examples/js/postprocessing/ShaderPass';
-import EffectComposer from 'imports?THREE=three!three/examples/js/postprocessing/EffectComposer';
-
 import SPE from 'imports?THREE=three!shader-particle-engine';
-
-import additive_shader from './3d/shaders/additive';
-import default_shader from './3d/shaders/default';
-import wave_shader from './3d/shaders/wave';
-import * as tube from './3d/tube';
 
 import OrbitControls from './3d/OrbitControls'
 
@@ -22,21 +9,9 @@ import {getWeaponsTable} from './data/weapons';
 
 const ResizeSensor = require('imports?this=>window!css-element-queries/src/ResizeSensor');
 
-
-const enableGlow = false;
-
-const dustDensity = 1 / 10000;
+const dustDensity = 1 / 7500;
 const dustMax = 10000;
 
-const topSize = 0.1;
-const bottomSize = 0.1;
-const sides = 8;
-const damping = 0.98;
-
-const killerColor = new THREE.Color(0x777777);
-const victimColor = new THREE.Color(0x777777);
-
-const shaderMaterial = new THREE.ShaderMaterial(wave_shader);
 
 /**
  * Create a plane from two vectors that share an origin.
@@ -70,7 +45,6 @@ export default class Viewer {
         this.initRenderer(canvas);
         this.initCamera();
         this.initControls(container);
-        this.initComposer();
 
         new ResizeSensor(container, this.onWindowResize.bind(this));
         this.onWindowResize();
@@ -120,35 +94,6 @@ export default class Viewer {
     }
 
     /**
-     * Setup the composer.
-     */
-    initComposer() {
-        this._composer = new THREE.EffectComposer(this._renderer);
-        this._composer.addPass(new THREE.RenderPass(this._scene, this._camera));
-
-        if (enableGlow) {
-            this._effectHorizBlur = new THREE.ShaderPass(THREE.HorizontalBlurShader);
-            this._effectVertiBlur = new THREE.ShaderPass(THREE.VerticalBlurShader);
-
-            const [viewWidth, viewHeight] = this._getViewportSize();
-            this._effectHorizBlur.uniforms["h"].value = 2 / viewWidth;
-            this._effectVertiBlur.uniforms["v"].value = 2 / viewHeight;
-            this._composer.addPass(this._effectHorizBlur);
-            this._composer.addPass(this._effectVertiBlur);
-        }
-
-        //final render pass
-        this._composer2 = new THREE.EffectComposer(this._renderer);
-
-        this._composer2.addPass(new THREE.RenderPass(this._scene, this._camera));
-
-        var effectBlend = new THREE.ShaderPass(additive_shader, 'tDiffuse1');
-        effectBlend.uniforms['tDiffuse2'].value = this._composer.renderTarget2;
-        effectBlend.renderToScreen = true;
-        this._composer2.addPass(effectBlend);
-    }
-
-    /**
      * Create a particle system to render the dust.
      */
     _createDustEmitter(bounds) {
@@ -175,7 +120,7 @@ export default class Viewer {
                 value: 15,
             },
             opacity: {
-                value: [ 0, 0.15, 0 ]
+                value: [ 0, 0.25, 0 ]
             },
             position: {
                 value: new THREE.Vector3(0, 0, 0),
@@ -265,37 +210,7 @@ export default class Viewer {
         geometry.vertices.push(new THREE.Vector3(0, 0, 0), vec);
         return new THREE.Line(geometry, material);
     }
-
-    _highlightTarget(target, mouse, previousMouse) {
-        const uniforms = target.material.uniforms;
-        if (uniforms && uniforms.wave_strength) {
-            uniforms.wave_strength.value = 1.0;
-            uniforms.wave_strength.needsUpdate = true;
-
-            const killVec = target.userData.killVec;
-            if (killVec) {
-                this._raycaster.setFromCamera(mouse, this._camera)
-                const ray = this._raycaster.ray.direction.clone();
-                this._raycaster.setFromCamera(previousMouse, this._camera)
-                const ray2 = this._raycaster.ray.direction.clone();
-
-                const dRay = new THREE.Vector3().subVectors(ray, ray2);
-                const mag = dRay.length();
-                dRay.applyQuaternion(target.quaternion)
-                dRay.y = 0;
-                dRay.normalize().multiplyScalar(mag);
-                
-                uniforms.wave_direction.value = dRay;
-                uniforms.wave_direction.needsUpdate = true;
-            }
-
-            this._active.add(target);
-            this.delegate.onEventActivate(target.userData.event, {
-                velocity: new THREE.Vector2().subVectors(mouse, previousMouse).length()
-            });
-        }
-    }
-
+    
     /**
      * Handle window resize events.
      */
@@ -305,12 +220,6 @@ export default class Viewer {
         this._camera.aspect = width / height;
         this._camera.updateProjectionMatrix();
         this._renderer.setSize(width, height);
-        
-        const scaling = window.devicePixelRatio ? window.devicePixelRatio : 1;
-        const bufferWidth = width * scaling;
-        const bufferHeight = height * scaling;
-        this._composer.setSize(bufferWidth, bufferHeight);
-        this._composer2.setSize(bufferWidth, bufferHeight);
     }
 
     _setLastPosition(x, y) {
@@ -384,95 +293,6 @@ export default class Viewer {
         }
     }
 
-    _shotLine(event, killer, victim) {
-        const killvec = new THREE.Vector3().subVectors(killer, victim);
-        const height = killvec.length();
-
-        const buffergeometry = new THREE.BufferGeometry();
-        const len = Math.max(3, Math.ceil(height / 1.0));
-
-        const position = new THREE.Float32Attribute(sides * 6 * 3 * len, 3);
-        buffergeometry.addAttribute('position', position)
-
-        const wave = new THREE.Float32Attribute(sides * 6 * len, 1);
-        buffergeometry.addAttribute('wave', wave)
-
-        const customColor = new THREE.Float32Attribute(sides * 6 * 3 * len, 3);
-        buffergeometry.addAttribute('customColor', customColor);
-
-        const d = height / len;
-        let y = -height / 2;
-        let index = 0;
-        const dWave = Math.PI / (len - 1) * 1;
-        let w = 0;
-        let ii = 0;
-        for (let i = 0; i < len - 1; ++i) {
-            const color = killerColor.clone().lerp(victimColor, i / len);
-            const nextColor = killerColor.clone().lerp(victimColor, (i + 1) / len);
-
-            tube.createGeometry(index, topSize, bottomSize, y, d, 3, position);
-            index = tube.fillData(index, 3, color, nextColor, customColor);
-            ii = tube.fillData(ii, 3, Math.sin(w), Math.sin(w + dWave), wave);
-
-            w += dWave;
-            y += d;
-        }
-
-        const mesh = new THREE.Mesh(buffergeometry, shaderMaterial.clone());
-        var arrow = new THREE.ArrowHelper(killvec.clone().normalize(), victim);
-
-        mesh.rotation.setFromQuaternion(arrow.quaternion);
-        mesh.position.addVectors(victim, killvec.multiplyScalar(0.5));
-
-        mesh.userData = { event: event, killVec: killvec };
-        return mesh;
-    }
-
-    addEvent(event, hidden) {
-        const {KillerWorldLocation, VictimWorldLocation} = event;
-
-        const killer = new THREE.Vector3(KillerWorldLocation.x, KillerWorldLocation.y, KillerWorldLocation.z);
-        const victim = new THREE.Vector3(VictimWorldLocation.x, VictimWorldLocation.y, VictimWorldLocation.z);
-        const killvec = new THREE.Vector3().subVectors(killer, victim);
-        const weapon = getWeaponsTable().get(event.KillerWeaponStockId);
-        const height = killvec.length();
-
-        let objs = [];
-        if ((weapon && weapon.type === 'Grenade') || event.IsMelee) {
-            if (false) {
-                const geometry = new THREE.SphereGeometry(0.2, 32, 23);
-                const material = new THREE.MeshBasicMaterial({ color: event.IsMelee ? 0xffff00 : 0xff0000 });
-                const sphere = new THREE.Mesh(geometry, material);
-                sphere.position.add(victim);
-                sphere.userData = { event: event };
-                objs.push(sphere);
-            }
-        } else if (weapon) {
-            const path = this._shotLine(event, killer, victim);
-            /*{
-                const geometry = new THREE.SphereGeometry(2, 32, 23);
-                const material = new THREE.MeshBasicMaterial({ color: killerColor, transparent: true, opacity: 0.2 });
-                const sphere = new THREE.Mesh(geometry, material);
-                sphere.position.y = height * 0.5;
-                path.add(sphere);
-            }
-            {
-                const geometry = new THREE.SphereGeometry(2, 32, 23);
-                const material = new THREE.MeshBasicMaterial({ color: victimColor , transparent: true, opacity: 0.2});
-                const sphere = new THREE.Mesh(geometry, material);
-                sphere.position.y = height * -0.5;
-                path.add(sphere);
-            }*/
-            objs.push(path);
-        }
-
-        for (let obj of objs) {
-            obj.name = event.Id;
-            obj.visible = !hidden;
-            this._scene.add(obj);
-        }
-    }
-    
     /**
      * 
      */
@@ -538,21 +358,6 @@ export default class Viewer {
      * Main update function.
      */
     update(delta) {
-        const time = this._clock.getElapsedTime() * 10;
-
-        for (let child of this._active) {
-            const uniforms = child.material && child.material.uniforms;
-            if (uniforms && uniforms.time) {
-                uniforms.time.value = time;
-                uniforms.time.needsUpdate = true;
-            }
-            if (uniforms && uniforms.wave_strength) {
-                uniforms.wave_strength.value *= damping;
-                if (uniforms.wave_strength.value < 0.05)
-                    this._active.delete(child);
-                uniforms.wave_strength.needsUpdate = true;
-            }
-        }
         this._controls.update();
     }
 
@@ -565,9 +370,8 @@ export default class Viewer {
         this.render(delta);
         requestAnimationFrame(this.animate);
     }
-
+    
     render(delta) {
-        this._composer.render();
-        this._composer2.render();
+        this._renderer.render(this._scene, this._camera);
     }
 }
